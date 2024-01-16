@@ -28,7 +28,7 @@ class TFRDataset:
         self.dataset_dir = os.path.join(dataset_dir)
         os.makedirs(self.dataset_dir, exist_ok=True)
 
-    def create(self, freq_bins=None, timestamps=None, reshape=False):
+    def create(self, freq_bins=None, timestamps=None):
         self.get_labels()
         self.num_classes = len(self.labels)
         self.num_epochs, self.num_channels, _ = self.data.epochs.get_data().shape
