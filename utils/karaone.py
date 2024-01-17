@@ -152,6 +152,17 @@ class KaraOneDataLoader:
         self.events = events
         return events, event_id
 
+    def apply_bandpass_filter(self, l_freq=0.5, h_freq=50.0):
+        raw_data = mne.filter.filter_data(
+            self.raw.get_data(),
+            sfreq=self.raw.info["sfreq"],
+            l_freq=l_freq,
+            h_freq=h_freq,
+            verbose="info",
+        )
+        self.raw = mne.io.RawArray(raw_data, self.raw.info)
+        return self.raw
+
     def make_epochs(self, sampling_freq=1000):
         epoch_inds_file = os.path.join(self.data_folder, self.subject, "epoch_inds.mat")
         self.epoch_inds = scipy.io.loadmat(epoch_inds_file)

@@ -32,6 +32,7 @@ if __name__ == "__main__":
 
     for subject in subjects[:]:
         karaone.load_data(subject=subject, pick_channels=pick_channels)
+        karaone.apply_bandpass_filter(l_freq=0.5, h_freq=50.0)
         karaone.make_epochs(sampling_freq=1000)
         karaone.apply_baseline_correction(baseline=(0, 0))
 
