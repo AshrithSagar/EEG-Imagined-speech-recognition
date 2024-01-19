@@ -44,7 +44,7 @@ class KaraOneDataLoader:
     def load_data(self, subject=subjects[0], pick_channels=[-1]):
         self.subject = subject
         self.console.print(f"Subject: [purple]{subject}[/]")
-        line_separator()
+        line_separator(self.console)
 
         eeglab_raw_filename = glob.glob(
             os.path.join(self.data_folder, subject, "*.set")
@@ -60,13 +60,13 @@ class KaraOneDataLoader:
             self.channels = pick_channels
 
         self.console.print("All channels: \n[", ", ".join(self.raw.ch_names), "]")
-        line_separator()
+        line_separator(self.console)
         self.console.print("Chosen channels: [", ", ".join(self.channels), "]")
-        line_separator()
+        line_separator(self.console)
 
         self.raw.pick_channels(self.channels)
         self.console.print(f"Raw data shape: [black]{self.raw.get_data().shape}[/]")
-        line_separator()
+        line_separator(self.console)
 
         return self.raw
 
@@ -194,9 +194,9 @@ class KaraOneDataLoader:
         epochs = mne.EpochsArray(
             thinking_mats, self.raw.info, events=self.events, event_id=self.event_id
         )
-        line_separator()
+        line_separator(self.console)
         self.console.print(f"Epochs shape: [black]{epochs.get_data().shape}[/]")
-        line_separator()
+        line_separator(self.console)
 
         # epochs_psd = epochs.compute_psd()
         # epochs_psd.shape
@@ -228,7 +228,7 @@ class KaraOneDataLoader:
             self.console.print("The signal is centered after baseline correction.")
         else:
             self.console.print("The signal may not be centered around zero.")
-        line_separator()
+        line_separator(self.console)
 
         # epochs.average().plot()
         # plt.show()

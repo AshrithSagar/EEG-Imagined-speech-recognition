@@ -186,7 +186,7 @@ class TFRDataset:
 
             tfr_data = []
             if verbose:
-                line_separator()
+                line_separator(self.console)
                 self.console.print(f"Class: [purple]{class_name}[/]")
 
             for file_name in os.listdir(class_dir):

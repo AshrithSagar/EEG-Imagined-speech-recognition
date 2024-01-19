@@ -5,11 +5,11 @@ Configuration utils
 from rich.console import Console
 
 
-def line_separator(line="normal", color="", width="full"):
+def line_separator(line="normal", color="", width="full", console=None):
     """
     Print a horizontal line to distinguish between blocks
     """
-    console = Console()
+    console = console if console else Console()
 
     line_characters = {"normal": "\u2500", "thick": "\u2501", "double": "\u2550"}
     selected_line = line_characters.get(line, "\u2500")
