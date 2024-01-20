@@ -109,24 +109,9 @@ class FEISDataLoader:
         return data
 
     def extract_labels(self, epoch_type="speaking"):
-        with Progress(
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            MofNCompleteColumn(),
-            TimeRemainingColumn(),
-            transient=True,
-        ) as progress:
-            task_subjects = progress.add_task(
-                "Subjects ...",
-                total=len(self.subjects),
-                completed=1,
-            )
-            labels = []
-            for subject in self.subjects:
-                file = os.path.join(self.data_dir, subject, f"{epoch_type}.csv")
-                numpy_features = np.genfromtxt(file, delimiter=",", dtype=str)
-                eeg_labels = numpy_features[1::1280, 16]
-                labels.append(eeg_labels)
-                progress.update(task_subjects, advance=1)
-            self.labels = labels
-        return labels
+        subject = self.subjects[0]
+        file = os.path.join(self.data_dir, subject, f"{epoch_type}.csv")
+        df = pd.read_csv(file, header=None, skiprows=range(1, 1280), usecols=[16])
+        eeg_labels = df.values.flatten()
+        self.labels = eeg_labels[1::1280]
+        return self.labels
