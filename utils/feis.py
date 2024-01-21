@@ -3,13 +3,9 @@ feis.py
 FEIS Dataset Utility scripts
 """
 import os
-import math
-import glob
-import mne
 import subprocess
 import numpy as np
 import pandas as pd
-import scipy.io
 from scipy import integrate, stats
 import antropy
 from rich.console import Console
@@ -205,13 +201,13 @@ class FEISDataLoader:
         self.features = np.asarray(features, dtype=np.float32)
         return self.features
 
-    def window_data(self, data: np.ndarray, num_windows: int = 10):
+    def window_data(self, data: np.ndarray, split: int = 10):
         """Windows the data with a stride length of 1."""
-        w_len = data.shape[0] // num_windows
+        w_len = data.shape[0] // split
         stride = w_len // 2
-        no_offset_windows = np.split(data, num_windows)
-        offset_windows = np.split(data[stride:-stride], num_windows - 1)
-        windows = [0] * (2 * num_windows - 1)
+        no_offset_windows = np.split(data, split)
+        offset_windows = np.split(data[stride:-stride], split - 1)
+        windows = [0] * (2 * split - 1)
         windows[::2] = no_offset_windows
         windows[1::2] = offset_windows
         windows = np.array(windows, dtype=np.float32)
