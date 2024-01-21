@@ -384,6 +384,9 @@ class FEISDataLoader:
         np.save(file, labels)
 
     def load_labels(self, filename="labels.npy"):
+        """Returns:
+        - labels (np.ndarray): Labels of shape (n.epochs, ).
+        """
         file = os.path.join(self.features_dir, filename)
         labels = np.load(file, allow_pickle=True)
         return labels
