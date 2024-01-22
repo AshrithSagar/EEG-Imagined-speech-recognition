@@ -68,7 +68,6 @@ class FEISDataLoader:
     def __init__(
         self,
         data_dir,
-        features_dir,
         subjects="all",
         sampling_freq=256,
         num_seconds_per_trial=5,
@@ -81,11 +80,10 @@ class FEISDataLoader:
         - num_seconds_per_trial (int): Number of seconds per trial (default: 5 seconds).
         """
         self.data_dir = data_dir
-        self.features_dir = features_dir
         self.subjects = all_subjects if subjects == "all" else subjects
-        self.console = console if console else Console()
         self.sampling_freq = sampling_freq
         self.num_seconds_per_trial = num_seconds_per_trial
+        self.console = console if console else Console()
 
     def unzip_data_eeg(self, delete_zip=False):
         with Progress(
@@ -138,7 +136,7 @@ class FEISDataLoader:
 
         self.save_labels(labels)
 
-    def extract_features(self, epoch_type: str, skip_if_exists=True):
+    def extract_features(self, features_dir, epoch_type: str, skip_if_exists=True):
         """Parameters:
         - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
         """
@@ -158,6 +156,7 @@ class FEISDataLoader:
             task_features = progress.add_task("Computing features ...")
 
             self.epoch_type = epoch_type
+            self.features_dir = features_dir
             self.get_features_functions()
 
             for subject in self.subjects:
@@ -192,7 +191,7 @@ class FEISDataLoader:
     def compute_features(self, epochs, progress=None, task=None):
         features = []
         for epoch in epochs:
-            epoch = self.window_data(epoch, num_windows=10)
+            epoch = self.window_data(epoch, split=10)
             feats = self.make_simple_feats(epoch)
             feats = self.add_deltas(feats)
             features.append(feats)
@@ -390,3 +389,13 @@ class FEISDataLoader:
         file = os.path.join(self.features_dir, filename)
         labels = np.load(file, allow_pickle=True)
         return labels
+
+    def flatten(self, features, labels, verbose=False):
+        flattened_features = features.reshape(
+            (-1, features.shape[-2] * features.shape[-1])
+        )
+        flattened_labels = np.tile(labels, features.shape[0])
+        if verbose:
+            self.console.print(f"Features: {flattened_features.shape}")
+            self.console.print(f"Labels: {flattened_labels.shape}")
+        return flattened_features, flattened_labels
