@@ -1,10 +1,5 @@
 import os
 import sys
-
-sys.path.append(
-    "/Users/ashrith/Documents/Hons/Repos/_/EEG-Imagined speech recognition/"
-)
-print(sys.path)
 import numpy as np
 from rich.console import Console
 import joblib
@@ -21,12 +16,14 @@ from sklearn.metrics import (
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, train_test_split
 from sklearn.svm import SVC
 
-from utils.config import line_separator
+sys.path.append(os.getcwd())
+from utils.config import load_config, line_separator
 from utils.feis import FEISDataLoader
 
 
 if __name__ == "__main__":
     console = Console()
+    args = load_config(key="feis")
 
     subjects = [
         "01",
@@ -52,7 +49,7 @@ if __name__ == "__main__":
     ]
 
     feis = FEISDataLoader(
-        data_dir="/Users/ashrith/Documents/Hons/Datasets/FEIS/data_eeg",
+        data_dir=args["data_dir"],
         subjects=subjects,
         sampling_freq=256,
         num_seconds_per_trial=5,
@@ -61,7 +58,7 @@ if __name__ == "__main__":
     feis.unzip_data_eeg(delete_zip=True)
 
     feis.extract_features(
-        features_dir="/Users/ashrith/Documents/Hons/Datasets/FEIS/simple_features",
+        features_dir=args["features_dir"],
         epoch_type="thinking",
     )
 
@@ -120,6 +117,6 @@ if __name__ == "__main__":
     print("Recall:", recall)
     print("F1 Score:", f1)
 
-    model_dir = "/Users/ashrith/Documents/Hons/Repos/_/EEG-Imagined speech recognition/files/FEIS/SVM"
+    model_dir = args["svm_model_dir"]
     filename = os.path.join(model_dir, "svm_model.pkl")
     joblib.dump(final_svm_model, filename)

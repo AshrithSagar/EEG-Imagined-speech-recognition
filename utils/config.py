@@ -2,6 +2,8 @@
 config.py
 Configuration utils
 """
+import os
+import yaml
 from rich.console import Console
 
 
@@ -22,3 +24,16 @@ def line_separator(line="normal", color="", width="full", console=None):
     else:
         separator = f"{selected_line * effective_width}"
     console.print(separator)
+
+
+def load_config(config_file="config.yaml", key=None):
+    """
+    Load configuration settings from a YAML file
+    """
+    with open(config_file, "r") as file:
+        config = yaml.safe_load(file)
+
+    if key:
+        return config.get(key, {})
+    else:
+        return config
