@@ -6,3 +6,4 @@ scikit-learn
 tensorflow
 mne
 tftb
+antropy
