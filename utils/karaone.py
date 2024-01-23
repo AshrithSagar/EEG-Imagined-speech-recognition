@@ -291,11 +291,17 @@ class KaraOneDataLoader:
         return self.epochs
 
     def epochs_info(self, verbose=False):
+        """Display the shape of the epochs"""
         verbose = verbose or self.verbose
         if verbose:
-            self.console.print(f"[bold]Epochs:[/]")
-            for epoch, subject in zip(self.all_epochs, self.subjects):
-                self.console.print(f"{subject}: {epoch.get_data().shape}")
+            message = f"[bold underline]Epochs:[/]\n"
+            message += "\n".join(
+                [
+                    f"{subject}: {epoch.get_data().shape}"
+                    for epoch, subject in zip(self.all_epochs, self.subjects)
+                ]
+            )
+            self.console.print(message)
 
     def process_data(self, epoch_type: str, pick_channels=[-1], verbose=False):
         with Progress(
@@ -557,9 +563,14 @@ class KaraOneDataLoader:
             features.append(subject_features)
 
         if verbose:
-            self.console.print(f"[bold]Features:[/]")
-            for feats, subject in zip(features, self.subjects):
-                self.console.print(f"{subject}: {feats.shape}")
+            message = f"[bold underline]Features:[/]\n"
+            message += "\n".join(
+                [
+                    f"{subject}: {feats.shape}"
+                    for feats, subject in zip(features, self.subjects)
+                ]
+            )
+            self.console.print(message)
 
         return features
 
