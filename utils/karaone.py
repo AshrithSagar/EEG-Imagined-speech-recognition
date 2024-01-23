@@ -2,14 +2,14 @@
 karaone_utils.py
 KaraOne Utility scripts
 """
-import os
-import math
 import glob
+import math
+import os
+
+import antropy
 import mne
 import numpy as np
 import scipy.io
-from scipy import integrate, stats
-import antropy
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -18,6 +18,7 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
 )
+from scipy import integrate, stats
 
 from utils.config import line_separator
 
