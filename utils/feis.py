@@ -361,7 +361,7 @@ class FEISDataLoader:
         filename = os.path.join(subject_features_dir, self.epoch_type + ".npy")
         np.save(filename, self.features)
 
-    def load_features(self, epoch_type: str = None):
+    def load_features(self, epoch_type: str = None, verbose=False):
         """Parameters:
         - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
 
@@ -375,7 +375,17 @@ class FEISDataLoader:
             filename = os.path.join(self.features_dir, subject, f"{epoch_type}.npy")
             subject_features = np.load(filename)
             features.append(subject_features)
-        features = np.asarray(features, dtype=np.float32)
+
+        if verbose:
+            message = f"[bold underline]Features:[/]\n"
+            message += "\n".join(
+                [
+                    f"{subject}: {feats.shape}"
+                    for feats, subject in zip(features, self.subjects)
+                ]
+            )
+            self.console.print(message)
+
         return features
 
     def save_labels(self, labels, filename="labels.npy"):
@@ -391,11 +401,13 @@ class FEISDataLoader:
         return labels
 
     def flatten(self, features, labels, verbose=False):
-        flattened_features = features.reshape(
-            (-1, features.shape[-2] * features.shape[-1])
-        )
-        flattened_labels = np.tile(labels, features.shape[0])
+        flattened_features = [feats.reshape(feats.shape[0], -1) for feats in features]
+        flattened_features = np.vstack(flattened_features)
+
+        flattened_labels = np.tile(labels, len(features))
+
         if verbose:
             self.console.print(f"Features: {flattened_features.shape}")
             self.console.print(f"Labels: {flattened_labels.shape}")
+
         return flattened_features, flattened_labels
