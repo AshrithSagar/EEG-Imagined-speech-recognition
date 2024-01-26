@@ -18,6 +18,7 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
 )
+from rich.table import Table
 from scipy import integrate, stats
 
 from utils.config import line_separator
@@ -150,15 +151,22 @@ class KaraOneDataLoader:
 
         return speaking_mats
 
-    def get_epoch_labels(self):
-        labels_file = os.path.join(
-            self.data_dir, self.subject, "kinect_data", "labels.txt"
-        )
+    def get_epoch_labels(self, subject=None):
+        subject = subject or self.subject
+
+        labels_file = os.path.join(self.data_dir, subject, "kinect_data", "labels.txt")
         with open(labels_file, encoding="utf-8") as F:
             prompts = F.read().splitlines()
 
         self.epoch_labels = np.asarray(prompts)
         return self.epoch_labels
+
+    def get_all_epoch_labels(self):
+        all_epoch_labels = []
+        for subject in self.subjects:
+            epoch_labels = self.get_epoch_labels(subject=subject)
+            all_epoch_labels.append(epoch_labels)
+        return all_epoch_labels
 
     def get_events(self, epoch_type: str = None):
         epoch_type = epoch_type or self.epoch_type
@@ -522,15 +530,15 @@ class KaraOneDataLoader:
             kurtosis,
             np.sum,
             spec_entropy,
-            # sample_entropy,
-            # perm_entropy,
-            # svd_entropy,
-            # app_entropy,
-            # petrosian,
-            # katz,
-            # higuchi,
-            # rootmeansquare,
-            # dfa,
+            sample_entropy,
+            perm_entropy,
+            svd_entropy,
+            app_entropy,
+            petrosian,
+            katz,
+            higuchi,
+            rootmeansquare,
+            dfa,
         ]
         return self.feature_functions
 
@@ -547,7 +555,7 @@ class KaraOneDataLoader:
         filename = os.path.join(subject_features_dir, f"{self.epoch_type}.npy")
         np.save(filename, features)
 
-    def load_features(self, epoch_type: str = None, verbose=False):
+    def load_features(self, epoch_type: str = None, features_dir=None):
         """Parameters:
         - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
 
@@ -556,33 +564,52 @@ class KaraOneDataLoader:
         """
         features = []
         epoch_type = epoch_type or self.epoch_type
-        verbose = verbose or self.verbose
+        features_dir = features_dir or self.features_dir
 
         for subject in self.subjects:
-            filename = os.path.join(self.features_dir, subject, f"{epoch_type}.npy")
+            filename = os.path.join(features_dir, subject, f"{epoch_type}.npy")
             subject_features = np.load(filename)
             features.append(subject_features)
-
-        if verbose:
-            message = f"[bold underline]Features:[/]\n"
-            message += "\n".join(
-                [
-                    f"{subject}: {feats.shape}"
-                    for feats, subject in zip(features, self.subjects)
-                ]
-            )
-            self.console.print(message)
 
         return features
 
     def flatten(self, features, labels, verbose=False):
+        verbose = verbose or self.verbose
+
         flattened_features = [feats.reshape(feats.shape[0], -1) for feats in features]
         flattened_features = np.vstack(flattened_features)
 
         flattened_labels = np.concatenate(labels)
 
         if verbose:
-            self.console.print(f"Features: {flattened_features.shape}")
-            self.console.print(f"Labels: {flattened_labels.shape}")
+            table = Table(title="[bold underline]Features Info[/]")
+            table.add_column("Data", justify="right", no_wrap=True)
+            table.add_column("Shape", style="cyan", no_wrap=True)
+            table.add_row("Features", str(flattened_features.shape))
+            table.add_row("Labels", str(flattened_labels.shape))
+
+            self.console.print(table)
 
         return flattened_features, flattened_labels
+
+    def subjects_info(self, verbose=False):
+        verbose = verbose or self.verbose
+
+        if verbose:
+            message = f"[bold underline]Subjects:[/]\n"
+            message += ", ".join(self.subjects)
+            self.console.print(message)
+
+    def features_info(self, features, labels, verbose=False):
+        verbose = verbose or self.verbose
+
+        if verbose:
+            table = Table(title="[bold underline]Features Info[/]")
+            table.add_column("Subject", justify="right", style="magenta", no_wrap=True)
+            table.add_column("Features", justify="center", style="cyan", no_wrap=True)
+            table.add_column("Labels", style="cyan", no_wrap=True)
+
+            for feats, subject, label in zip(features, self.subjects, labels):
+                table.add_row(str(subject), str(feats.shape), str(label.shape))
+
+            self.console.print(table)
