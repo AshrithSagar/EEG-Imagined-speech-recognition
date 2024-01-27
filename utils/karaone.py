@@ -560,7 +560,7 @@ class KaraOneDataLoader:
         filename = os.path.join(subject_features_dir, f"{self.epoch_type}.npy")
         np.save(filename, features)
 
-    def load_features(self, epoch_type: str = None, features_dir=None):
+    def load_features(self, epoch_type: str = None, features_dir=None, verbose=False):
         """Parameters:
         - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
 
@@ -570,6 +570,7 @@ class KaraOneDataLoader:
         features = []
         epoch_type = epoch_type or self.epoch_type
         features_dir = features_dir or self.features_dir
+        verbose = verbose or self.verbose
 
         for subject in self.subjects:
             filename = os.path.join(features_dir, subject, f"{epoch_type}.npy")
@@ -666,6 +667,7 @@ class KaraOneDataLoader:
                 self.progress.update(task, advance=1)
 
         return filtered_data
+
     def apply_laplacian_filter_csd(self, num_neighbors=4, verbose=False):
         verbose = verbose or self.verbose
 
