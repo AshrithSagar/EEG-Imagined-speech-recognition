@@ -20,6 +20,7 @@ from rich.progress import (
 )
 from rich.table import Table
 from scipy import integrate, stats
+from scipy.spatial.distance import cdist
 
 from utils.config import line_separator
 
@@ -69,6 +70,7 @@ class KaraOneDataLoader:
         self.epoch_type = None
         self.verbose = verbose
         self.console = console if console else Console()
+        self.progress = None
 
     def load_data(self, subject, verbose=False):
         self.subject = subject
@@ -211,13 +213,12 @@ class KaraOneDataLoader:
         self.raw = mne.io.RawArray(raw_data, self.raw.info, verbose=verbose)
         return self.raw
 
-    def assemble_epochs(self, verbose=False):
+    def assemble_epochs(self, data, verbose=False):
         """Assembles and organizes different types of epochs from raw EEG data."""
         verbose = verbose or self.verbose
         epoch_inds_file = os.path.join(self.data_dir, self.subject, "epoch_inds.mat")
         self.epoch_inds = scipy.io.loadmat(epoch_inds_file)
 
-        data = self.raw.get_data()
         data = data * 10**6  # Use microVolts instead of Volts
 
         self.all_mats = {
@@ -312,19 +313,22 @@ class KaraOneDataLoader:
             )
             self.console.print(message)
 
-    def process_data(self, epoch_type: str, pick_channels=[-1], verbose=False):
+    def process_data(
+        self, epoch_type: str, pick_channels=[-1], num_neighbors=4, verbose=False
+    ):
         with Progress(
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             MofNCompleteColumn(),
             TimeRemainingColumn(),
             transient=True,
-        ) as progress:
-            task_subjects = progress.add_task(
+        ) as self.progress:
+            task_subjects = self.progress.add_task(
                 "Subjects ...",
                 total=len(self.subjects),
                 completed=1,
             )
+            task_filter = self.progress.add_task("Applying Laplacian filter ...")
 
             self.verbose = verbose
             self.epoch_type = epoch_type
@@ -335,8 +339,9 @@ class KaraOneDataLoader:
                 self.load_data(subject)
                 self.pick_channels(pick_channels)
                 self.apply_bandpass_filter(l_freq=0.5, h_freq=50.0)
+                data = self.apply_laplacian_filter(num_neighbors=4, task=task_filter)
 
-                self.assemble_epochs()
+                self.assemble_epochs(data)
                 epoch_labels = self.get_epoch_labels()
                 self.get_events()
                 self.make_epochs()
@@ -344,7 +349,7 @@ class KaraOneDataLoader:
 
                 self.all_epochs.append(subject_epochs)
                 self.all_epoch_labels.append(epoch_labels)
-                progress.update(task_subjects, advance=1)
+                self.progress.update(task_subjects, advance=1)
 
     def extract_features(self, features_dir, epoch_type=None, skip_if_exists=True):
         with Progress(
@@ -613,3 +618,51 @@ class KaraOneDataLoader:
                 table.add_row(str(subject), str(feats.shape), str(label.shape))
 
             self.console.print(table)
+
+    def apply_laplacian_filter(self, num_neighbors=4, task=None, verbose=False):
+        """Apply Laplacian filtering to EEG data.
+
+        Parameters:
+        - eeg_data: ndarray, shape (num_channels, num_samples)
+            EEG data matrix.
+        - num_neighbors: int
+            Number of nearest neighbors to consider.
+
+        Returns:
+        - filtered_data: ndarray, shape (num_channels, num_samples)
+            Filtered EEG data matrix.
+        """
+
+        filtered_data = self.raw.get_data().copy()
+        num_channels, num_samples = filtered_data.shape
+        if task:
+            self.progress.reset(task)
+            self.progress.update(task, total=num_samples)
+
+        # locations = np.asarray([self.raw.info["chs"][idx]["loc"][:3] for idx in picks])
+        channel_locations = mne.channels.find_layout(self.raw.info, ch_type="eeg")
+        channel_positions = channel_locations.pos[:, :3]
+
+        distance_matrix = cdist(channel_positions, channel_positions)
+        nearest_neighbors = np.argsort(distance_matrix, axis=1)
+        nearest_neighbors = nearest_neighbors[:, 1 : (num_neighbors + 1)]
+
+        # Normalized nearest neighbor inverse distance matrix
+        inverse_distances = np.zeros((num_channels, num_neighbors))
+        for i in range(num_channels):
+            inverse_distances[i, :] = 1.0 / distance_matrix[i, nearest_neighbors[i, :]]
+            inverse_distances[i, :] /= np.sum(inverse_distances[i, :])
+
+        for sample in range(num_samples):
+            # Sum of n-closest channel values weighted by normalized inverse distance
+            sum_values = np.zeros(num_channels)
+            for channel in range(num_channels):
+                sum_values[channel] = np.dot(
+                    inverse_distances[channel, :],
+                    filtered_data[nearest_neighbors[channel, :], sample],
+                )
+            filtered_data[:, sample] -= sum_values
+            if task:
+                self.progress.update(task, advance=1)
+
+        return filtered_data
