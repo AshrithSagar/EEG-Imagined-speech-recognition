@@ -2,8 +2,11 @@
 **/.ipynb_checkpoints
 **/__pycache__/
 .venv/
+venv/
 
 other/
 files/
 notebooks/
-config.yaml
+
+config*.yaml
+!config-template.yaml
