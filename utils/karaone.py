@@ -343,7 +343,8 @@ class KaraOneDataLoader:
                 self.load_data(subject)
                 self.pick_channels(pick_channels)
                 self.apply_bandpass_filter(l_freq=0.5, h_freq=50.0)
-                data = self.apply_laplacian_filter(num_neighbors=4, task=task_filter)
+                self.apply_laplacian_filter_csd(num_neighbors=4, task=task_filter)
+                data = self.raw.get_data()
 
                 self.assemble_epochs(data)
                 epoch_labels = self.get_epoch_labels()
@@ -672,10 +673,10 @@ class KaraOneDataLoader:
 
         return filtered_data
 
-    def apply_laplacian_filter_csd(self, num_neighbors=4, verbose=False):
+    def apply_laplacian_filter_csd(self, num_neighbors=4, task=None, verbose=False):
         verbose = verbose or self.verbose
 
         self.raw = mne.preprocessing.compute_current_source_density(
-            self.raw, n_src_ref=num_neighbors, verbose=verbose
+            self.raw, n_legendre_terms=num_neighbors, verbose=verbose
         )
         return self.raw
