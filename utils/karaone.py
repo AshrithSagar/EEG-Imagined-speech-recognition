@@ -133,7 +133,11 @@ class KaraOneDataLoader:
     def trim_speaking_mats(self, spk_mats):
         # Matrices trimmed to contain only the "speaking" segments of the EEG data.
         kinect_folder = os.path.join(self.data_dir, self.subject, "kinect_data")
-        wav_fns = list(filter(lambda x: ".wav" in x, os.listdir(kinect_folder)))
+        wav_fns = [
+            file
+            for file in os.listdir(kinect_folder)
+            if not file.startswith(".") and file.endswith(".wav")
+        ]
 
         assert len(wav_fns) == len(spk_mats)
 
