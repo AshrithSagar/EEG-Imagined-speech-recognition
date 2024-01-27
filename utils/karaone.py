@@ -373,7 +373,7 @@ class KaraOneDataLoader:
                 self.load_raw_data(subject)
                 self.pick_channels(pick_channels)
                 self.apply_bandpass_filter(l_freq=l_freq, h_freq=h_freq)
-                self.apply_laplacian_filter(num_neighbors, task=task_filter)
+                # self.apply_laplacian_filter(num_neighbors, task=task_filter)
                 self.save_raw(self.data_dir, overwrite=overwrite)
                 self.progress.update(task_subjects, advance=1)
 
@@ -466,7 +466,6 @@ class KaraOneDataLoader:
             features.append(feats)
             if progress:
                 progress.update(task, advance=1)
-            break
 
         return np.asarray(features, dtype=np.float32)
 
