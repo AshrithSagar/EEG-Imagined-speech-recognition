@@ -69,6 +69,7 @@ class KaraOneDataLoader:
         self.num_milliseconds_per_trial = num_milliseconds_per_trial
         self.epoch_type = None
         self.verbose = verbose
+        mne.set_log_level(verbose=verbose)
         self.console = console if console else Console()
         self.progress = None
 
@@ -412,13 +413,13 @@ class KaraOneDataLoader:
                 self.all_epoch_labels.append(epoch_labels)
                 self.progress.update(task_subjects, advance=1)
 
-    def save_raw(self, save_dir, overwrite=False):
+    def save_raw(self, save_dir, overwrite=False, verbose=False):
         """Save the raw data to disk"""
         subject_dir = os.path.join(save_dir, self.subject)
         os.makedirs(subject_dir, exist_ok=True)
         raw_filename = os.path.join(subject_dir, "raw.fif")
         if overwrite or not os.path.exists(raw_filename):
-            self.raw.save(raw_filename, overwrite=overwrite)
+            self.raw.save(raw_filename, overwrite=overwrite, verbose=verbose)
 
     def extract_features(self, features_dir, epoch_type=None, skip_if_exists=True):
         with Progress(
@@ -447,7 +448,7 @@ class KaraOneDataLoader:
                         progress.update(task_subjects, advance=1)
                         continue
 
-                subject_epochs = self.all_epochs[index].get_data()
+                subject_epochs = self.all_epochs[index].get_data(copy=True)
                 progress.update(task_features, total=len(subject_epochs))
                 features = self.compute_features(
                     subject_epochs, progress=progress, task=task_features
