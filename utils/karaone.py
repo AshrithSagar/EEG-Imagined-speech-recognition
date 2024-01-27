@@ -666,3 +666,10 @@ class KaraOneDataLoader:
                 self.progress.update(task, advance=1)
 
         return filtered_data
+    def apply_laplacian_filter_csd(self, num_neighbors=4, verbose=False):
+        verbose = verbose or self.verbose
+
+        self.raw = mne.preprocessing.compute_current_source_density(
+            self.raw, n_src_ref=num_neighbors, verbose=verbose
+        )
+        return self.raw
