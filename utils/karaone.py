@@ -50,7 +50,7 @@ class KaraOneDataLoader:
 
     def __init__(
         self,
-        data_dir,
+        raw_data_dir,
         subjects="all",
         sampling_freq=1000,
         num_milliseconds_per_trial=4900,
@@ -58,12 +58,12 @@ class KaraOneDataLoader:
         console=None,
     ):
         """Parameters:
-        - data_dir (str): Path to the data folder.
+        - raw_data_dir (str): Path to the raw data folder.
         - subjects (list): List of subjects to load. Use "all" for all subjects (default)
         - sampling_freq (int): Sampling frequency for EEG data (default: 1000 Hz).
         - num_milliseconds_per_trial (int): Number of milliseconds per trial (default: 4900 ms).
         """
-        self.data_dir = data_dir
+        self.raw_data_dir = raw_data_dir
         self.subjects = all_subjects if subjects == "all" else subjects
         self.sampling_freq = sampling_freq
         self.num_milliseconds_per_trial = num_milliseconds_per_trial
@@ -72,17 +72,34 @@ class KaraOneDataLoader:
         self.console = console if console else Console()
         self.progress = None
 
-    def load_data(self, subject, verbose=False):
+    def load_raw_data(self, subject, verbose=False):
+        """Load data from KaraOne folder"""
         self.subject = subject
         verbose = verbose or self.verbose
         if verbose:
             self.console.print(f"Subject: [purple]{subject}[/]")
             line_separator(self.console)
 
-        eeglab_raw_filename = glob.glob(os.path.join(self.data_dir, subject, "*.set"))
-        eeglab_raw_file = os.path.join(self.data_dir, subject, eeglab_raw_filename[0])
+        data_dir = self.raw_data_dir
+        eeglab_raw_filename = glob.glob(os.path.join(data_dir, subject, "*.set"))
+        eeglab_raw_file = os.path.join(data_dir, subject, eeglab_raw_filename[0])
         self.raw = mne.io.read_raw_eeglab(
             eeglab_raw_file, montage_units="mm", verbose=verbose or "critical"
+        )
+
+        return self.raw
+
+    def load_data(self, data_dir, subject, verbose=False):
+        """Load data from a .fif file"""
+        self.subject = subject
+        verbose = verbose or self.verbose
+        if verbose:
+            self.console.print(f"Subject: [purple]{subject}[/]")
+            line_separator(self.console)
+
+        raw_filename = os.path.join(data_dir, subject, "raw.fif")
+        self.raw = mne.io.read_raw_fif(
+            raw_filename, preload=True, verbose=verbose or "critical"
         )
 
         return self.raw
@@ -132,7 +149,7 @@ class KaraOneDataLoader:
 
     def trim_speaking_mats(self, spk_mats):
         # Matrices trimmed to contain only the "speaking" segments of the EEG data.
-        kinect_folder = os.path.join(self.data_dir, self.subject, "kinect_data")
+        kinect_folder = os.path.join(self.raw_data_dir, self.subject, "kinect_data")
         wav_fns = [
             file
             for file in os.listdir(kinect_folder)
@@ -147,7 +164,7 @@ class KaraOneDataLoader:
         for index in range(num_files):
             mat = spk_mats[index]
             wav_file = os.path.join(
-                self.data_dir, self.subject, "kinect_data", str(index) + ".wav"
+                self.raw_data_dir, self.subject, "kinect_data", str(index) + ".wav"
             )
             sample_rate, data = scipy.io.wavfile.read(wav_file)
             num_samples = math.floor((len(data) / sample_rate) * self.sampling_freq)
@@ -160,7 +177,9 @@ class KaraOneDataLoader:
     def get_epoch_labels(self, subject=None):
         subject = subject or self.subject
 
-        labels_file = os.path.join(self.data_dir, subject, "kinect_data", "labels.txt")
+        labels_file = os.path.join(
+            self.raw_data_dir, subject, "kinect_data", "labels.txt"
+        )
         with open(labels_file, encoding="utf-8") as F:
             prompts = F.read().splitlines()
 
@@ -168,11 +187,10 @@ class KaraOneDataLoader:
         return self.epoch_labels
 
     def get_all_epoch_labels(self):
-        all_epoch_labels = []
-        for subject in self.subjects:
-            epoch_labels = self.get_epoch_labels(subject=subject)
-            all_epoch_labels.append(epoch_labels)
-        return all_epoch_labels
+        self.all_epoch_labels = [
+            self.get_epoch_labels(subject) for subject in self.subjects
+        ]
+        return self.all_epoch_labels
 
     def get_events(self, epoch_type: str = None):
         epoch_type = epoch_type or self.epoch_type
@@ -217,12 +235,15 @@ class KaraOneDataLoader:
         self.raw = mne.io.RawArray(raw_data, self.raw.info, verbose=verbose)
         return self.raw
 
-    def assemble_epochs(self, data, verbose=False):
+    def assemble_epochs(self, verbose=False):
         """Assembles and organizes different types of epochs from raw EEG data."""
         verbose = verbose or self.verbose
-        epoch_inds_file = os.path.join(self.data_dir, self.subject, "epoch_inds.mat")
+        epoch_inds_file = os.path.join(
+            self.raw_data_dir, self.subject, "epoch_inds.mat"
+        )
         self.epoch_inds = scipy.io.loadmat(epoch_inds_file)
 
+        data = self.raw.get_data()
         data = data * 10**6  # Use microVolts instead of Volts
 
         self.all_mats = {
@@ -275,7 +296,7 @@ class KaraOneDataLoader:
 
         # Extract the data within the baseline period
         baseline_data = self.epochs.copy().crop(*baseline_period, verbose=verbose)
-        baseline_data = baseline_data.get_data()
+        baseline_data = baseline_data.get_data(copy=True)
 
         # Calculate the mean within the baseline period
         baseline_mean = np.mean(baseline_data)
@@ -311,22 +332,35 @@ class KaraOneDataLoader:
             message = f"[bold underline]Epochs:[/]\n"
             message += "\n".join(
                 [
-                    f"{subject}: {epoch.get_data().shape}"
+                    f"{subject}: {epoch.get_data(copy=True).shape}"
                     for epoch, subject in zip(self.all_epochs, self.subjects)
                 ]
             )
             self.console.print(message)
 
-    def process_data(
-        self, epoch_type: str, pick_channels=[-1], num_neighbors=4, verbose=False
-    ):
-        with Progress(
+    def create_progress_bar(self):
+        return Progress(
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             MofNCompleteColumn(),
             TimeRemainingColumn(),
             transient=True,
-        ) as self.progress:
+        )
+
+    def process_raw_data(
+        self,
+        save_dir=None,
+        pick_channels=[-1],
+        l_freq=0.5,
+        h_freq=50.0,
+        num_neighbors=4,
+        overwrite=False,
+        verbose=False,
+    ):
+        self.verbose = verbose
+        self.data_dir = save_dir
+
+        with self.create_progress_bar() as self.progress:
             task_subjects = self.progress.add_task(
                 "Subjects ...",
                 total=len(self.subjects),
@@ -334,19 +368,41 @@ class KaraOneDataLoader:
             )
             task_filter = self.progress.add_task("Applying Laplacian filter ...")
 
-            self.verbose = verbose
-            self.epoch_type = epoch_type
-            self.all_epochs = []
-            self.all_epoch_labels = []
+            for subject in self.subjects:
+                self.load_raw_data(subject)
+                self.pick_channels(pick_channels)
+                self.apply_bandpass_filter(l_freq=l_freq, h_freq=h_freq)
+                self.apply_laplacian_filter(num_neighbors, task=task_filter)
+                self.save_raw(self.data_dir, overwrite=overwrite)
+                self.progress.update(task_subjects, advance=1)
+
+        return self.raw
+
+    def process_epochs(
+        self,
+        epoch_type: str,
+        data_dir=None,
+        pick_channels=[-1],
+        verbose=False,
+    ):
+        self.verbose = verbose
+        data_dir = data_dir or self.data_dir
+        self.epoch_type = epoch_type
+        self.all_epochs = []
+        self.all_epoch_labels = []
+
+        with self.create_progress_bar() as self.progress:
+            task_subjects = self.progress.add_task(
+                "Subjects ...",
+                total=len(self.subjects),
+                completed=1,
+            )
 
             for subject in self.subjects:
-                self.load_data(subject)
+                self.load_data(data_dir, subject)
                 self.pick_channels(pick_channels)
-                self.apply_bandpass_filter(l_freq=0.5, h_freq=50.0)
-                self.apply_laplacian_filter_csd(num_neighbors=4, task=task_filter)
-                data = self.raw.get_data()
 
-                self.assemble_epochs(data)
+                self.assemble_epochs()
                 epoch_labels = self.get_epoch_labels()
                 self.get_events()
                 self.make_epochs()
@@ -355,6 +411,14 @@ class KaraOneDataLoader:
                 self.all_epochs.append(subject_epochs)
                 self.all_epoch_labels.append(epoch_labels)
                 self.progress.update(task_subjects, advance=1)
+
+    def save_raw(self, save_dir, overwrite=False):
+        """Save the raw data to disk"""
+        subject_dir = os.path.join(save_dir, self.subject)
+        os.makedirs(subject_dir, exist_ok=True)
+        raw_filename = os.path.join(subject_dir, "raw.fif")
+        if overwrite or not os.path.exists(raw_filename):
+            self.raw.save(raw_filename, overwrite=overwrite)
 
     def extract_features(self, features_dir, epoch_type=None, skip_if_exists=True):
         with Progress(
@@ -401,6 +465,7 @@ class KaraOneDataLoader:
             features.append(feats)
             if progress:
                 progress.update(task, advance=1)
+            break
 
         return np.asarray(features, dtype=np.float32)
 
@@ -671,7 +736,8 @@ class KaraOneDataLoader:
             if task:
                 self.progress.update(task, advance=1)
 
-        return filtered_data
+        self.raw = mne.io.RawArray(filtered_data, self.raw.info, verbose=verbose)
+        return self.raw
 
     def apply_laplacian_filter_csd(self, num_neighbors=4, task=None, verbose=False):
         verbose = verbose or self.verbose

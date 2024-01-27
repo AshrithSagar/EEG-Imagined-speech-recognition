@@ -16,7 +16,7 @@ if __name__ == "__main__":
     args = load_config(key="karaone")
 
     karaone = KaraOneDataLoader(
-        data_dir=args["data_dir"],
+        raw_data_dir=args["raw_data_dir"],
         subjects="all",
         sampling_freq=1000,
         num_milliseconds_per_trial=4900,
@@ -24,12 +24,10 @@ if __name__ == "__main__":
         console=console,
     )
 
-    karaone.process_data(
-        epoch_type="thinking",
-        pick_channels=[-1],
-        num_neighbors=5,
-        verbose=False,
+    karaone.process_raw_data(
+        save_dir=args["filtered_data_dir"], pick_channels=[-1], num_neighbors=5
     )
+    karaone.process_epochs(epoch_type="thinking")
     karaone.epochs_info(verbose=True)
     labels = karaone.all_epoch_labels
 
