@@ -1,7 +1,6 @@
 import os
 import sys
 import numpy as np
-from rich.console import Console
 import joblib
 import numpy as np
 import pandas as pd
@@ -22,7 +21,6 @@ from utils.feis import FEISDataLoader
 
 
 if __name__ == "__main__":
-    console = Console()
     args = load_config(key="feis")
 
     subjects = [
@@ -53,7 +51,6 @@ if __name__ == "__main__":
         subjects=subjects,
         sampling_freq=256,
         num_seconds_per_trial=5,
-        console=console,
     )
     feis.unzip_data_eeg(delete_zip=True)
 

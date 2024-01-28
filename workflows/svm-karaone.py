@@ -1,7 +1,6 @@
 import os
 import sys
 import numpy as np
-from rich.console import Console
 import joblib
 import numpy as np
 import pandas as pd
@@ -22,7 +21,6 @@ from utils.karaone import KaraOneDataLoader
 
 
 if __name__ == "__main__":
-    console = Console()
     args = load_config(key="karaone")
 
     subjects = [
@@ -50,7 +48,6 @@ if __name__ == "__main__":
         sampling_freq=1000,
         num_milliseconds_per_trial=4900,
         verbose=False,
-        console=console,
     )
 
     karaone.process_data(pick_channels=pick_channels, epoch_type="thinking")

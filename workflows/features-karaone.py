@@ -4,7 +4,6 @@ Extraction of features from KaraOne dataset.
 """
 import os
 import sys
-from rich.console import Console
 
 sys.path.append(os.getcwd())
 from utils.config import load_config, line_separator
@@ -12,7 +11,6 @@ from utils.karaone import KaraOneDataLoader
 
 
 if __name__ == "__main__":
-    console = Console()
     args = load_config(key="karaone")
 
     karaone = KaraOneDataLoader(
@@ -21,7 +19,6 @@ if __name__ == "__main__":
         sampling_freq=1000,
         num_milliseconds_per_trial=4900,
         verbose=True,
-        console=console,
     )
 
     karaone.process_raw_data(
