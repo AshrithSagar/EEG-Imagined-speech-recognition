@@ -25,16 +25,18 @@ if __name__ == "__main__":
     )
 
     karaone.process_raw_data(
-        save_dir=args["filtered_data_dir"], pick_channels=[-1], num_neighbors=4
+        save_dir=args["filtered_data_dir"],
+        pick_channels=[-1],
+        num_neighbors=4,
+        overwrite=False,
+        verbose=True,
     )
+
     karaone.process_epochs(epoch_type="thinking")
     karaone.epochs_info(verbose=True)
     labels = karaone.all_epoch_labels
 
-    karaone.extract_features(
-        features_dir=args["features_dir"],
-        epoch_type="thinking",
-    )
+    karaone.extract_features(features_dir=args["features_dir"], epoch_type="thinking")
 
     features = karaone.load_features(epoch_type="thinking", verbose=True)
 

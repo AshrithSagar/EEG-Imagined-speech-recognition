@@ -44,9 +44,7 @@ all_subjects = [
 
 
 class KaraOneDataLoader:
-    """
-    Load data from KaraOne folder
-    """
+    """Load data from KaraOne folder"""
 
     def __init__(
         self,
@@ -330,14 +328,20 @@ class KaraOneDataLoader:
         """Display the shape of the epochs"""
         verbose = verbose or self.verbose
         if verbose:
-            message = f"[bold underline]Epochs:[/]\n"
-            message += "\n".join(
-                [
-                    f"{subject}: {epoch.get_data(copy=True).shape}"
-                    for epoch, subject in zip(self.all_epochs, self.subjects)
-                ]
-            )
-            self.console.print(message)
+            table = Table(title="[bold underline]Epochs Info[/]")
+            table.add_column("Subject", justify="right", style="magenta", no_wrap=True)
+            table.add_column("Epochs", justify="center", style="cyan", no_wrap=True)
+            table.add_column("Labels", style="cyan", no_wrap=True)
+
+            for epochs, subject, labels in zip(
+                self.all_epochs, self.subjects, self.all_epoch_labels
+            ):
+                table.add_row(
+                    str(subject),
+                    str(epochs.get_data(copy=True).shape),
+                    str(labels.shape),
+                )
+            self.console.print(table)
 
     def create_progress_bar(self):
         return Progress(
@@ -370,14 +374,18 @@ class KaraOneDataLoader:
             task_filter = self.progress.add_task("Applying Laplacian filter ...")
 
             for subject in self.subjects:
+                if not overwrite and os.path.exists(
+                    os.path.join(self.data_dir, subject, "raw.fif")
+                ):
+                    self.progress.update(task_subjects, advance=1)
+                    continue
+
                 self.load_raw_data(subject)
                 self.pick_channels(pick_channels)
                 self.apply_bandpass_filter(l_freq=l_freq, h_freq=h_freq)
                 # self.apply_laplacian_filter(num_neighbors, task=task_filter)
                 self.save_raw(self.data_dir, overwrite=overwrite)
                 self.progress.update(task_subjects, advance=1)
-
-        return self.raw
 
     def process_epochs(
         self,
@@ -630,27 +638,38 @@ class KaraOneDataLoader:
         filename = os.path.join(subject_features_dir, f"{self.epoch_type}.npy")
         np.save(filename, features)
 
-    def load_features(self, epoch_type: str = None, features_dir=None, verbose=False):
+    def load_features(self, features_dir=None, epoch_type: str = None, verbose=False):
         """Parameters:
+        - features_dir (str): Path to the features directory.
         - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
 
         Returns:
         - features (np.ndarray): Features of shape (n.subjects, n.epochs, n.windows, n.features_per_window).
         """
-        features = []
-        epoch_type = epoch_type or self.epoch_type
+        self.features = []
         features_dir = features_dir or self.features_dir
+        epoch_type = epoch_type or self.epoch_type
         verbose = verbose or self.verbose
 
         for subject in self.subjects:
             filename = os.path.join(features_dir, subject, f"{epoch_type}.npy")
             subject_features = np.load(filename)
-            features.append(subject_features)
+            self.features.append(subject_features)
 
-        return features
+        if verbose:
+            labels = (
+                self.all_epoch_labels
+                if "all_epoch_labels" in self.__dict__
+                else self.get_all_epoch_labels()
+            )
+            self.features_info(self.features, labels, verbose=verbose)
 
-    def flatten(self, features, labels, verbose=False):
+        return self.features
+
+    def flatten(self, features=None, labels=None, verbose=False):
         verbose = verbose or self.verbose
+        features = features if features is not None else self.features
+        labels = labels if labels is not None else self.get_all_epoch_labels()
 
         flattened_features = [feats.reshape(feats.shape[0], -1) for feats in features]
         flattened_features = np.vstack(flattened_features)
@@ -658,15 +677,23 @@ class KaraOneDataLoader:
         flattened_labels = np.concatenate(labels)
 
         if verbose:
-            table = Table(title="[bold underline]Features Info[/]")
-            table.add_column("Data", justify="right", no_wrap=True)
-            table.add_column("Shape", style="cyan", no_wrap=True)
-            table.add_row("Features", str(flattened_features.shape))
-            table.add_row("Labels", str(flattened_labels.shape))
-
-            self.console.print(table)
+            self.dataset_info(flattened_features, flattened_labels, verbose=verbose)
 
         return flattened_features, flattened_labels
+
+    def dataset_info(self, features=None, labels=None, verbose=False):
+        verbose = verbose or self.verbose
+        features = features if features is not None else self.features
+        labels = labels if labels is not None else self.get_all_epoch_labels()
+
+        if verbose:
+            table = Table(title="[bold underline]Dataset Info[/]")
+            table.add_column("Data", justify="right", no_wrap=True)
+            table.add_column("Shape", style="cyan", no_wrap=True)
+            table.add_row("Features", str(features.shape))
+            table.add_row("Labels", str(labels.shape))
+
+            self.console.print(table)
 
     def subjects_info(self, verbose=False):
         verbose = verbose or self.verbose
