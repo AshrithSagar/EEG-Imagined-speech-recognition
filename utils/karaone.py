@@ -450,7 +450,7 @@ class KaraOneDataLoader:
         if overwrite or not os.path.exists(raw_filename):
             self.raw.save(raw_filename, overwrite=overwrite, verbose=verbose)
 
-    def extract_features(self, features_dir, epoch_type=None, skip_if_exists=True):
+    def extract_features(self, save_dir, epoch_type=None, skip_if_exists=True):
         with self.create_progress_bar() as self.progress:
             task_subjects = self.progress.add_task(
                 "Subjects ...",
@@ -460,7 +460,7 @@ class KaraOneDataLoader:
             task_features = self.progress.add_task("Computing features ...")
 
             epoch_type = epoch_type or self.epoch_type
-            self.features_dir = features_dir
+            self.features_dir = save_dir
             self.get_features_functions()
 
             for index, subject in enumerate(self.subjects):
