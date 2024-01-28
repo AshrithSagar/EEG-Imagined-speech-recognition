@@ -439,6 +439,9 @@ class KaraOneDataLoader:
                 self.all_epoch_labels.append(epoch_labels)
                 self.progress.update(task_subjects, advance=1)
 
+        if verbose:
+            self.epochs_info()
+
     def save_raw(self, save_dir, overwrite=False, verbose=None):
         """Save the raw data to disk"""
         subject_dir = os.path.join(save_dir, self.subject)
@@ -448,19 +451,13 @@ class KaraOneDataLoader:
             self.raw.save(raw_filename, overwrite=overwrite, verbose=verbose)
 
     def extract_features(self, features_dir, epoch_type=None, skip_if_exists=True):
-        with Progress(
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            MofNCompleteColumn(),
-            TimeRemainingColumn(),
-            transient=True,
-        ) as progress:
-            task_subjects = progress.add_task(
+        with self.create_progress_bar() as self.progress:
+            task_subjects = self.progress.add_task(
                 "Subjects ...",
                 total=len(self.subjects),
                 completed=1,
             )
-            task_features = progress.add_task("Computing features ...")
+            task_features = self.progress.add_task("Computing features ...")
 
             epoch_type = epoch_type or self.epoch_type
             self.features_dir = features_dir
@@ -471,27 +468,25 @@ class KaraOneDataLoader:
                     if os.path.exists(
                         os.path.join(self.features_dir, subject, f"{epoch_type}.npy")
                     ):
-                        progress.update(task_subjects, advance=1)
+                        self.progress.update(task_subjects, advance=1)
                         continue
 
                 subject_epochs = self.all_epochs[index].get_data(copy=True)
-                progress.update(task_features, total=len(subject_epochs))
-                features = self.compute_features(
-                    subject_epochs, progress=progress, task=task_features
-                )
-                progress.reset(task_features)
+                self.progress.update(task_features, total=len(subject_epochs))
+                features = self.compute_features(subject_epochs, task=task_features)
+                self.progress.reset(task_features)
                 self.save_features(subject, features)
-                progress.update(task_subjects, advance=1)
+                self.progress.update(task_subjects, advance=1)
 
-    def compute_features(self, epochs, progress=None, task=None):
+    def compute_features(self, epochs, task=None):
         features = []
         for epoch in epochs:
             epoch = self.window_data(epoch, split=10)
             feats = self.make_simple_feats(epoch)
             feats = self.add_deltas(feats)
             features.append(feats)
-            if progress:
-                progress.update(task, advance=1)
+            if task:
+                self.progress.update(task, advance=1)
 
         return np.asarray(features, dtype=np.float32)
 
