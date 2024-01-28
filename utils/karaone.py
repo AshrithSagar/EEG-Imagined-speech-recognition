@@ -70,11 +70,13 @@ class KaraOneDataLoader:
         mne.set_log_level(verbose=verbose)
         self.console = console if console else Console()
         self.progress = None
+        if verbose:
+            self.subjects_info()
 
-    def load_raw_data(self, subject, verbose=False):
+    def load_raw_data(self, subject, verbose=None):
         """Load data from KaraOne folder"""
         self.subject = subject
-        verbose = verbose or self.verbose
+        verbose = verbose if verbose is not None else self.verbose
         if verbose:
             self.console.print(f"Subject: [purple]{subject}[/]")
             line_separator(self.console)
@@ -88,10 +90,10 @@ class KaraOneDataLoader:
 
         return self.raw
 
-    def load_data(self, data_dir, subject, verbose=False):
+    def load_data(self, data_dir, subject, verbose=None):
         """Load data from a .fif file"""
         self.subject = subject
-        verbose = verbose or self.verbose
+        verbose = verbose if verbose is not None else self.verbose
         if verbose:
             self.console.print(f"Subject: [purple]{subject}[/]")
             line_separator(self.console)
@@ -103,8 +105,8 @@ class KaraOneDataLoader:
 
         return self.raw
 
-    def pick_channels(self, pick_channels=[-1], verbose=False):
-        verbose = verbose or self.verbose
+    def pick_channels(self, pick_channels=[-1], verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
 
         if pick_channels == [-1]:
             self.channels = self.raw.ch_names  # All channels
@@ -222,8 +224,8 @@ class KaraOneDataLoader:
         self.events = np.array(events)
         return events, event_id
 
-    def apply_bandpass_filter(self, l_freq=0.5, h_freq=50.0, verbose=False):
-        verbose = verbose or self.verbose
+    def apply_bandpass_filter(self, l_freq=0.5, h_freq=50.0, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
         raw_data = mne.filter.filter_data(
             self.raw.get_data(),
             sfreq=self.raw.info["sfreq"],
@@ -234,9 +236,9 @@ class KaraOneDataLoader:
         self.raw = mne.io.RawArray(raw_data, self.raw.info, verbose=verbose)
         return self.raw
 
-    def assemble_epochs(self, verbose=False):
+    def assemble_epochs(self, verbose=None):
         """Assembles and organizes different types of epochs from raw EEG data."""
-        verbose = verbose or self.verbose
+        verbose = verbose if verbose is not None else self.verbose
         epoch_inds_file = os.path.join(
             self.raw_data_dir, self.subject, "epoch_inds.mat"
         )
@@ -255,8 +257,9 @@ class KaraOneDataLoader:
         }
         return self.all_mats
 
-    def make_epochs(self, epoch_type: str = None, verbose=False):
+    def make_epochs(self, epoch_type: str = None, verbose=None):
         epoch_type = epoch_type or self.epoch_type
+        verbose = verbose if verbose is not None else self.verbose
 
         self.epochs = mne.EpochsArray(
             self.all_mats[epoch_type],
@@ -280,11 +283,11 @@ class KaraOneDataLoader:
 
         return self.epochs
 
-    def epochs_apply_baseline_correction(self, baseline=(0, 0), verbose=False):
+    def epochs_apply_baseline_correction(self, baseline=(0, 0), verbose=None):
         """
         baseline = (0, 0)  # Baseline from the beginning of the epoch to t=0 seconds
         """
-        verbose = verbose or self.verbose
+        verbose = verbose if verbose is not None else self.verbose
         wbc_epochs = self.epochs.copy()  # Without baseline correction epochs
         self.epochs.apply_baseline(
             baseline, verbose=verbose
@@ -324,9 +327,9 @@ class KaraOneDataLoader:
 
         return self.epochs
 
-    def epochs_info(self, verbose=False):
+    def epochs_info(self, verbose=None):
         """Display the shape of the epochs"""
-        verbose = verbose or self.verbose
+        verbose = verbose if verbose is not None else self.verbose
         if verbose:
             table = Table(title="[bold underline]Epochs Info[/]")
             table.add_column("Subject", justify="right", style="magenta", no_wrap=True)
@@ -421,7 +424,7 @@ class KaraOneDataLoader:
                 self.all_epoch_labels.append(epoch_labels)
                 self.progress.update(task_subjects, advance=1)
 
-    def save_raw(self, save_dir, overwrite=False, verbose=False):
+    def save_raw(self, save_dir, overwrite=False, verbose=None):
         """Save the raw data to disk"""
         subject_dir = os.path.join(save_dir, self.subject)
         os.makedirs(subject_dir, exist_ok=True)
@@ -638,7 +641,7 @@ class KaraOneDataLoader:
         filename = os.path.join(subject_features_dir, f"{self.epoch_type}.npy")
         np.save(filename, features)
 
-    def load_features(self, features_dir=None, epoch_type: str = None, verbose=False):
+    def load_features(self, features_dir=None, epoch_type: str = None, verbose=None):
         """Parameters:
         - features_dir (str): Path to the features directory.
         - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
@@ -649,7 +652,7 @@ class KaraOneDataLoader:
         self.features = []
         features_dir = features_dir or self.features_dir
         epoch_type = epoch_type or self.epoch_type
-        verbose = verbose or self.verbose
+        verbose = verbose if verbose is not None else self.verbose
 
         for subject in self.subjects:
             filename = os.path.join(features_dir, subject, f"{epoch_type}.npy")
@@ -666,12 +669,16 @@ class KaraOneDataLoader:
 
         return self.features
 
-    def flatten(self, features=None, labels=None, verbose=False):
-        verbose = verbose or self.verbose
+    def flatten(self, features=None, labels=None, reshape=False, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
         features = features if features is not None else self.features
         labels = labels if labels is not None else self.get_all_epoch_labels()
 
-        flattened_features = [feats.reshape(feats.shape[0], -1) for feats in features]
+        flattened_features = (
+            [feats.reshape(feats.shape[0], -1) for feats in features]
+            if reshape
+            else features
+        )
         flattened_features = np.vstack(flattened_features)
 
         flattened_labels = np.concatenate(labels)
@@ -681,8 +688,8 @@ class KaraOneDataLoader:
 
         return flattened_features, flattened_labels
 
-    def dataset_info(self, features=None, labels=None, verbose=False):
-        verbose = verbose or self.verbose
+    def dataset_info(self, features=None, labels=None, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
         features = features if features is not None else self.features
         labels = labels if labels is not None else self.get_all_epoch_labels()
 
@@ -695,16 +702,16 @@ class KaraOneDataLoader:
 
             self.console.print(table)
 
-    def subjects_info(self, verbose=False):
-        verbose = verbose or self.verbose
+    def subjects_info(self, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
 
         if verbose:
             message = f"[bold underline]Subjects:[/]\n"
             message += ", ".join(self.subjects)
             self.console.print(message)
 
-    def features_info(self, features, labels, verbose=False):
-        verbose = verbose or self.verbose
+    def features_info(self, features, labels, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
 
         if verbose:
             table = Table(title="[bold underline]Features Info[/]")
@@ -717,7 +724,7 @@ class KaraOneDataLoader:
 
             self.console.print(table)
 
-    def apply_laplacian_filter(self, num_neighbors=4, task=None, verbose=False):
+    def apply_laplacian_filter(self, num_neighbors=4, task=None, verbose=None):
         """Apply Laplacian filtering to EEG data.
 
         Parameters:
@@ -766,8 +773,8 @@ class KaraOneDataLoader:
         self.raw = mne.io.RawArray(filtered_data, self.raw.info, verbose=verbose)
         return self.raw
 
-    def apply_laplacian_filter_csd(self, num_neighbors=4, task=None, verbose=False):
-        verbose = verbose or self.verbose
+    def apply_laplacian_filter_csd(self, num_neighbors=4, task=None, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
 
         self.raw = mne.preprocessing.compute_current_source_density(
             self.raw, n_legendre_terms=num_neighbors, verbose=verbose
