@@ -57,12 +57,13 @@ class KaraOneDataLoader:
     ):
         """Parameters:
         - raw_data_dir (str): Path to the raw data folder.
-        - subjects (list): List of subjects to load. Use "all" for all subjects (default)
+        - subjects (str or list): List of subjects to load. Use "all" for all subjects (default),
+            or a list of subject indices, or a list of subject names.
         - sampling_freq (int): Sampling frequency for EEG data (default: 1000 Hz).
         - num_milliseconds_per_trial (int): Number of milliseconds per trial (default: 4900 ms).
         """
         self.raw_data_dir = raw_data_dir
-        self.subjects = all_subjects if subjects == "all" else subjects
+        self.subjects = self.get_subjects(subjects)
         self.sampling_freq = sampling_freq
         self.num_milliseconds_per_trial = num_milliseconds_per_trial
         self.epoch_type = None
@@ -72,6 +73,20 @@ class KaraOneDataLoader:
         self.progress = None
         if verbose:
             self.subjects_info()
+
+    def get_subjects(self, subjects):
+        if subjects == "all":
+            return all_subjects
+        elif isinstance(subjects, list):
+            if all(isinstance(subject, int) for subject in subjects):
+                return [all_subjects[index] for index in subjects]
+            elif all(subject in all_subjects for subject in subjects):
+                return subjects
+
+        raise ValueError(
+            """Invalid value for 'subjects'.
+            Should be 'all', a list of subject indices, or a list of subject names."""
+        )
 
     def load_raw_data(self, subject, verbose=None):
         """Load data from KaraOne folder"""
