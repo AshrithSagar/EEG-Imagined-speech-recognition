@@ -30,7 +30,8 @@ class InformationSet:
             second_fold_information = self.compute_information_values(
                 information_source_matrix, function="gaussian", axis=1
             )
-            effective_information = first_fold_information + second_fold_information
+            two_fold_information = first_fold_information + second_fold_information
+            effective_information = np.mean(two_fold_information, axis=(0, 1))
             self.features.append(effective_information)
 
         self.features = np.asarray(self.features)
