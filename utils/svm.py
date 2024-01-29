@@ -42,7 +42,7 @@ class SVMClassifier:
             self.X, self.y, test_size=self.test_size, random_state=self.random_state
         )
 
-        self.model = SVC(kernel=self.kernel)
+        self.model = SVC(kernel=self.kernel, verbose=verbose)
         self.model.fit(self.X_train, self.y_train)
 
         return self.model
@@ -87,12 +87,12 @@ class SVMClassifier:
         verbose = verbose if verbose is not None else self.verbose
 
         def plot_confusion_matrix(conf_matrix, labels):
-            plt.figure(figsize=(8, 6))
+            plt.figure(figsize=(6, 5))
             sns.heatmap(
                 conf_matrix,
                 annot=True,
                 fmt="d",
-                cmap="Blues",
+                cmap="Greens",
                 xticklabels=labels,
                 yticklabels=labels,
             )
