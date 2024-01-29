@@ -442,6 +442,8 @@ class KaraOneDataLoader:
         if verbose:
             self.epochs_info()
 
+        return self.all_epochs, self.all_epoch_labels
+
     def save_raw(self, save_dir, overwrite=False, verbose=None):
         """Save the raw data to disk"""
         subject_dir = os.path.join(save_dir, self.subject)
@@ -480,11 +482,10 @@ class KaraOneDataLoader:
 
     def compute_features(self, epochs, task=None):
         features = []
-        for epoch in epochs:
-            epoch = self.window_data(epoch, split=10)
-            feats = self.make_simple_feats(epoch)
-            feats = self.add_deltas(feats)
-            features.append(feats)
+            windowed_epoch = self.window_data(epoch, split=10)
+            feats = self.make_simple_feats(windowed_epoch, flatten=False)
+            all_feats = self.add_deltas(feats)
+            features.append(all_feats)
             if task:
                 self.progress.update(task, advance=1)
 
@@ -502,13 +503,11 @@ class KaraOneDataLoader:
         windows = np.array(windows, dtype=np.float32)
         return windows
 
-    def make_simple_feats(self, windowed_data: np.ndarray):
-        simple_feats = []
-        for w in range(len(windowed_data)):
-            simple_feats.append(self.features_per_window(windowed_data[w]))
-        return np.array(simple_feats)
+    def make_simple_feats(self, windowed_data: np.ndarray, flatten: bool = True):
+        feats = [self.features_per_window(window, flatten) for window in windowed_data]
+        return np.asarray(feats, dtype=np.float32)
 
-    def features_per_window(self, window: np.ndarray):
+    def features_per_window(self, window: np.ndarray, flatten: bool = True):
         """
         Takes a single window, returns an array of features of shape
         (n.features, electrodes), and then flattens it into a vector
@@ -517,7 +516,10 @@ class KaraOneDataLoader:
         for i in range(window.shape[0]):
             for j in range(len(self.feature_functions)):
                 outvec[i, j] = self.feature_functions[j](window[i, :])
-        outvec = outvec.transpose().reshape(-1)
+
+        if flatten:
+            outvec = outvec.transpose().reshape(-1)
+
         return outvec
 
     def get_features_functions(self):
@@ -641,7 +643,8 @@ class KaraOneDataLoader:
     def add_deltas(self, feats_array: np.ndarray):
         deltas = np.diff(feats_array, axis=0)
         double_deltas = np.diff(deltas, axis=0)
-        all_feats = np.hstack((feats_array[2:], deltas[1:], double_deltas))
+        # all_feats = np.hstack((feats_array[2:], deltas[1:], double_deltas))
+        all_feats = np.concatenate((feats_array, deltas, double_deltas), axis=0)
         return all_feats
 
     def save_features(self, subject: str, features: np.ndarray):
