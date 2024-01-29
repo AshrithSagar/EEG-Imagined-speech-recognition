@@ -482,6 +482,7 @@ class KaraOneDataLoader:
 
     def compute_features(self, epochs, task=None):
         features = []
+        for epoch in epochs:
             windowed_epoch = self.window_data(epoch, split=10)
             feats = self.make_simple_feats(windowed_epoch, flatten=False)
             all_feats = self.add_deltas(feats)
