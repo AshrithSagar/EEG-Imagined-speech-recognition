@@ -22,14 +22,21 @@ class SVMClassifier:
     def __init__(
         self,
         kernel="linear",
+        degree=3,
         test_size=0.2,
         random_state=42,
+        trial_size=None,
         verbose=False,
         console=None,
     ):
+        """Parameters:
+        - trial_size (int): Only use part of the dataset for trial
+        """
         self.kernel = kernel
+        self.degree = degree
         self.test_size = test_size
         self.random_state = random_state
+        self.trial_size = trial_size
         self.model = None
         self.verbose = verbose
         self.console = console if console else Console()
@@ -38,11 +45,15 @@ class SVMClassifier:
         verbose = verbose if verbose is not None else self.verbose
         self.X, self.y = X, y
 
+        if self.trial_size is not None:
+            X = X[: self.trial_size]
+            y = y[: self.trial_size]
+
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            self.X, self.y, test_size=self.test_size, random_state=self.random_state
+            X, y, test_size=self.test_size, random_state=self.random_state
         )
 
-        self.model = SVC(kernel=self.kernel, verbose=verbose)
+        self.model = SVC(kernel=self.kernel, degree=self.degree, verbose=verbose)
         self.model.fit(self.X_train, self.y_train)
 
         return self.model
