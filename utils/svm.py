@@ -2,6 +2,9 @@
 svm.py
 Support Vector Machine Classifier Utility scripts
 """
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 from rich.console import Console
 from rich.table import Table
 from sklearn.metrics import (
@@ -33,9 +36,10 @@ class SVMClassifier:
 
     def train(self, X, y, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
+        self.X, self.y = X, y
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, test_size=self.test_size, random_state=self.random_state
+            self.X, self.y, test_size=self.test_size, random_state=self.random_state
         )
 
         self.model = SVC(kernel=self.kernel)
@@ -63,7 +67,7 @@ class SVMClassifier:
         y_pred = y_pred if y_pred is not None else self.y_pred
 
         accuracy = accuracy_score(y_test, y_pred)
-        precision = precision_score(y_test, y_pred, average="weighted")
+        precision = precision_score(y_test, y_pred, average="weighted", zero_division=0)
         recall = recall_score(y_test, y_pred, average="weighted")
         f1 = f1_score(y_test, y_pred, average="weighted")
         cm = confusion_matrix(y_test, y_pred)
@@ -72,7 +76,7 @@ class SVMClassifier:
             "accuracy": accuracy,
             "precision": precision,
             "recall": recall,
-            "f1": f1,
+            "f1_score": f1,
             "confusion_matrix": cm,
         }
 
@@ -81,10 +85,30 @@ class SVMClassifier:
 
     def metrics_info(self, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
+
+        def plot_confusion_matrix(conf_matrix, labels):
+            plt.figure(figsize=(8, 6))
+            sns.heatmap(
+                conf_matrix,
+                annot=True,
+                fmt="d",
+                cmap="Blues",
+                xticklabels=labels,
+                yticklabels=labels,
+            )
+            plt.xlabel("Predicted")
+            plt.ylabel("Actual")
+            plt.title("Confusion Matrix")
+            plt.show()
+
         if verbose:
-            table = Table(title="Evaluation Metrics")
-            table.add_column("Metric")
-            table.add_column("Value")
+            table = Table(title="[bold underline]Evaluation Metrics:[/]")
+            table.add_column("Metric", justify="right", style="magenta", no_wrap=True)
+            table.add_column("Value", justify="left", style="cyan", no_wrap=True)
             for metric, value in self.metrics.items():
-                table.add_row(metric, str(value))
+                if metric != "confusion_matrix":
+                    value_str = f"{value:.2%}"
+                    table.add_row(metric, value_str)
+
             self.console.print(table)
+            plot_confusion_matrix(self.metrics["confusion_matrix"], self.model.classes_)
