@@ -2,9 +2,13 @@
 svm.py
 Support Vector Machine Classifier Utility scripts
 """
+import os
+
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+import yaml
 from rich.console import Console
 from rich.table import Table
 from sklearn.metrics import (
@@ -71,33 +75,37 @@ class SVMClassifier:
         cm = confusion_matrix(y_test, y_pred)
 
         self.metrics = {
-            "accuracy": accuracy,
-            "precision": precision,
-            "recall": recall,
-            "f1_score": f1,
+            "accuracy": float(accuracy),
+            "precision": float(precision),
+            "recall": float(recall),
+            "f1_score": float(f1),
             "confusion_matrix": cm,
         }
 
         if verbose:
             self.metrics_info()
 
+    def plot_confusion_matrix(self, confusion_matrix, labels, save_path=None):
+        plt.figure(figsize=(6, 5))
+        sns.heatmap(
+            confusion_matrix,
+            annot=True,
+            fmt="d",
+            cmap="Greens",
+            xticklabels=labels,
+            yticklabels=labels,
+        )
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        plt.title("Confusion Matrix")
+        if save_path:
+            plt.savefig(save_path)
+            plt.close()
+        else:
+            plt.show()
+
     def metrics_info(self, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
-
-        def plot_confusion_matrix(conf_matrix, labels):
-            plt.figure(figsize=(6, 5))
-            sns.heatmap(
-                conf_matrix,
-                annot=True,
-                fmt="d",
-                cmap="Greens",
-                xticklabels=labels,
-                yticklabels=labels,
-            )
-            plt.xlabel("Predicted")
-            plt.ylabel("Actual")
-            plt.title("Confusion Matrix")
-            plt.show()
 
         if verbose:
             table = Table(title="[bold underline]Evaluation Metrics:[/]")
@@ -109,4 +117,26 @@ class SVMClassifier:
                     table.add_row(metric, value_str)
 
             self.console.print(table)
-            plot_confusion_matrix(self.metrics["confusion_matrix"], self.model.classes_)
+            self.plot_confusion_matrix(
+                self.metrics["confusion_matrix"], self.model.classes_
+            )
+
+    def save(self, save_dir):
+        os.makedirs(save_dir, exist_ok=True)
+
+        filename = os.path.join(save_dir, "model.joblib")
+        joblib.dump(self.model, filename)
+
+        filename = os.path.join(save_dir, "metrics.yaml")
+        metrics = {
+            key: float(value)
+            for key, value in self.metrics.items()
+            if key != "confusion_matrix"
+        }
+        with open(filename, "w") as file:
+            yaml.dump(metrics, file, default_flow_style=False)
+
+        filename = os.path.join(save_dir, "confusion_matrix.png")
+        self.plot_confusion_matrix(
+            self.metrics["confusion_matrix"], self.model.classes_, save_path=filename
+        )
