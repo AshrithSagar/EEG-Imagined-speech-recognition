@@ -15,14 +15,13 @@ from sklearn.metrics import (
     recall_score,
 )
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
 
 
 class SVMClassifier:
     def __init__(
         self,
-        kernel="linear",
-        degree=3,
+        X,
+        y,
         test_size=0.2,
         random_state=42,
         trial_size=None,
@@ -32,8 +31,7 @@ class SVMClassifier:
         """Parameters:
         - trial_size (int): Only use part of the dataset for trial
         """
-        self.kernel = kernel
-        self.degree = degree
+        self.X, self.y = X, y
         self.test_size = test_size
         self.random_state = random_state
         self.trial_size = trial_size
@@ -41,33 +39,22 @@ class SVMClassifier:
         self.verbose = verbose
         self.console = console if console else Console()
 
-    def train(self, X, y, verbose=None):
+    def train(self, model, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
-        self.X, self.y = X, y
-
-        if self.trial_size is not None:
-            X = X[: self.trial_size]
-            y = y[: self.trial_size]
+        self.model = model
+        X = self.X[: self.trial_size] if self.trial_size is not None else self.X
+        y = self.y[: self.trial_size] if self.trial_size is not None else self.y
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=self.test_size, random_state=self.random_state
         )
 
-        self.model = SVC(kernel=self.kernel, degree=self.degree, verbose=verbose)
         self.model.fit(self.X_train, self.y_train)
-
-        return self.model
 
     def evaluate(self, X_test=None, y_test=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         X_test = X_test if X_test is not None else self.X_test
         y_test = y_test if y_test is not None else self.y_test
-
-        if self.model is None:
-            self.console.print(
-                "Model has not been trained yet. Please train the model first."
-            )
-            return
 
         self.y_pred = self.model.predict(X_test)
         self.get_metrics(verbose=verbose)
@@ -79,8 +66,8 @@ class SVMClassifier:
 
         accuracy = accuracy_score(y_test, y_pred)
         precision = precision_score(y_test, y_pred, average="weighted", zero_division=0)
-        recall = recall_score(y_test, y_pred, average="weighted")
-        f1 = f1_score(y_test, y_pred, average="weighted")
+        recall = recall_score(y_test, y_pred, average="weighted", zero_division=0)
+        f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
         cm = confusion_matrix(y_test, y_pred)
 
         self.metrics = {
