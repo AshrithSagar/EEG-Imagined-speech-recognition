@@ -29,7 +29,7 @@ class SVMClassifier:
         console=None,
     ):
         """Parameters:
-        - trial_size (int): Only use part of the dataset for trial
+        - trial_size (int): Only use part of the dataset for trial (default: Entire dataset)
         """
         self.X, self.y = X, y
         self.test_size = test_size
@@ -42,8 +42,8 @@ class SVMClassifier:
     def train(self, model, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         self.model = model
-        X = self.X[: self.trial_size] if self.trial_size is not None else self.X
-        y = self.y[: self.trial_size] if self.trial_size is not None else self.y
+        X = self.X[: self.trial_size]
+        y = self.y[: self.trial_size]
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=self.test_size, random_state=self.random_state
