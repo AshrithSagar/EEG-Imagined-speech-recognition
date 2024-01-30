@@ -152,7 +152,11 @@ class SVMClassifier:
             )
             table.add_column("Value", justify="left", style="cyan", no_wrap=True)
             for param, value in self.params.items():
-                table.add_row(param, str(value))
+                if param == "data":
+                    for data, shape in value.items():
+                        table.add_row(data, shape)
+                else:
+                    table.add_row(param, str(value))
 
             self.console.print(table)
 
