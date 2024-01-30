@@ -18,7 +18,7 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 
 
 class SVMClassifier:
@@ -62,17 +62,15 @@ class SVMClassifier:
         self.model.fit(self.X_train, self.y_train)
 
     def evaluate(self, X_test=None, y_test=None, verbose=None):
-        verbose = verbose if verbose is not None else self.verbose
-        X_test = X_test if X_test is not None else self.X_test
-        y_test = y_test if y_test is not None else self.y_test
-
-        self.y_pred = self.model.predict(X_test)
+        self.predict(X_test=X_test, y_test=y_test, verbose=False)
         self.get_metrics(verbose=verbose)
 
-    def predict(self, X_test=None, y_test=None, verbose=None):
+    def predict(self, X_test=None, y_test=None, model=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         X_test = X_test if X_test is not None else self.X_test
         y_test = y_test if y_test is not None else self.y_test
+
+        self.get_model(model)
         self.y_pred = self.model.predict(X_test)
 
         if verbose:
@@ -85,6 +83,41 @@ class SVMClassifier:
                 table.add_row(str(label), str(pred))
 
             self.console.print(table)
+
+    def perform_grid_search(self, param_grid, scoring="accuracy", cv=5, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+
+        self.grid_search = GridSearchCV(
+            self.model, param_grid, scoring=scoring, cv=cv, verbose=verbose, n_jobs=-1
+        )
+        self.grid_search.fit(self.X_train, self.y_train)
+
+        if verbose:
+            self.console.print(f"Best Parameters: {self.grid_search.best_params_}")
+            self.console.print(
+                f"Best {scoring.capitalize()}: {self.grid_search.best_score_}"
+            )
+
+        return self.grid_search
+
+    def get_model(self, model=None):
+        if model:
+            self.model = model
+            # self.classes
+            return self.model
+
+        if (
+            hasattr(self, "grid_search")
+            and hasattr(self.grid_search, "cv_results_")
+            and self.grid_search.cv_results_ is not None
+            and hasattr(self.grid_search, "best_estimator_")
+        ):
+            self.model = self.grid_search.best_estimator_
+            self.classes = self.grid_search.classes_
+            return self.model
+
+        self.classes = self.model.classes_
+        return self.model
 
     def get_metrics(self, y_test=None, y_pred=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
@@ -140,9 +173,7 @@ class SVMClassifier:
                     table.add_row(metric, value_str)
 
             self.console.print(table)
-            self.plot_confusion_matrix(
-                self.metrics["confusion_matrix"], self.model.classes_
-            )
+            self.plot_confusion_matrix(self.metrics["confusion_matrix"], self.classes)
 
     def get_params(self):
         self.params = {
@@ -216,5 +247,5 @@ class SVMClassifier:
 
         filename = os.path.join(save_dir, "confusion_matrix.png")
         self.plot_confusion_matrix(
-            self.metrics["confusion_matrix"], self.model.classes_, save_path=filename
+            self.metrics["confusion_matrix"], self.classes, save_path=filename
         )
