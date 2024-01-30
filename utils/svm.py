@@ -42,6 +42,14 @@ class SVMClassifier:
         self.verbose = verbose
         self.console = console if console else Console()
 
+    def compile(self, model=None, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+        self.model = model if model is not None else self.model
+
+        if verbose:
+            self.params_info()
+            self.model_info()
+
     def train(self, model=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         self.model = model if model is not None else self.model
