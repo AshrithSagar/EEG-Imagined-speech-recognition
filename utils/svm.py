@@ -69,6 +69,23 @@ class SVMClassifier:
         self.y_pred = self.model.predict(X_test)
         self.get_metrics(verbose=verbose)
 
+    def predict(self, X_test=None, y_test=None, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+        X_test = X_test if X_test is not None else self.X_test
+        y_test = y_test if y_test is not None else self.y_test
+        self.y_pred = self.model.predict(X_test)
+
+        if verbose:
+            table = Table(title="[bold underline]Predictions:[/]")
+            table.add_column(
+                "True Label", justify="right", style="magenta", no_wrap=True
+            )
+            table.add_column("Prediction", justify="left", style="cyan", no_wrap=True)
+            for label, pred in zip(y_test, self.y_pred):
+                table.add_row(str(label), str(pred))
+
+            self.console.print(table)
+
     def get_metrics(self, y_test=None, y_pred=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         y_test = y_test if y_test is not None else self.y_test
