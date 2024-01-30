@@ -45,6 +45,12 @@ class SVMClassifier:
     def compile(self, model=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         self.model = model if model is not None else self.model
+        X = self.X[: self.trial_size]
+        y = self.y[: self.trial_size]
+
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            X, y, test_size=self.test_size, random_state=self.random_state
+        )
 
         if verbose:
             self.params_info()
@@ -53,13 +59,6 @@ class SVMClassifier:
     def train(self, model=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         self.model = model if model is not None else self.model
-        X = self.X[: self.trial_size]
-        y = self.y[: self.trial_size]
-
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, test_size=self.test_size, random_state=self.random_state
-        )
-
         self.model.fit(self.X_train, self.y_train)
 
     def evaluate(self, X_test=None, y_test=None, verbose=None):
@@ -134,6 +133,10 @@ class SVMClassifier:
             "random_state": self.random_state,
             "trial_size": self.trial_size,
             "model": str(self.model),
+            "data": {
+                "train": str(self.X_train.shape),
+                "test": str(self.X_test.shape),
+            },
         }
 
         return self.params
