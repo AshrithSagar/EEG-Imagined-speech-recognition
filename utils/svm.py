@@ -249,6 +249,7 @@ class SVMClassifier:
 
     def save(self, save_dir):
         os.makedirs(save_dir, exist_ok=True)
+        self.get_model(verbose=False)
 
         filename = os.path.join(save_dir, "params.yaml")
         with open(filename, "w") as file:
@@ -274,3 +275,20 @@ class SVMClassifier:
         self.plot_confusion_matrix(
             self.metrics["confusion_matrix"], self.classes, save_path=filename
         )
+
+        if (
+            hasattr(self, "grid_search")
+            and hasattr(self.grid_search, "cv_results_")
+            and self.grid_search.cv_results_ is not None
+            and hasattr(self.grid_search, "best_estimator_")
+        ):
+            gs = {
+                "best_params": self.grid_search.best_params_,
+                "best_score": float(f"{self.grid_search.best_score_:g}"),
+            }
+            filename = os.path.join(save_dir, "grid_search.yaml")
+            with open(filename, "w") as file:
+                yaml.dump(gs, file, default_flow_style=False)
+
+            filename = os.path.join(save_dir, "grid_search.joblib")
+            joblib.dump(self.grid_search, filename)
