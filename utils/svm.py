@@ -61,9 +61,9 @@ class SVMClassifier:
         self.model = model if model is not None else self.model
         self.model.fit(self.X_train, self.y_train)
 
-    def evaluate(self, X_test=None, y_test=None, verbose=None):
+    def evaluate(self, X_test=None, y_test=None, show_plots=False, verbose=None):
         self.predict(X_test=X_test, y_test=y_test, verbose=False)
-        self.get_metrics(verbose=verbose)
+        self.get_metrics(show_plots=show_plots, verbose=verbose)
 
     def predict(self, X_test=None, y_test=None, model=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
@@ -144,7 +144,7 @@ class SVMClassifier:
         self.classes = self.model.classes_
         return self.model
 
-    def get_metrics(self, y_test=None, y_pred=None, verbose=None):
+    def get_metrics(self, y_test=None, y_pred=None, show_plots=False, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         y_test = y_test if y_test is not None else self.y_test
         y_pred = y_pred if y_pred is not None else self.y_pred
@@ -163,8 +163,7 @@ class SVMClassifier:
             "confusion_matrix": cm,
         }
 
-        if verbose:
-            self.metrics_info()
+        self.metrics_info(show_plots=show_plots, verbose=verbose)
 
     def plot_confusion_matrix(self, confusion_matrix, labels, save_path=None):
         plt.figure(figsize=(6, 5))
@@ -185,7 +184,7 @@ class SVMClassifier:
         else:
             plt.show()
 
-    def metrics_info(self, verbose=None):
+    def metrics_info(self, show_plots=False, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
 
         if verbose:
@@ -198,6 +197,8 @@ class SVMClassifier:
                     table.add_row(metric, value_str)
 
             self.console.print(table)
+
+        if show_plots:
             self.plot_confusion_matrix(self.metrics["confusion_matrix"], self.classes)
 
     def get_params(self):
