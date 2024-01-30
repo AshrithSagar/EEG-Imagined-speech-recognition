@@ -100,7 +100,30 @@ class SVMClassifier:
 
         return self.grid_search
 
-    def get_model(self, model=None):
+    def grid_search_info(self, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+
+        if verbose:
+            params = self.grid_search.cv_results_["params"]
+
+            table = Table(title="[bold underline]Grid Search Results:[/]")
+            table.add_column(
+                "Parameter", justify="right", style="magenta", no_wrap=True
+            )
+            for idx, param in enumerate(params):
+                header = "\n".join(f"{key}={value}" for key, value in param.items())
+                table.add_column(header, justify="left", style="cyan", no_wrap=True)
+
+            for param, value in self.grid_search.cv_results_.items():
+                if param == "params":
+                    continue
+                table.add_row(param, *[f"{val:g}" for val in value])
+
+            self.console.print(table)
+
+    def get_model(self, model=None, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+
         if model:
             self.model = model
             # self.classes
@@ -114,6 +137,8 @@ class SVMClassifier:
         ):
             self.model = self.grid_search.best_estimator_
             self.classes = self.grid_search.classes_
+            if verbose:
+                self.console.print(f"Best Parameters: {self.grid_search.best_params_}")
             return self.model
 
         self.classes = self.model.classes_
