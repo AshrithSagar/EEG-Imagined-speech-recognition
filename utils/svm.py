@@ -39,13 +39,12 @@ class SVMClassifier:
         self.test_size = test_size
         self.random_state = random_state
         self.trial_size = trial_size
-        self.model = None
         self.verbose = verbose
         self.console = console if console else Console()
 
-    def train(self, model, verbose=None):
+    def train(self, model=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
-        self.model = model
+        self.model = model if model is not None else self.model
         X = self.X[: self.trial_size]
         y = self.y[: self.trial_size]
 
@@ -121,8 +120,55 @@ class SVMClassifier:
                 self.metrics["confusion_matrix"], self.model.classes_
             )
 
+    def get_params(self):
+        self.params = {
+            "test_size": self.test_size,
+            "random_state": self.random_state,
+            "trial_size": self.trial_size,
+            "model": str(self.model),
+        }
+
+        return self.params
+
+    def params_info(self, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+        self.get_params()
+
+        if verbose:
+            table = Table(title="[bold underline]Parameters:[/]")
+            table.add_column(
+                "Parameter", justify="right", style="magenta", no_wrap=True
+            )
+            table.add_column("Value", justify="left", style="cyan", no_wrap=True)
+            for param, value in self.params.items():
+                table.add_row(param, str(value))
+
+            self.console.print(table)
+
+    def model_info(self, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+
+        if verbose:
+            table = Table(title="[bold underline]Model Parameters:[/]")
+            table.add_column(
+                "Parameter", justify="right", style="magenta", no_wrap=True
+            )
+            table.add_column("Value", justify="left", style="cyan", no_wrap=True)
+            for param, value in self.model.get_params().items():
+                table.add_row(param, str(value))
+
+            self.console.print(table)
+
     def save(self, save_dir):
         os.makedirs(save_dir, exist_ok=True)
+
+        filename = os.path.join(save_dir, "params.yaml")
+        with open(filename, "w") as file:
+            yaml.dump(self.get_params(), file, default_flow_style=False)
+
+        filename = os.path.join(save_dir, "model_params.yaml")
+        with open(filename, "w") as file:
+            yaml.dump(self.model.get_params(), file, default_flow_style=False)
 
         filename = os.path.join(save_dir, "model.joblib")
         joblib.dump(self.model, filename)
