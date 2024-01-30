@@ -207,7 +207,7 @@ class SVMClassifier:
 
         filename = os.path.join(save_dir, "metrics.yaml")
         metrics = {
-            key: float(value)
+            key: f"{value:.2%}"
             for key, value in self.metrics.items()
             if key != "confusion_matrix"
         }
