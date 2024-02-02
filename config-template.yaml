@@ -2,12 +2,12 @@
 feis:
   data_dir: null
   features_dir: null
-  svm_model_dir: null
+  model_dir: null
 karaone:
   features_dir: null
   filtered_data_dir: null
   raw_data_dir: null
-  svm_model_dir: null
+  model_dir: null
   tfr_dataset_dir: null
 utils:
   path: null

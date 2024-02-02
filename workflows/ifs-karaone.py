@@ -1,12 +1,11 @@
 import os
 import sys
-from sklearn.svm import SVC
 
 sys.path.append(os.getcwd())
 from utils.config import line_separator, load_config
 from utils.ifs import InformationSet
 from utils.karaone import KaraOneDataLoader
-from utils.svm import SVMClassifier
+from utils.classifier import Classifier
 
 
 if __name__ == "__main__":
@@ -25,22 +24,18 @@ if __name__ == "__main__":
     eff_features = features_ifs.extract_effective_information()
     karaone.dataset_info(eff_features, labels)
 
-    # Support Vector Machines (SVMs)
-    svm = SVMClassifier(
+    clf = Classifier(
         eff_features,
         labels,
+        save_dir=args["model_dir"],
         test_size=0.2,
         random_state=42,
-        trial_size=30,
+        trial_size=args["trial_size"],
         verbose=True,
     )
 
-    model = SVC(kernel="linear", degree=3, cache_size=1000, verbose=False)
-    svm.compile(model)
-
-    svm.train()
-
-    svm.predict()
-
-    svm.evaluate(show_plots=False)
-    svm.save(save_dir=args["svm_model_dir"])
+    clf.compile()
+    clf.train()
+    clf.predict()
+    clf.evaluate(show_plots=False)
+    clf.save()

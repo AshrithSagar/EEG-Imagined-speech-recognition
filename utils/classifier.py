@@ -1,7 +1,9 @@
 """
-svm.py
-Support Vector Machine Classifier Utility scripts
+classifier.py
+Classifier Utility scripts
 """
+
+import importlib.util
 import os
 
 import joblib
@@ -21,11 +23,12 @@ from sklearn.metrics import (
 from sklearn.model_selection import GridSearchCV, train_test_split
 
 
-class SVMClassifier:
+class Classifier:
     def __init__(
         self,
         X,
         y,
+        save_dir,
         test_size=0.2,
         random_state=42,
         trial_size=None,
@@ -36,21 +39,32 @@ class SVMClassifier:
         - trial_size (int): Only use part of the dataset for trial (default: Entire dataset)
         """
         self.X, self.y = X, y
+        self.save_dir = save_dir
+        os.makedirs(self.save_dir, exist_ok=True)
         self.test_size = test_size
         self.random_state = random_state
         self.trial_size = trial_size
         self.verbose = verbose
         self.console = console if console else Console()
+        self.model = None
 
     def compile(self, model=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
-        self.model = model if model is not None else self.model
         X = self.X[: self.trial_size]
         y = self.y[: self.trial_size]
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=self.test_size, random_state=self.random_state
         )
+
+        if model:
+            self.model = model
+        else:
+            model_file = os.path.join(self.save_dir, "model.py")
+            spec = importlib.util.spec_from_file_location("model", model_file)
+            model_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(model_module)
+            self.model = model_module.model()
 
         if verbose:
             self.params_info()
@@ -248,22 +262,22 @@ class SVMClassifier:
 
             self.console.print(table)
 
-    def save(self, save_dir):
-        os.makedirs(save_dir, exist_ok=True)
+    def save(self, verbose=False):
+        verbose = verbose if verbose is not None else self.verbose
         self.get_model(verbose=False)
 
-        filename = os.path.join(save_dir, "params.yaml")
+        filename = os.path.join(self.save_dir, "params.yaml")
         with open(filename, "w") as file:
             yaml.dump(self.get_params(), file, default_flow_style=False)
 
-        filename = os.path.join(save_dir, "model_params.yaml")
+        filename = os.path.join(self.save_dir, "model_params.yaml")
         with open(filename, "w") as file:
             yaml.dump(self.model.get_params(), file, default_flow_style=False)
 
-        filename = os.path.join(save_dir, "model.joblib")
+        filename = os.path.join(self.save_dir, "model.joblib")
         joblib.dump(self.model, filename)
 
-        filename = os.path.join(save_dir, "metrics.yaml")
+        filename = os.path.join(self.save_dir, "metrics.yaml")
         metrics = {
             key: f"{value:.2%}"
             for key, value in self.metrics.items()
@@ -272,7 +286,7 @@ class SVMClassifier:
         with open(filename, "w") as file:
             yaml.dump(metrics, file, default_flow_style=False)
 
-        filename = os.path.join(save_dir, "confusion_matrix.png")
+        filename = os.path.join(self.save_dir, "confusion_matrix.png")
         self.plot_confusion_matrix(
             self.metrics["confusion_matrix"], self.classes, save_path=filename
         )
@@ -287,9 +301,9 @@ class SVMClassifier:
                 "best_params": self.grid_search.best_params_,
                 "best_score": float(f"{self.grid_search.best_score_:g}"),
             }
-            filename = os.path.join(save_dir, "grid_search.yaml")
+            filename = os.path.join(self.save_dir, "grid_search.yaml")
             with open(filename, "w") as file:
                 yaml.dump(gs, file, default_flow_style=False)
 
-            filename = os.path.join(save_dir, "grid_search.joblib")
+            filename = os.path.join(self.save_dir, "grid_search.joblib")
             joblib.dump(self.grid_search, filename)
