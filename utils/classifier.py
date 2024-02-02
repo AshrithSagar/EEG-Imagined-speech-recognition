@@ -98,8 +98,17 @@ class Classifier:
 
             self.console.print(table)
 
-    def perform_grid_search(self, param_grid, scoring="accuracy", cv=5, verbose=None):
+    def perform_grid_search(
+        self, param_grid=None, scoring="accuracy", cv=5, verbose=None
+    ):
         verbose = verbose if verbose is not None else self.verbose
+
+        if param_grid is None:
+            model_file = os.path.join(self.save_dir, "model.py")
+            spec = importlib.util.spec_from_file_location("model", model_file)
+            model_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(model_module)
+            param_grid = model_module.param_grid()
 
         self.grid_search = GridSearchCV(
             self.model, param_grid, scoring=scoring, cv=cv, verbose=verbose, n_jobs=-1
