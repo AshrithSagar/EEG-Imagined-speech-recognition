@@ -30,7 +30,7 @@ if __name__ == "__main__":
         save_dir=args["model_dir"],
         test_size=0.2,
         random_state=42,
-        trial_size=args["trial_size"],
+        trial_size=args["trial_size"] or None,
         verbose=True,
     )
 
