@@ -17,6 +17,7 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
 )
+from rich.table import Table
 
 from utils.config import line_separator
 
@@ -62,9 +63,7 @@ labels = [
 
 
 class FEISDataLoader:
-    """
-    Load data from FEIS folder
-    """
+    """FEIS Utility class"""
 
     def __init__(
         self,
@@ -73,6 +72,7 @@ class FEISDataLoader:
         sampling_freq=256,
         num_seconds_per_trial=5,
         console=None,
+        verbose=False,
     ):
         """Parameters:
         - data_dir (str): Path to the data folder.
@@ -81,11 +81,28 @@ class FEISDataLoader:
         - num_seconds_per_trial (int): Number of seconds per trial (default: 5 seconds).
         """
         self.data_dir = data_dir
-        self.subjects = all_subjects if subjects == "all" else subjects
+        self.subjects = self.get_subjects(subjects)
         self.sampling_freq = sampling_freq
         self.num_seconds_per_trial = num_seconds_per_trial
         self.console = console if console else Console()
+        self.verbose = verbose
         self.progress = None
+        if verbose:
+            self.subjects_info()
+
+    def get_subjects(self, subjects):
+        if subjects == "all":
+            return all_subjects
+        elif isinstance(subjects, list):
+            if all(isinstance(subject, int) for subject in subjects):
+                return [all_subjects[index] for index in subjects]
+            elif all(subject in all_subjects for subject in subjects):
+                return subjects
+
+        raise ValueError(
+            """Invalid value for 'subjects'.
+            Should be 'all', a list of subject indices, or a list of subject names."""
+        )
 
     def unzip_data_eeg(self, delete_zip=False):
         with self.create_progress_bar() as self.progress:
@@ -122,21 +139,24 @@ class FEISDataLoader:
                             os.remove(os.path.join(subject_dir, file))
                 self.progress.update(task_subjects, advance=1)
 
-    def extract_labels(self, subject=None, epoch_type: str = "speaking"):
+    def extract_labels(
+        self, subject=None, epoch_type: str = "speaking", features_dir=None
+    ):
+        features_dir = features_dir or self.features_dir
         subject = subject or self.subjects[0]
         file = os.path.join(self.data_dir, subject, f"{epoch_type}.csv")
 
         df = pd.read_csv(file, header=None, skiprows=range(1, 1280), usecols=[16])
         eeg_labels = df.values.flatten()
-        labels = eeg_labels[1::1280]
+        self.labels = eeg_labels[1::1280]
 
-        self.save_labels(labels)
+        self.save_labels(features_dir=features_dir)
+        return self.labels
 
-    def extract_features(self, features_dir, epoch_type: str, skip_if_exists=True):
+    def extract_features(self, save_dir, epoch_type: str, skip_if_exists=True):
         """Parameters:
         - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
         """
-
         with self.create_progress_bar() as self.progress:
             task_subjects = self.progress.add_task(
                 "Subjects ...",
@@ -146,7 +166,7 @@ class FEISDataLoader:
             task_features = self.progress.add_task("Computing features ...")
 
             self.epoch_type = epoch_type
-            self.features_dir = features_dir
+            self.features_dir = save_dir
             self.get_features_functions()
 
             for subject in self.subjects:
@@ -160,9 +180,9 @@ class FEISDataLoader:
                 data = self.load_data_eeg(subject, epoch_type)
                 epochs = self.make_epochs(data)
                 self.progress.update(task_features, total=len(epochs))
-                self.compute_features(epochs, task=task_features)
+                features = self.compute_features(epochs, task=task_features)
                 self.progress.reset(task_features)
-                self.save_features(subject)
+                self.save_features(subject, features)
                 self.progress.update(task_subjects, advance=1)
 
     def load_data_eeg(self, subject, epoch_type):
@@ -181,14 +201,14 @@ class FEISDataLoader:
     def compute_features(self, epochs, task=None):
         features = []
         for epoch in epochs:
-            epoch = self.window_data(epoch, split=10)
-            feats = self.make_simple_feats(epoch)
-            feats = self.add_deltas(feats)
-            features.append(feats)
+            windowed_epoch = self.window_data(epoch, split=10)
+            feats = self.make_simple_feats(windowed_epoch, flatten=False)
+            all_feats = self.add_deltas(feats)
+            features.append(all_feats)
             if task:
                 self.progress.update(task, advance=1)
-        self.features = np.asarray(features, dtype=np.float32)
-        return self.features
+
+        return np.asarray(features, dtype=np.float32)
 
     def window_data(self, data: np.ndarray, split: int = 10):
         """Windows the data with a stride length of 1."""
@@ -202,13 +222,11 @@ class FEISDataLoader:
         windows = np.array(windows, dtype=np.float32)
         return windows
 
-    def make_simple_feats(self, windowed_data: np.ndarray):
-        simple_feats = []
-        for w in range(len(windowed_data)):
-            simple_feats.append(self.features_per_window(windowed_data[w]))
-        return np.array(simple_feats)
+    def make_simple_feats(self, windowed_data: np.ndarray, flatten: bool = True):
+        feats = [self.features_per_window(window, flatten) for window in windowed_data]
+        return np.asarray(feats, dtype=np.float32)
 
-    def features_per_window(self, window: np.ndarray):
+    def features_per_window(self, window: np.ndarray, flatten: bool = True):
         """
         Takes a single window, returns an array of features of shape
         (n.features, electrodes), and then flattens it into a vector
@@ -217,7 +235,11 @@ class FEISDataLoader:
         for i in range(len(self.feature_functions)):
             for j in range(window.shape[1]):
                 outvec[i, j] = self.feature_functions[i](window[:, j])
-        outvec = outvec.reshape(-1)
+
+        outvec = outvec.transpose()
+        if flatten:
+            outvec = outvec.reshape(-1)
+
         return outvec
 
     def get_features_functions(self):
@@ -345,42 +367,41 @@ class FEISDataLoader:
         all_feats = np.concatenate((feats_array, deltas, double_deltas), axis=0)
         return all_feats
 
-    def save_features(self, subject):
+    def save_features(self, subject: str, features: np.ndarray):
         subject_features_dir = os.path.join(self.features_dir, subject)
         os.makedirs(subject_features_dir, exist_ok=True)
 
-        filename = os.path.join(subject_features_dir, self.epoch_type + ".npy")
-        np.save(filename, self.features)
+        filename = os.path.join(subject_features_dir, f"{self.epoch_type}.npy")
+        np.save(filename, features)
 
-    def load_features(self, epoch_type: str = None, verbose=False):
+    def load_features(self, features_dir=None, epoch_type: str = None, verbose=None):
         """Parameters:
         - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
 
         Returns:
         - features (np.ndarray): Features of shape (n.subjects, n.epochs, n.windows, n.features_per_window).
         """
-        features = []
+        self.features = []
+        self.features_dir = features_dir or self.features_dir
         epoch_type = epoch_type or self.epoch_type
+        verbose = verbose if verbose is not None else self.verbose
 
         for subject in self.subjects:
             filename = os.path.join(self.features_dir, subject, f"{epoch_type}.npy")
             subject_features = np.load(filename)
-            features.append(subject_features)
+            self.features.append(subject_features)
 
         if verbose:
-            message = f"[bold underline]Features:[/]\n"
-            message += "\n".join(
-                [
-                    f"{subject}: {feats.shape}"
-                    for feats, subject in zip(features, self.subjects)
-                ]
-            )
-            self.console.print(message)
+            labels = self.labels if "labels" in self.__dict__ else self.extract_labels()
+            self.features_info(self.features, labels, verbose=verbose)
 
-        return features
+        return self.features
 
-    def save_labels(self, labels, filename="labels.npy"):
-        file = os.path.join(self.features_dir, filename)
+    def save_labels(self, labels=None, filename="labels.npy", features_dir=None):
+        labels = labels or self.labels
+        features_dir = features_dir or self.features_dir
+
+        file = os.path.join(features_dir, filename)
         np.save(file, labels)
 
     def load_labels(self, filename="labels.npy"):
@@ -391,15 +412,22 @@ class FEISDataLoader:
         labels = np.load(file, allow_pickle=True)
         return labels
 
-    def flatten(self, features, labels, verbose=False):
-        flattened_features = [feats.reshape(feats.shape[0], -1) for feats in features]
+    def flatten(self, features=None, labels=None, reshape=False, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+        features = features if features is not None else self.features
+        labels = labels if labels is not None else self.extract_labels()
+
+        flattened_features = (
+            [feats.reshape(feats.shape[0], -1) for feats in features]
+            if reshape
+            else features
+        )
         flattened_features = np.vstack(flattened_features)
 
         flattened_labels = np.tile(labels, len(features))
 
         if verbose:
-            self.console.print(f"Features: {flattened_features.shape}")
-            self.console.print(f"Labels: {flattened_labels.shape}")
+            self.dataset_info(flattened_features, flattened_labels, verbose=verbose)
 
         return flattened_features, flattened_labels
 
@@ -411,3 +439,39 @@ class FEISDataLoader:
             TimeRemainingColumn(),
             transient=True,
         )
+
+    def subjects_info(self, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+
+        if verbose:
+            message = f"[bold underline]Subjects:[/]\n"
+            message += ", ".join(self.subjects)
+            self.console.print(message)
+
+    def dataset_info(self, features=None, labels=None, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+        features = features if features is not None else self.features
+        labels = labels if labels is not None else self.extract_labels()
+
+        if verbose:
+            table = Table(title="[bold underline]Dataset Info[/]")
+            table.add_column("Data", justify="right", no_wrap=True)
+            table.add_column("Shape", style="cyan", no_wrap=True)
+            table.add_row("Features", str(features.shape))
+            table.add_row("Labels", str(labels.shape))
+
+            self.console.print(table)
+
+    def features_info(self, features, labels, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+
+        if verbose:
+            table = Table(title="[bold underline]Features Info[/]")
+            table.add_column("Subject", justify="right", style="magenta", no_wrap=True)
+            table.add_column("Features", justify="center", style="cyan", no_wrap=True)
+            table.add_column("Labels", style="cyan", no_wrap=True)
+
+            for feats, subject in zip(features, self.subjects):
+                table.add_row(str(subject), str(feats.shape), str(labels.shape))
+
+            self.console.print(table)
