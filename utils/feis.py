@@ -2,6 +2,7 @@
 feis.py
 FEIS Dataset Utility scripts
 """
+
 import os
 import subprocess
 import numpy as np
@@ -84,16 +85,11 @@ class FEISDataLoader:
         self.sampling_freq = sampling_freq
         self.num_seconds_per_trial = num_seconds_per_trial
         self.console = console if console else Console()
+        self.progress = None
 
     def unzip_data_eeg(self, delete_zip=False):
-        with Progress(
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            MofNCompleteColumn(),
-            TimeRemainingColumn(),
-            transient=True,
-        ) as progress:
-            task_subjects = progress.add_task(
+        with self.create_progress_bar() as self.progress:
+            task_subjects = self.progress.add_task(
                 "Subjects ...",
                 total=len(self.subjects),
                 completed=1,
@@ -124,7 +120,7 @@ class FEISDataLoader:
 
                         if delete_zip:
                             os.remove(os.path.join(subject_dir, file))
-                progress.update(task_subjects, advance=1)
+                self.progress.update(task_subjects, advance=1)
 
     def extract_labels(self, subject=None, epoch_type: str = "speaking"):
         subject = subject or self.subjects[0]
@@ -141,19 +137,13 @@ class FEISDataLoader:
         - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
         """
 
-        with Progress(
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            MofNCompleteColumn(),
-            TimeRemainingColumn(),
-            transient=True,
-        ) as progress:
-            task_subjects = progress.add_task(
+        with self.create_progress_bar() as self.progress:
+            task_subjects = self.progress.add_task(
                 "Subjects ...",
                 total=len(self.subjects),
                 completed=1,
             )
-            task_features = progress.add_task("Computing features ...")
+            task_features = self.progress.add_task("Computing features ...")
 
             self.epoch_type = epoch_type
             self.features_dir = features_dir
@@ -164,16 +154,16 @@ class FEISDataLoader:
                     if os.path.exists(
                         os.path.join(self.features_dir, subject, f"{epoch_type}.npy")
                     ):
-                        progress.update(task_subjects, advance=1)
+                        self.progress.update(task_subjects, advance=1)
                         continue
 
                 data = self.load_data_eeg(subject, epoch_type)
                 epochs = self.make_epochs(data)
-                progress.update(task_features, total=len(epochs))
-                self.compute_features(epochs, progress=progress, task=task_features)
-                progress.reset(task_features)
+                self.progress.update(task_features, total=len(epochs))
+                self.compute_features(epochs, task=task_features)
+                self.progress.reset(task_features)
                 self.save_features(subject)
-                progress.update(task_subjects, advance=1)
+                self.progress.update(task_subjects, advance=1)
 
     def load_data_eeg(self, subject, epoch_type):
         file = os.path.join(self.data_dir, subject, f"{epoch_type}.csv")
@@ -188,15 +178,15 @@ class FEISDataLoader:
         epochs = np.asarray(epochs, dtype=np.float32)
         return epochs
 
-    def compute_features(self, epochs, progress=None, task=None):
+    def compute_features(self, epochs, task=None):
         features = []
         for epoch in epochs:
             epoch = self.window_data(epoch, split=10)
             feats = self.make_simple_feats(epoch)
             feats = self.add_deltas(feats)
             features.append(feats)
-            if progress:
-                progress.update(task, advance=1)
+            if task:
+                self.progress.update(task, advance=1)
         self.features = np.asarray(features, dtype=np.float32)
         return self.features
 
@@ -351,7 +341,8 @@ class FEISDataLoader:
     def add_deltas(self, feats_array: np.ndarray):
         deltas = np.diff(feats_array, axis=0)
         double_deltas = np.diff(deltas, axis=0)
-        all_feats = np.hstack((feats_array[2:], deltas[1:], double_deltas))
+        # all_feats = np.hstack((feats_array[2:], deltas[1:], double_deltas))
+        all_feats = np.concatenate((feats_array, deltas, double_deltas), axis=0)
         return all_feats
 
     def save_features(self, subject):
@@ -411,3 +402,12 @@ class FEISDataLoader:
             self.console.print(f"Labels: {flattened_labels.shape}")
 
         return flattened_features, flattened_labels
+
+    def create_progress_bar(self):
+        return Progress(
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            MofNCompleteColumn(),
+            TimeRemainingColumn(),
+            transient=True,
+        )
