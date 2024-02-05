@@ -32,6 +32,7 @@ class Classifier:
         test_size=0.2,
         random_state=42,
         trial_size=None,
+        run_grid_search=False,
         verbose=False,
         console=None,
     ):
@@ -44,6 +45,7 @@ class Classifier:
         self.test_size = test_size
         self.random_state = random_state
         self.trial_size = trial_size
+        self.run_grid_search = run_grid_search
         self.verbose = verbose
         self.console = console if console else Console()
         self.model = None
@@ -72,8 +74,13 @@ class Classifier:
 
     def train(self, model=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
-        self.model = model if model is not None else self.model
-        self.model.fit(self.X_train, self.y_train)
+
+        if self.run_grid_search:
+            self.perform_grid_search(verbose=10)
+            self.grid_search_info(verbose=verbose)
+        else:
+            self.model = model if model is not None else self.model
+            self.model.fit(self.X_train, self.y_train)
 
     def evaluate(self, X_test=None, y_test=None, show_plots=False, verbose=None):
         self.predict(X_test=X_test, y_test=y_test, verbose=False)
@@ -234,6 +241,7 @@ class Classifier:
                 "train": str(self.X_train.shape),
                 "test": str(self.X_test.shape),
             },
+            "run_grid_search": self.run_grid_search,
         }
 
         return self.params

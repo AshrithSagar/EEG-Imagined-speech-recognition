@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     karaone.load_features(epoch_type="thinking", features_dir=args["features_dir"])
     features, labels = karaone.flatten()
-    labels = karaone.get_task(labels, task=args["task"])
+    task_labels = karaone.get_task(labels, task=args["task"])
 
     features_ifs = InformationSet(features, verbose=True)
     eff_features = features_ifs.extract_effective_information()
@@ -31,20 +31,18 @@ if __name__ == "__main__":
 
     clf = Classifier(
         eff_features,
-        labels,
+        task_labels,
         save_dir=args["model_dir"],
         test_size=0.2,
         random_state=42,
         trial_size=args["trial_size"] or None,
+        run_grid_search=args["grid_search"],
         verbose=True,
         console=console,
     )
 
     clf.compile()
-    if args["grid_search"]:
-        clf.perform_grid_search(verbose=10)
-    else:
-        clf.train()
+    clf.train()
     clf.predict()
     clf.evaluate(show_plots=False)
     clf.save()
