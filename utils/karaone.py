@@ -806,7 +806,7 @@ class KaraOneDataLoader:
         - 4: Non-uw (0) vs uw (1)
         """
         verbose = verbose if verbose is not None else self.verbose
-        all_labels = labels or self.all_epoch_labels
+        all_labels = labels if labels is not None else self.all_epoch_labels
 
         class_dict = {
             "/diy/": [1, 0, 0, 1, 0],
