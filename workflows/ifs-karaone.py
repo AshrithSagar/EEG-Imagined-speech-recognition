@@ -23,6 +23,7 @@ if __name__ == "__main__":
 
     karaone.load_features(epoch_type="thinking", features_dir=args["features_dir"])
     features, labels = karaone.flatten()
+    labels = karaone.get_task(labels, task=args["task"])
 
     features_ifs = InformationSet(features, verbose=True)
     eff_features = features_ifs.extract_effective_information()
