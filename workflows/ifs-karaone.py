@@ -9,7 +9,7 @@ from utils.classifier import Classifier
 
 
 if __name__ == "__main__":
-    args = load_config(key="karaone")
+    args = load_config(config_file="config.yaml", key="karaone")
 
     karaone = KaraOneDataLoader(
         raw_data_dir=args["raw_data_dir"],
@@ -35,7 +35,10 @@ if __name__ == "__main__":
     )
 
     clf.compile()
-    clf.train()
+    if args["grid_search"]:
+        clf.perform_grid_search(verbose=10)
+    else:
+        clf.train()
     clf.predict()
     clf.evaluate(show_plots=False)
     clf.save()

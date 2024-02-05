@@ -6,8 +6,10 @@ feis:
 karaone:
   features_dir: null
   filtered_data_dir: null
-  raw_data_dir: null
+  grid_search: null
   model_dir: null
+  raw_data_dir: null
   tfr_dataset_dir: null
+  trial_size: null
 utils:
   path: null
