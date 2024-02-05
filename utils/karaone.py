@@ -2,6 +2,7 @@
 karaone_utils.py
 KaraOne Utility scripts
 """
+
 import glob
 import math
 import os
@@ -794,3 +795,35 @@ class KaraOneDataLoader:
             self.raw, n_legendre_terms=num_neighbors, verbose=verbose
         )
         return self.raw
+
+    def get_task(self, labels=None, task=None, verbose=None):
+        """
+        Classes:
+        - 0: Vowel only (0) vs Consonant (1)
+        - 1: Non-nasal (0) vs Nasal (1)
+        - 2: Non-bilabial (0) vs Bilabial (1)
+        - 3: Non-iy (0) vs iy (1)
+        - 4: Non-uw (0) vs uw (1)
+        """
+        verbose = verbose if verbose is not None else self.verbose
+        all_labels = labels or self.all_epoch_labels
+
+        class_dict = {
+            "/diy/": [1, 0, 0, 1, 0],
+            "/iy/": [0, 0, 0, 1, 0],
+            "/m/": [1, 1, 1, 0, 0],
+            "/n/": [1, 1, 0, 0, 0],
+            "/piy/": [1, 0, 1, 1, 0],
+            "/tiy/": [1, 0, 0, 1, 0],
+            "/uw/": [0, 0, 0, 0, 1],
+            "gnaw": [1, 1, 0, 0, 0],
+            "knew": [1, 1, 0, 0, 0],
+            "pat": [1, 0, 1, 0, 0],
+            "pot": [1, 0, 1, 0, 0],
+        }
+
+        all_classes = [
+            [class_dict[label][task] for label in labels] for labels in all_labels
+        ]
+        task_labels = np.concatenate(all_classes)
+        return task_labels
