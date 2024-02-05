@@ -806,7 +806,7 @@ class KaraOneDataLoader:
         - 4: Non-uw (0) vs uw (1)
         """
         verbose = verbose if verbose is not None else self.verbose
-        all_labels = labels if labels is not None else self.all_epoch_labels
+        labels = labels if labels is not None else self.all_epoch_labels
 
         class_dict = {
             "/diy/": [1, 0, 0, 1, 0],
@@ -822,8 +822,5 @@ class KaraOneDataLoader:
             "pot": [1, 0, 1, 0, 0],
         }
 
-        all_classes = [
-            [class_dict[label][task] for label in labels] for labels in all_labels
-        ]
-        task_labels = np.concatenate(all_classes)
-        return task_labels
+        task_labels = [class_dict[label][task] for label in labels]
+        return np.asarray(task_labels)
