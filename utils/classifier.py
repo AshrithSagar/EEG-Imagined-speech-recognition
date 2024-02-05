@@ -77,7 +77,7 @@ class Classifier:
 
         if self.run_grid_search:
             self.perform_grid_search(verbose=10)
-            self.grid_search_info(verbose=verbose)
+            # self.grid_search_info(verbose=verbose)
         else:
             self.model = model if model is not None else self.model
             self.model.fit(self.X_train, self.y_train)
@@ -195,19 +195,47 @@ class Classifier:
 
         self.metrics_info(show_plots=show_plots, verbose=verbose)
 
-    def plot_confusion_matrix(self, confusion_matrix, labels, save_path=None):
-        plt.figure(figsize=(6, 5))
-        sns.heatmap(
-            confusion_matrix,
-            annot=True,
-            fmt="d",
-            cmap="Greens",
-            xticklabels=labels,
-            yticklabels=labels,
-        )
-        plt.xlabel("Predicted")
-        plt.ylabel("Actual")
-        plt.title("Confusion Matrix")
+    def plot_confusion_matrix(
+        self,
+        confusion_matrix,
+        classes,
+        save_path=None,
+        normalize=False,
+        cmap=plt.cm.Blues,
+    ):
+        if normalize:
+            confusion_matrix = (
+                confusion_matrix.astype("float")
+                / confusion_matrix.sum(axis=1)[:, np.newaxis]
+            )
+
+        plt.figure(figsize=(8, 6))
+        plt.imshow(confusion_matrix, interpolation="nearest", cmap=cmap)
+        plt.title("Confusion matrix")
+        plt.colorbar()
+
+        tick_marks = np.arange(len(classes))
+        plt.xticks(tick_marks, classes, rotation=45)
+        plt.yticks(tick_marks, classes)
+
+        fmt = ".2f" if normalize else "d"
+        thresh = confusion_matrix.max() / 2.0
+
+        for i in range(confusion_matrix.shape[0]):
+            for j in range(confusion_matrix.shape[1]):
+                plt.text(
+                    j,
+                    i,
+                    format(confusion_matrix[i, j], fmt),
+                    ha="center",
+                    va="center",
+                    color="white" if confusion_matrix[i, j] > thresh else "black",
+                )
+
+        plt.ylabel("True label")
+        plt.xlabel("Predicted label")
+        plt.tight_layout()
+
         if save_path:
             plt.savefig(save_path)
             plt.close()
