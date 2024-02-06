@@ -24,11 +24,12 @@ if __name__ == "__main__":
     karaone.load_features(epoch_type="thinking", features_dir=args["features_dir"])
     features, labels = karaone.flatten()
 
-    features_ifs = InformationSet(features, verbose=True)
+    features_ifs = InformationSet(features, verbose=True, console=console)
     eff_features = features_ifs.extract_effective_information()
     karaone.dataset_info(eff_features, labels)
 
     for task in args["tasks"]:
+        console.rule(title=f"[bold black][Task-{task}][/]", style="black")
         task_labels = karaone.get_task(labels, task=task)
         save_dir = os.path.join(args["model_dir"], f"task-{task}")
 
@@ -50,7 +51,6 @@ if __name__ == "__main__":
         clf.predict()
         clf.evaluate(show_plots=False)
         clf.save()
-        line_separator(console)
 
     with open(os.path.join(args["model_dir"], "output.txt"), "w") as file:
         file.write(console.export_text())

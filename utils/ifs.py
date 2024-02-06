@@ -2,6 +2,7 @@
 ifs.py
 Information Set Theory Utility scripts
 """
+
 import os
 import numpy as np
 from rich.console import Console
@@ -14,6 +15,8 @@ class InformationSet:
         self.Set = Set
         self.verbose = verbose
         self.console = console if console else Console()
+        if verbose:
+            self.console.rule(title="[bold][Information Set][/]", style="black")
 
     def extract_effective_information(self, verbose=None):
         """

@@ -73,6 +73,7 @@ class KaraOneDataLoader:
         self.console = console if console else Console()
         self.progress = None
         if verbose:
+            self.console.rule(title="[bold][KaraOne Dataset][/]", style="black")
             self.subjects_info()
 
     def get_subjects(self, subjects):
