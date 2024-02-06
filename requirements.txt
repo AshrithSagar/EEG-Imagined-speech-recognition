@@ -7,3 +7,4 @@ tensorflow
 mne
 tftb
 antropy
+imbalanced-learn

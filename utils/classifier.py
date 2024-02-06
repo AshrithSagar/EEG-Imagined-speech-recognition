@@ -9,7 +9,6 @@ import os
 import joblib
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import yaml
 from rich.console import Console
 from rich.table import Table
@@ -49,11 +48,24 @@ class Classifier:
         self.verbose = verbose
         self.console = console if console else Console()
         self.model = None
+        self.model_config = None
 
-    def compile(self, model=None, verbose=None):
+    def get_model_config(self, model_file=None, reload=False):
+        if reload or not self.model_config:
+            if not model_file:
+                model_file = os.path.join(self.save_dir, "model.py")
+            spec = importlib.util.spec_from_file_location("model", model_file)
+            model_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(model_module)
+
+            self.model_config = model_module
+        return self.model_config
+
+    def compile(self, model=None, sampler=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         X = self.X[: self.trial_size]
         y = self.y[: self.trial_size]
+        X, y = self.resample(X, y, sampler)
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=self.test_size, random_state=self.random_state
@@ -62,15 +74,29 @@ class Classifier:
         if model:
             self.model = model
         else:
-            model_file = os.path.join(self.save_dir, "model.py")
-            spec = importlib.util.spec_from_file_location("model", model_file)
-            model_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(model_module)
-            self.model = model_module.model()
+            self.get_model_config()
+            self.model = self.model_config.model()
 
         if verbose:
             self.params_info()
             self.model_info()
+
+    def resample(self, X, y, sampler=None, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+        self.sampler = None
+
+        if sampler is False:
+            return X, y
+
+        if sampler is None:
+            self.get_model_config()
+            if not hasattr(self.model_config, "resample"):
+                return X, y
+            sampler = self.model_config.resample()
+
+        self.sampler = sampler
+        X, y = self.sampler.fit_resample(X, y)
+        return X, y
 
     def train(self, model=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
@@ -111,11 +137,8 @@ class Classifier:
         verbose = verbose if verbose is not None else self.verbose
 
         if param_grid is None:
-            model_file = os.path.join(self.save_dir, "model.py")
-            spec = importlib.util.spec_from_file_location("model", model_file)
-            model_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(model_module)
-            param_grid = model_module.param_grid()
+            self.get_model_config()
+            param_grid = self.model_config.param_grid()
 
         self.grid_search = GridSearchCV(
             self.model, param_grid, scoring=scoring, cv=cv, verbose=verbose, n_jobs=-1
@@ -265,6 +288,7 @@ class Classifier:
             "random_state": self.random_state,
             "trial_size": self.trial_size,
             "model": str(self.model),
+            "sampler": str(self.sampler),
             "data": {
                 "train": str(self.X_train.shape),
                 "test": str(self.X_test.shape),
