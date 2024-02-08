@@ -14,10 +14,16 @@ from rich.console import Console
 from rich.table import Table
 from sklearn.metrics import (
     accuracy_score,
+    balanced_accuracy_score,
+    classification_report,
+    cohen_kappa_score,
     confusion_matrix,
     f1_score,
+    log_loss,
+    matthews_corrcoef,
     precision_score,
     recall_score,
+    roc_auc_score,
 )
 from sklearn.model_selection import GridSearchCV, train_test_split
 
@@ -207,6 +213,11 @@ class Classifier:
         recall = recall_score(y_test, y_pred, average="weighted", zero_division=0)
         f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
         cm = confusion_matrix(y_test, y_pred)
+        roc_auc = roc_auc_score(y_test, y_pred)
+        classification_rep = classification_report(y_test, y_pred)
+        mcc = matthews_corrcoef(y_test, y_pred)
+        kappa = cohen_kappa_score(y_test, y_pred)
+        balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
 
         self.metrics = {
             "accuracy": float(accuracy),
@@ -214,6 +225,11 @@ class Classifier:
             "recall": float(recall),
             "f1_score": float(f1),
             "confusion_matrix": cm,
+            "roc_auc": float(roc_auc),
+            "classification_report": classification_rep,
+            "matthews_corrcoef": float(mcc),
+            "cohen_kappa": float(kappa),
+            "balanced_accuracy": float(balanced_accuracy),
         }
 
         self.metrics_info(show_plots=show_plots, verbose=verbose)
@@ -273,7 +289,7 @@ class Classifier:
             table.add_column("Metric", justify="right", style="magenta", no_wrap=True)
             table.add_column("Value", justify="left", style="cyan", no_wrap=True)
             for metric, value in self.metrics.items():
-                if metric != "confusion_matrix":
+                if metric not in ["confusion_matrix", "classification_report"]:
                     value_str = f"{value:.2%}"
                     table.add_row(metric, value_str)
 
@@ -350,7 +366,7 @@ class Classifier:
         metrics = {
             key: f"{value:.2%}"
             for key, value in self.metrics.items()
-            if key != "confusion_matrix"
+            if key not in ["confusion_matrix", "classification_report"]
         }
         with open(filename, "w") as file:
             yaml.dump(metrics, file, default_flow_style=False)
