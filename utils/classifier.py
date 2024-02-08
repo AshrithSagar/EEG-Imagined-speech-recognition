@@ -67,7 +67,7 @@ class Classifier:
             self.model_config = model_module
         return self.model_config
 
-    def compile(self, model=None, sampler=None, verbose=None):
+    def compile(self, model=None, sampler=None, load=False, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         X = self.X[: self.trial_size]
         y = self.y[: self.trial_size]
@@ -82,6 +82,10 @@ class Classifier:
         else:
             self.get_model_config()
             self.model = self.model_config.model()
+
+        if load:
+            filename = os.path.join(self.save_dir, "model.joblib")
+            self.model = joblib.load(filename)
 
         if verbose:
             self.params_info()
