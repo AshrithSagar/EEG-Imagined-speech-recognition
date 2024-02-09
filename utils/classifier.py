@@ -238,6 +238,26 @@ class Classifier:
 
         self.metrics_info(show_plots=show_plots, verbose=verbose)
 
+    def format_metrics(self, metrics=None):
+        metrics = metrics if metrics is not None else self.metrics
+
+        format_options = {
+            "accuracy": lambda x: f"{x:.2%}",
+            "precision": lambda x: f"{x:.2%}",
+            "recall": lambda x: f"{x:.2%}",
+            "f1_score": lambda x: f"{x:.2%}",
+            "roc_auc": lambda x: f"{x:.2%}",
+            "matthews_corrcoef": lambda x: f"{x:.4f}",
+            "cohen_kappa": lambda x: f"{x:.4f}",
+            "balanced_accuracy": lambda x: f"{x:.2%}",
+        }
+
+        return {
+            metric: format_options.get(metric, str)(value)
+            for metric, value in metrics.items()
+            if metric not in ["confusion_matrix", "classification_report"]
+        }
+
     def plot_confusion_matrix(
         self,
         confusion_matrix,
@@ -292,10 +312,8 @@ class Classifier:
             table = Table(title="[bold underline]Evaluation Metrics:[/]")
             table.add_column("Metric", justify="right", style="magenta", no_wrap=True)
             table.add_column("Value", justify="left", style="cyan", no_wrap=True)
-            for metric, value in self.metrics.items():
-                if metric not in ["confusion_matrix", "classification_report"]:
-                    value_str = f"{value:.2%}"
-                    table.add_row(metric, value_str)
+            for metric, value in self.format_metrics().items():
+                table.add_row(metric, value)
 
             self.console.print(table)
 
@@ -367,13 +385,8 @@ class Classifier:
         joblib.dump(self.model, filename)
 
         filename = os.path.join(self.save_dir, "metrics.yaml")
-        metrics = {
-            key: f"{value:.2%}"
-            for key, value in self.metrics.items()
-            if key not in ["confusion_matrix", "classification_report"]
-        }
         with open(filename, "w") as file:
-            yaml.dump(metrics, file, default_flow_style=False)
+            yaml.dump(self.format_metrics(), file, default_flow_style=False)
 
         filename = os.path.join(self.save_dir, "confusion_matrix.png")
         self.plot_confusion_matrix(
