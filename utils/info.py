@@ -59,7 +59,7 @@ class ModelSummary:
             for metric in self.metrics[0].keys():
                 row = [metric]
                 for task_metrics in self.metrics:
-                    row.append(task_metrics[metric])
+                    row.append(str(task_metrics[metric]))
                 table.add_row(*row)
 
             self.console.print(table)
