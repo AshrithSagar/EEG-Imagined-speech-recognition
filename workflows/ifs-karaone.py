@@ -46,8 +46,9 @@ if __name__ == "__main__":
         )
 
         clf.get_model_config(model_file=os.path.join(args["model_dir"], "model.py"))
-        clf.compile()
-        clf.train()
+        clf.compile(load=args["evaluate_only"])
+        if not args["evaluate_only"]:
+            clf.train()
         clf.predict()
         clf.evaluate(show_plots=False)
         clf.save()

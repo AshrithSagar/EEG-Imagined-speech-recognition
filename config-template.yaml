@@ -4,6 +4,7 @@ feis:
   features_dir: null
   model_dir: null
 karaone:
+  evaluate_only: null
   features_dir: null
   filtered_data_dir: null
   grid_search: null
