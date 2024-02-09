@@ -46,7 +46,7 @@ class ModelSummary:
             self.params = yaml.safe_load(file)
 
         if verbose:
-            self.console.rule(title="[bold][Model Summary][/]", style="black")
+            self.console.rule(title="[bold blue3][Model Summary][/]", style="blue3")
             self.console.print(
                 f"model_dir: [bold black]{os.path.basename(self.model_dir)}[/]"
             )

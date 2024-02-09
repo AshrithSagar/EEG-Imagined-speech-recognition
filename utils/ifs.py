@@ -16,7 +16,7 @@ class InformationSet:
         self.verbose = verbose
         self.console = console if console else Console()
         if verbose:
-            self.console.rule(title="[bold][Information Set][/]", style="black")
+            self.console.rule(title="[bold blue3][Information Set][/]", style="blue3")
 
     def extract_effective_information(self, verbose=None):
         """

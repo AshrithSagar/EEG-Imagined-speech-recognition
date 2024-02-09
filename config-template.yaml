@@ -8,7 +8,8 @@ karaone:
   features_dir: null
   filtered_data_dir: null
   grid_search: null
-  model_dir: null
+  model_base_dir: null
+  models: null
   raw_data_dir: null
   tasks: null
   tfr_dataset_dir: null
