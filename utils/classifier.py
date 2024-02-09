@@ -238,18 +238,18 @@ class Classifier:
 
         self.metrics_info(show_plots=show_plots, verbose=verbose)
 
-    def format_metrics(self, metrics=None):
+    def format_metrics(self, metrics=None, as_str=True):
         metrics = metrics if metrics is not None else self.metrics
 
         format_options = {
-            "accuracy": lambda x: f"{x:.2%}",
-            "precision": lambda x: f"{x:.2%}",
-            "recall": lambda x: f"{x:.2%}",
-            "f1_score": lambda x: f"{x:.2%}",
-            "roc_auc": lambda x: f"{x:.2%}",
-            "matthews_corrcoef": lambda x: f"{x:.4f}",
-            "cohen_kappa": lambda x: f"{x:.4f}",
-            "balanced_accuracy": lambda x: f"{x:.2%}",
+            "accuracy": lambda x: f"{x:.2%}" if as_str else round(x, 4),
+            "precision": lambda x: f"{x:.2%}" if as_str else round(x, 4),
+            "recall": lambda x: f"{x:.2%}" if as_str else round(x, 4),
+            "f1_score": lambda x: f"{x:.2%}" if as_str else round(x, 4),
+            "roc_auc": lambda x: f"{x:.2%}" if as_str else round(x, 4),
+            "matthews_corrcoef": lambda x: (f"{x:.4f}" if as_str else round(x, 4)),
+            "cohen_kappa": lambda x: f"{x:.4f}" if as_str else round(x, 4),
+            "balanced_accuracy": lambda x: (f"{x:.2%}" if as_str else round(x, 4)),
         }
 
         return {
@@ -386,7 +386,7 @@ class Classifier:
 
         filename = os.path.join(self.save_dir, "metrics.yaml")
         with open(filename, "w") as file:
-            yaml.dump(self.format_metrics(), file, default_flow_style=False)
+            yaml.dump(self.format_metrics(as_str=False), file, default_flow_style=False)
 
         filename = os.path.join(self.save_dir, "confusion_matrix.png")
         self.plot_confusion_matrix(
