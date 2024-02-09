@@ -13,8 +13,9 @@ from rich.table import Table
 
 
 class ModelSummary:
-    def __init__(self, model_dir, console=None, verbose=False):
-        self.model_dir = model_dir
+    def __init__(self, model_base_dir, models, console=None, verbose=False):
+        self.model_base_dir = model_base_dir
+        self.models = models
         self.verbose = verbose
         self.console = console if console else Console()
         self.tasks = [f"task-{task}" for task in range(5)]
@@ -22,9 +23,11 @@ class ModelSummary:
     def show(self, plots=False, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
 
-        self.metrics_info(verbose)
-        if plots:
-            self.plot_confusion_matrix(verbose)
+        for model in self.models:
+            self.model_dir = os.path.join(self.model_base_dir, model)
+            self.metrics_info(verbose)
+            if plots:
+                self.plot_confusion_matrix(verbose)
 
     def metrics_info(self, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
@@ -54,11 +57,10 @@ class ModelSummary:
             for task, metrics in zip(self.tasks, self.metrics):
                 table.add_column(task, justify="left", style="cyan", no_wrap=True)
             for metric in self.metrics[0].keys():
-                if metric != "confusion_matrix":
-                    row = [metric]
-                    for task_metrics in self.metrics:
-                        row.append(task_metrics[metric])
-                    table.add_row(*row)
+                row = [metric]
+                for task_metrics in self.metrics:
+                    row.append(task_metrics[metric])
+                table.add_row(*row)
 
             self.console.print(table)
 
