@@ -24,6 +24,7 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     roc_auc_score,
+    ConfusionMatrixDisplay,
 )
 from sklearn.model_selection import GridSearchCV, train_test_split
 
@@ -273,31 +274,11 @@ class Classifier:
             )
 
         plt.figure(figsize=(8, 6))
-        plt.imshow(confusion_matrix, interpolation="nearest", cmap=cmap)
-        plt.title("Confusion matrix")
-        plt.colorbar()
-
-        tick_marks = np.arange(len(classes))
-        plt.xticks(tick_marks, classes, rotation=45)
-        plt.yticks(tick_marks, classes)
-
-        fmt = ".2f" if normalize else "d"
-        thresh = confusion_matrix.max() / 2.0
-
-        for i in range(confusion_matrix.shape[0]):
-            for j in range(confusion_matrix.shape[1]):
-                plt.text(
-                    j,
-                    i,
-                    format(confusion_matrix[i, j], fmt),
-                    ha="center",
-                    va="center",
-                    color="white" if confusion_matrix[i, j] > thresh else "black",
-                )
-
-        plt.ylabel("True label")
-        plt.xlabel("Predicted label")
-        plt.tight_layout()
+        disp = ConfusionMatrixDisplay(
+            confusion_matrix=confusion_matrix, display_labels=classes
+        )
+        disp.plot(cmap=cmap)
+        plt.title("Confusion Matrix")
 
         if save_path:
             plt.savefig(save_path)
