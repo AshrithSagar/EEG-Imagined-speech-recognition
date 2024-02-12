@@ -53,8 +53,7 @@ if __name__ == "__main__":
             clf.compile(load=args["evaluate_only"])
             if not args["evaluate_only"]:
                 clf.train()
-            clf.predict()
-            clf.evaluate(show_plots=False)
+            clf.evaluate(show_plots=False, verbose=True)
             clf.save()
 
         with open(os.path.join(model_dir, "output.txt"), "w") as file:

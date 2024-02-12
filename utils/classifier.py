@@ -50,7 +50,10 @@ class Classifier:
         os.makedirs(self.save_dir, exist_ok=True)
         self.test_size = test_size
         self.random_state = random_state
-        self.trial_size = trial_size
+        if isinstance(trial_size, float) and trial_size < 1:
+            self.trial_size = int(trial_size * len(X))
+        else:
+            self.trial_size = trial_size
         self.run_grid_search = run_grid_search
         self.verbose = verbose
         self.console = console if console else Console()
@@ -120,7 +123,8 @@ class Classifier:
             self.model.fit(self.X_train, self.y_train)
 
     def evaluate(self, X_test=None, y_test=None, show_plots=False, verbose=None):
-        self.predict(X_test=X_test, y_test=y_test, verbose=False)
+        self.predict(X_test=X_test, y_test=y_test, verbose=False or verbose)
+        verbose = verbose if verbose is not None else self.verbose
         self.get_metrics(show_plots=show_plots, verbose=verbose)
 
     def predict(self, X_test=None, y_test=None, model=None, verbose=None):
