@@ -1,26 +1,30 @@
-# EEG-Imagined speech recognition
+# EEG Imagined Speech Recognition
 
-## About
+![GitHub](https://img.shields.io/github/license/AshrithSagar/EEG-Imagined-speech-recognition) ![GitHub repo size](https://img.shields.io/github/repo-size/AshrithSagar/EEG-Imagined-speech-recognition)
 
 Imagined speech recognition through EEG signals
 
 ## Installation
 
-```shell
-git clone https://github.com/AshrithSagar/EEG-Imagined-speech-recognition.git
-cd EEG-Imagined-speech-recognition
-```
+1. Clone the repository:
 
-```shell
-pip install -r requirements.txt
-```
+    ```bash
+    git clone https://github.com/AshrithSagar/EEG-Imagined-speech-recognition.git
+    cd EEG-Imagined-speech-recognition
+    ```
 
-```shell
-python3 utils/tfr_dataset.py
-```
+2. Install dependencies:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 ## Usage
 
-## LICENSE
+1. Preprocess EEG data: Preprocess the EEG data to extract relevant features and prepare it for model training.
 
-MIT License
+2. Train the model: Train a machine learning model using the preprocessed EEG data. Experiment with different algorithms and hyperparameters to optimize performance.
+
+## License
+
+This project falls under the [MIT License](LICENSE).
