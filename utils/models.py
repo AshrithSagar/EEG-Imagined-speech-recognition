@@ -4,7 +4,6 @@ Model classes
 """
 
 import numpy as np
-from imblearn.over_sampling import RandomOverSampler
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.preprocessing import minmax_scale
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
