@@ -1,6 +1,7 @@
 """
-tfr_dataset.py
+tfr.py
 """
+
 import os
 import numpy as np
 from tftb.processing import smoothed_pseudo_wigner_ville
