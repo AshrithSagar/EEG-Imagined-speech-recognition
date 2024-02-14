@@ -14,6 +14,10 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 class HanmanClassifier(BaseEstimator, ClassifierMixin):
     """Hanman Classifier.
 
+    For more information, refer here
+    - https://doi.org/10.1016/j.eswa.2014.03.040
+    - https://doi.org/10.1007/s00500-019-04277-9
+
     Parameters
     ----------
     alpha : float, optional (default=None)
