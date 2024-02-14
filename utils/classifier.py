@@ -48,7 +48,6 @@ class Classifier:
         """
         self.X, self.y = X, y
         self.save_dir = save_dir
-        os.makedirs(self.save_dir, exist_ok=True)
         self.test_size = test_size
         self.random_state = random_state
         if isinstance(trial_size, float) and trial_size < 1:
@@ -357,6 +356,7 @@ class Classifier:
 
     def save(self, verbose=False):
         verbose = verbose if verbose is not None else self.verbose
+        os.makedirs(self.save_dir, exist_ok=True)
         self.get_model(verbose=False)
 
         filename = os.path.join(self.save_dir, "params.yaml")
