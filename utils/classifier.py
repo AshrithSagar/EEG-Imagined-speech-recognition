@@ -43,7 +43,8 @@ class Classifier:
         console=None,
     ):
         """Parameters:
-        - trial_size (int): Only use part of the dataset for trial (default: Entire dataset)
+        - trial_size (int | float | None): Only use part of the dataset for trial.
+            (default: Entire dataset)
         """
         self.X, self.y = X, y
         self.save_dir = save_dir
@@ -78,7 +79,7 @@ class Classifier:
         X, y = self.resample(X, y, sampler)
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, test_size=self.test_size, random_state=self.random_state
+            X, y, test_size=self.test_size, random_state=self.random_state, stratify=y
         )
 
         if model:
