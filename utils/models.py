@@ -48,13 +48,16 @@ class HanmanClassifier(BaseEstimator, ClassifierMixin):
 
     """
 
-    def __init__(self, *, alpha=None, beta=None, a=None, b=None, q=None, n_jobs=1):
+    def __init__(
+        self, *, alpha=None, beta=None, a=None, b=None, q=None, n_jobs=1, verbose=None
+    ):
         self.alpha = alpha
         self.beta = beta
         self.a = a
         self.b = b
         self.q = q
         self.n_jobs = n_jobs
+        self.verbose = verbose
 
     def __repr__(self):
         return (
@@ -153,7 +156,7 @@ class HanmanClassifier(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         sample : array-like of shape (n_features,)
-            The input sample.
+            The input sample, assuming MinMax scaled along features.
 
         Returns
         -------
@@ -163,17 +166,10 @@ class HanmanClassifier(BaseEstimator, ClassifierMixin):
         """
 
         entropies = np.zeros(len(self.classes_))
-        for cls_idx in range(len(self.classes_)):
-            n_cls = self.X_cls[cls_idx].shape[0]
-            error = np.abs(self.X_cls[cls_idx] - sample)
+        for cls_idx, X_cls in enumerate(self.X_cls):
+            error = np.abs(X_cls - sample)
 
-            norm_error = np.ones((n_cls, n_cls, self.n_features_in_))
-            for i in range(n_cls):
-                for j in range(n_cls):
-                    if i == j:
-                        continue
-                    norm_error[i][j] = self.frank_t_norm(error[i], error[j], self.q)
-
+            norm_error = self.frank_t_norm(error[:, None], error[None, :], self.q)
             min_norm_error = np.min(norm_error, axis=(0, 1))
 
             possibilistic_uncertainty = np.sum(
