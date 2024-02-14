@@ -6,18 +6,26 @@ Imagined speech recognition through EEG signals
 
 ## Installation
 
-1. Clone the repository:
+Follow these steps to get started.
 
-    ```bash
-    git clone https://github.com/AshrithSagar/EEG-Imagined-speech-recognition.git
-    cd EEG-Imagined-speech-recognition
-    ```
+1. **Clone the repository:**
+   
+   First, clone the GitHub repository to your local machine:
 
-2. Install dependencies:
+   ```bash
+   git clone https://github.com/AshrithSagar/EEG-Imagined-speech-recognition.git
+   cd EEG-Imagined-speech-recognition
+   ```
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+2. **Install dependencies:**
+
+   Next, install the required dependencies using pip:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+   This will ensure that all necessary packages are installed and ready for use.
 
 ## Usage
 
