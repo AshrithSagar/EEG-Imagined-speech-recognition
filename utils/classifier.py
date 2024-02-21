@@ -13,6 +13,7 @@ import yaml
 from rich.console import Console
 from rich.table import Table
 from sklearn.metrics import (
+    ConfusionMatrixDisplay,
     accuracy_score,
     balanced_accuracy_score,
     classification_report,
@@ -20,13 +21,13 @@ from sklearn.metrics import (
     confusion_matrix,
     f1_score,
     log_loss,
+    make_scorer,
     matthews_corrcoef,
     precision_score,
     recall_score,
     roc_auc_score,
-    ConfusionMatrixDisplay,
 )
-from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.model_selection import GridSearchCV, cross_validate, train_test_split
 
 
 class Classifier:
@@ -46,14 +47,11 @@ class Classifier:
         - trial_size (int | float | None): Only use part of the dataset for trial.
             (default: Entire dataset)
         """
-        self.X, self.y = X, y
+        self.X_raw, self.y_raw = X, y
         self.save_dir = save_dir
         self.test_size = test_size
         self.random_state = random_state
-        if isinstance(trial_size, float) and trial_size < 1:
-            self.trial_size = int(trial_size * len(X))
-        else:
-            self.trial_size = trial_size
+        self.trial_size = trial_size
         self.run_grid_search = run_grid_search
         self.verbose = verbose
         self.console = console if console else Console()
@@ -69,23 +67,77 @@ class Classifier:
             spec.loader.exec_module(model_module)
 
             self.model_config = model_module
-        return self.model_config
 
-    def compile(self, model=None, sampler=None, load=False, verbose=None):
+    def compile(self, model=None, sampler=None, cv=None, load=False, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
-        X = self.X[: self.trial_size]
-        y = self.y[: self.trial_size]
-        X, y = self.resample(X, y, sampler)
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, test_size=self.test_size, random_state=self.random_state, stratify=y
+        X, y = self.resample(self.X_raw, self.y_raw, sampler)
+
+        if isinstance(self.trial_size, float) and self.trial_size <= 1:
+            self.trial_size = int(self.trial_size * len(X))
+
+        # Stratified sampling
+        X_train, X_test, y_train, y_test = train_test_split(
+            X,
+            y,
+            train_size=int(self.trial_size * (1 - self.test_size)),
+            test_size=int(self.trial_size * self.test_size),
+            random_state=self.random_state,
+            stratify=y,
         )
+        self.X = np.concatenate((X_train, X_test))
+        self.y = np.concatenate((y_train, y_test))
+
+        # Train:Test split
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            self.X,
+            self.y,
+            test_size=self.test_size,
+            random_state=self.random_state,
+            stratify=self.y,
+        )
+
+        self.scoring = {
+            "accuracy": make_scorer(accuracy_score),
+            "precision": make_scorer(
+                precision_score, average="binary", zero_division=0
+            ),
+            "precision_macro": make_scorer(
+                precision_score, average="macro", zero_division=0
+            ),
+            "precision_micro": make_scorer(
+                precision_score, average="micro", zero_division=0
+            ),
+            "precision_weighted": make_scorer(
+                precision_score, average="weighted", zero_division=0
+            ),
+            "recall": make_scorer(recall_score, average="binary", zero_division=0),
+            "recall_macro": make_scorer(recall_score, average="macro", zero_division=0),
+            "recall_micro": make_scorer(recall_score, average="micro", zero_division=0),
+            "recall_weighted": make_scorer(
+                recall_score, average="weighted", zero_division=0
+            ),
+            "f1": make_scorer(f1_score, average="binary", zero_division=0),
+            "f1_macro": make_scorer(f1_score, average="macro", zero_division=0),
+            "f1_micro": make_scorer(f1_score, average="micro", zero_division=0),
+            "f1_weighted": make_scorer(f1_score, average="weighted", zero_division=0),
+            "roc_auc": make_scorer(roc_auc_score),
+            "matthews_corrcoef": make_scorer(matthews_corrcoef),
+            "cohen_kappa": make_scorer(cohen_kappa_score),
+            "balanced_accuracy": make_scorer(balanced_accuracy_score),
+        }
 
         if model:
             self.model = model
         else:
             self.get_model_config()
             self.model = self.model_config.model()
+
+        if cv:
+            self.cv = cv
+        else:
+            self.get_model_config()
+            self.cv = self.model_config.cross_validation()
 
         if load:
             filename = os.path.join(self.save_dir, "model.joblib")
@@ -122,10 +174,34 @@ class Classifier:
             self.model = model if model is not None else self.model
             self.model.fit(self.X_train, self.y_train)
 
-    def evaluate(self, X_test=None, y_test=None, show_plots=False, verbose=None):
-        self.predict(X_test=X_test, y_test=y_test, verbose=False or verbose)
+    def evaluate(
+        self,
+        X=None,
+        y=None,
+        return_train_score=False,
+        return_estimator=False,
+        show_plots=False,
+        n_jobs=None,
+        verbose=None,
+    ):
+        X = X if X is not None else self.X_train
+        y = y if y is not None else self.y_train
+        self.predict(X_test=X, y_test=y, verbose=False or verbose)
         verbose = verbose if verbose is not None else self.verbose
-        self.get_metrics(show_plots=show_plots, verbose=verbose)
+        self.get_metrics(y_test=y, show_plots=show_plots, verbose=verbose)
+
+        self.scores = cross_validate(
+            estimator=self.model,
+            X=X,
+            y=y,
+            scoring=self.scoring,
+            cv=self.cv,
+            return_train_score=return_train_score,
+            return_estimator=return_estimator,
+            n_jobs=n_jobs,
+            verbose=False or verbose,
+        )
+        self.evaluation_metrics_info(verbose=verbose)
 
     def predict(self, X_test=None, y_test=None, model=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
@@ -290,6 +366,27 @@ class Classifier:
         else:
             plt.show()
 
+    def evaluation_metrics_info(self, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+
+        metrics_mean = {
+            metric: np.mean(self.scores[f"test_{metric}"]) for metric in self.scoring
+        }
+        metrics_std = {
+            metric: np.std(self.scores[f"test_{metric}"]) for metric in self.scoring
+        }
+
+        if verbose:
+            table = Table(title="[bold underline]Evaluation Metrics:[/]")
+            table.add_column("Metric", justify="right", style="magenta", no_wrap=True)
+            table.add_column("Mean ± Std", justify="center", style="cyan", no_wrap=True)
+            for metric, mean, std in zip(
+                self.scoring.keys(), metrics_mean.values(), metrics_std.values()
+            ):
+                table.add_row(metric, f"{mean:.4f} ± {std:.4f}")
+
+            self.console.print(table)
+
     def metrics_info(self, show_plots=False, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
 
@@ -395,3 +492,7 @@ class Classifier:
 
             filename = os.path.join(self.save_dir, "grid_search.joblib")
             joblib.dump(self.grid_search, filename)
+
+        if hasattr(self, "scores"):
+            filename = os.path.join(self.save_dir, "scores.joblib")
+            joblib.dump(self.scores, filename)
