@@ -9,6 +9,7 @@ import os
 import joblib
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import yaml
 from rich.console import Console
 from rich.table import Table
@@ -73,7 +74,9 @@ class Classifier:
 
         X, y = self.resample(self.X_raw, self.y_raw, sampler)
 
-        if isinstance(self.trial_size, float) and self.trial_size <= 1:
+        if self.trial_size is None:
+            self.trial_size = len(X)
+        elif isinstance(self.trial_size, float) and self.trial_size <= 1:
             self.trial_size = int(self.trial_size * len(X))
 
         # Stratified sampling
@@ -376,12 +379,22 @@ class Classifier:
             metric: np.std(self.scores[f"test_{metric}"]) for metric in self.scoring
         }
 
+        self.cv_metrics_df = pd.DataFrame(
+            {
+                "Metric": list(self.scoring.keys()),
+                "Mean": list(metrics_mean.values()),
+                "Std": list(metrics_std.values()),
+            }
+        )
+
         if verbose:
             table = Table(title="[bold underline]Evaluation Metrics:[/]")
             table.add_column("Metric", justify="right", style="magenta", no_wrap=True)
             table.add_column("Mean ± Std", justify="center", style="cyan", no_wrap=True)
             for metric, mean, std in zip(
-                self.scoring.keys(), metrics_mean.values(), metrics_std.values()
+                self.scoring.keys(),
+                metrics_mean.values(),
+                metrics_std.values(),
             ):
                 table.add_row(metric, f"{mean:.4f} ± {std:.4f}")
 
@@ -496,3 +509,6 @@ class Classifier:
         if hasattr(self, "scores"):
             filename = os.path.join(self.save_dir, "scores.joblib")
             joblib.dump(self.scores, filename)
+
+            filename = os.path.join(self.save_dir, "cv_metrics.csv")
+            self.cv_metrics_df.to_csv(filename, index=False)
