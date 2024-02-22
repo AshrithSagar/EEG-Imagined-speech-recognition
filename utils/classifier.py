@@ -429,6 +429,156 @@ class ClassifierGridSearch(ClassifierMixin):
             console=console,
         )
 
+    def get_model(self, model=None, verbose=None):
+        verbose = self.set_verbose(verbose)
+
+        if model:
+            self.model = model
+            # self.classes
+            return self.model
+
+        self.model = self.grid_search.best_estimator_
+        self.classes = self.grid_search.classes_
+
+        if verbose:
+            self.console.print(f"Best Parameters: {self.grid_search.best_params_}")
+
+        return self.model
+
+    def compile(
+        self,
+        model=None,
+        sampler=None,
+        param_grid=None,
+        scoring=None,
+        cv=None,
+        verbose=None,
+    ):
+        verbose = self.set_verbose(verbose)
+
+        X, y = self.resample(self.X_raw, self.y_raw, sampler)
+
+        if self.trial_size is None:
+            self.trial_size = len(X)
+        elif isinstance(self.trial_size, float) and self.trial_size <= 1.0:
+            self.trial_size = int(self.trial_size * len(X))
+
+        # Stratified sampling
+        X_train, X_test, y_train, y_test = train_test_split(
+            X,
+            y,
+            train_size=int(self.trial_size * (1 - self.test_size)),
+            test_size=int(self.trial_size * self.test_size),
+            random_state=self.random_state,
+            stratify=y,
+        )
+        self.X = np.concatenate((X_train, X_test))
+        self.y = np.concatenate((y_train, y_test))
+
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            self.X,
+            self.y,
+            test_size=self.test_size,
+            random_state=self.random_state,
+            stratify=self.y,
+        )
+
+        self.get_scoring(scoring)
+        self.get_model_config()
+        self.model = model if model else self.model_config.model()
+        self.param_grid = param_grid if param_grid else self.model_config.param_grid()
+        self.cv = cv if cv else self.model_config.cross_validation()
+
+        if verbose:
+            self.params_info()
+            self.model_info()
+
+    def train(self, n_jobs=None, verbose=None):
+        verbose = self.set_verbose(verbose)
+
+        self.grid_search = GridSearchCV(
+            self.model,
+            self.param_grid,
+            scoring=self.scoring,
+            cv=self.cv,
+            verbose=verbose,
+            n_jobs=n_jobs,
+        )
+        self.grid_search.fit(self.X_train, self.y_train)
+
+        if verbose:
+            self.console.print(
+                f"Best {self.scoring.capitalize()}: {self.grid_search.best_score_:g}"
+            )
+
+        return self.grid_search
+
+    def evaluate(self, X=None, y=None, model=None, show_plots=False, verbose=None):
+        self.predict(X=X, y=y, verbose=verbose if verbose is not None else False)
+        verbose = self.set_verbose(verbose)
+        self.get_metrics(show_plots=show_plots, verbose=verbose)
+
+    def predict(self, X=None, y=None, model=None, verbose=None):
+        verbose = self.set_verbose(verbose)
+        X_test = X if X is not None else self.X_test
+        y_test = y if y is not None else self.y_test
+
+        self.get_model(model)
+        self.y_pred = self.model.predict(X_test)
+
+        if verbose:
+            table = Table(title="[bold underline]Predictions:[/]")
+            table.add_column(
+                "True Label", justify="right", style="magenta", no_wrap=True
+            )
+            table.add_column("Prediction", justify="left", style="cyan", no_wrap=True)
+            for label, pred in zip(y_test, self.y_pred):
+                table.add_row(str(label), str(pred))
+
+            self.console.print(table)
+
+    def grid_search_info(self, verbose=None):
+        verbose = self.set_verbose(verbose)
+        params = self.grid_search.cv_results_["params"]
+
+        if verbose:
+            table = Table(title="[bold underline]Grid Search Results:[/]")
+            table.add_column(
+                "Parameter", justify="right", style="magenta", no_wrap=True
+            )
+            for idx, param in enumerate(params):
+                header = "\n".join(f"{key}={value}" for key, value in param.items())
+                table.add_column(header, justify="left", style="cyan", no_wrap=True)
+
+            for param, value in self.grid_search.cv_results_.items():
+                if param == "params":
+                    continue
+                table.add_row(param, *[f"{val:g}" for val in value])
+
+            self.console.print(table)
+
+    def save(self, verbose=False):
+        super().save(verbose)
+        self.get_model(verbose=False)
+
+        gs = {
+            "best_params": self.grid_search.best_params_,
+            "best_score": float(f"{self.grid_search.best_score_:g}"),
+        }
+        filename = os.path.join(self.save_dir, "grid_search.yaml")
+        with open(filename, "w") as file:
+            yaml.dump(gs, file, default_flow_style=False)
+
+        filename = os.path.join(self.save_dir, "grid_search.joblib")
+        joblib.dump(self.grid_search, filename)
+
+    def run(self):
+        self.compile(scoring="accuracy")
+        self.train()
+        self.evaluate()
+        self.grid_search_info()
+        self.save()
+
 
 class EvaluateClassifier(ClassifierMixin):
     def __init__(
