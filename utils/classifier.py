@@ -403,7 +403,7 @@ class RegularClassifier(ClassifierMixin):
     def run(self):
         self.compile()
         self.train()
-        self.evaluate()
+        self.evaluate(verbose=True)
         self.save()
 
 
@@ -576,7 +576,7 @@ class ClassifierGridSearch(ClassifierMixin):
     def run(self):
         self.compile(scoring="accuracy")
         self.train()
-        self.evaluate()
+        self.evaluate(verbose=True)
         self.grid_search_info()
         self.save()
 
@@ -703,5 +703,5 @@ class EvaluateClassifier(ClassifierMixin):
 
     def run(self):
         self.compile()
-        self.evaluate(n_jobs=-1)
+        self.evaluate(n_jobs=-1, verbose=True)
         self.save()
