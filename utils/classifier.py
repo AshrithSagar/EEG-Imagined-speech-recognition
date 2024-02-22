@@ -282,6 +282,154 @@ class ClassifierMixin:
             yaml.dump(self.model.get_params(), file, default_flow_style=False)
 
 
+class RegularClassifier(ClassifierMixin):
+    def __init__(
+        self,
+        X,
+        y,
+        save_dir,
+        test_size=0.2,
+        random_state=42,
+        trial_size=None,
+        verbose=False,
+        console=None,
+    ):
+        super().__init__(
+            X=X,
+            y=y,
+            save_dir=save_dir,
+            test_size=test_size,
+            random_state=random_state,
+            trial_size=trial_size,
+            verbose=verbose,
+            console=console,
+        )
+
+    def get_model(self, model=None, verbose=None):
+        verbose = self.set_verbose(verbose)
+
+        if model:
+            self.model = model
+            # self.classes
+            return self.model
+
+        self.classes = self.model.classes_
+        return self.model
+
+    def compile(self, model=None, sampler=None, cv=None, verbose=None):
+        verbose = self.set_verbose(verbose)
+
+        X, y = self.resample(self.X_raw, self.y_raw, sampler)
+
+        if self.trial_size is None:
+            self.trial_size = len(X)
+        elif isinstance(self.trial_size, float) and self.trial_size <= 1.0:
+            self.trial_size = int(self.trial_size * len(X))
+
+        # Stratified sampling
+        X_train, X_test, y_train, y_test = train_test_split(
+            X,
+            y,
+            train_size=int(self.trial_size * (1 - self.test_size)),
+            test_size=int(self.trial_size * self.test_size),
+            random_state=self.random_state,
+            stratify=y,
+        )
+        self.X = np.concatenate((X_train, X_test))
+        self.y = np.concatenate((y_train, y_test))
+
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            self.X,
+            self.y,
+            test_size=self.test_size,
+            random_state=self.random_state,
+            stratify=self.y,
+        )
+
+        self.get_scoring()
+        self.get_model_config()
+        self.model = model if model else self.model_config.model()
+        self.cv = cv if cv else self.model_config.cross_validation()
+
+        if verbose:
+            self.params_info()
+            self.model_info()
+
+    def train(self, verbose=None):
+        verbose = self.set_verbose(verbose)
+        self.model.fit(self.X_train, self.y_train)
+
+    def evaluate(self, X=None, y=None, model=None, show_plots=False, verbose=None):
+        self.predict(X=X, y=y, verbose=verbose if verbose is not None else False)
+        verbose = self.set_verbose(verbose)
+        self.get_metrics(show_plots=show_plots, verbose=verbose)
+
+    def predict(self, X=None, y=None, model=None, verbose=None):
+        verbose = self.set_verbose(verbose)
+        X_test = X if X is not None else self.X_test
+        y_test = y if y is not None else self.y_test
+
+        self.get_model(model)
+        self.y_pred = self.model.predict(X_test)
+
+        if verbose:
+            table = Table(title="[bold underline]Predictions:[/]")
+            table.add_column(
+                "True Label", justify="right", style="magenta", no_wrap=True
+            )
+            table.add_column("Prediction", justify="left", style="cyan", no_wrap=True)
+            for label, pred in zip(y_test, self.y_pred):
+                table.add_row(str(label), str(pred))
+
+            self.console.print(table)
+
+    def save(self, verbose=False):
+        super().save(verbose)
+        self.get_model(verbose=False)
+
+        filename = os.path.join(self.save_dir, "model.joblib")
+        joblib.dump(self.model, filename)
+
+        filename = os.path.join(self.save_dir, "metrics.yaml")
+        with open(filename, "w") as file:
+            yaml.dump(self.format_metrics(as_str=False), file, default_flow_style=False)
+
+        filename = os.path.join(self.save_dir, "confusion_matrix.png")
+        self.plot_confusion_matrix(
+            self.metrics["confusion_matrix"], self.classes, save_path=filename
+        )
+
+    def run(self):
+        self.compile()
+        self.train()
+        self.evaluate()
+        self.save()
+
+
+class ClassifierGridSearch(ClassifierMixin):
+    def __init__(
+        self,
+        X,
+        y,
+        save_dir,
+        test_size=0.2,
+        random_state=42,
+        trial_size=None,
+        verbose=False,
+        console=None,
+    ):
+        super().__init__(
+            X=X,
+            y=y,
+            save_dir=save_dir,
+            test_size=test_size,
+            random_state=random_state,
+            trial_size=trial_size,
+            verbose=verbose,
+            console=console,
+        )
+
+
 class EvaluateClassifier(ClassifierMixin):
     def __init__(
         self,
@@ -401,3 +549,8 @@ class EvaluateClassifier(ClassifierMixin):
 
         filename = os.path.join(self.save_dir, "cv_metrics.csv")
         self.cv_metrics_df.to_csv(filename, index=False)
+
+    def run(self):
+        self.compile()
+        self.evaluate(n_jobs=-1)
+        self.save()

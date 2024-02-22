@@ -7,11 +7,17 @@ sys.path.append(os.getcwd())
 from utils.config import line_separator, load_config
 from utils.ifs import InformationSet
 from utils.karaone import KaraOneDataLoader
-from utils.classifier import EvaluateClassifier
+from utils.classifier import RegularClassifier, ClassifierGridSearch, EvaluateClassifier
 
 
 if __name__ == "__main__":
     args = load_config(config_file="config.yaml", key="karaone")
+
+    classifier_map = {
+        "RegularClassifier": RegularClassifier,
+        "EvaluateClassifier": EvaluateClassifier,
+        "ClassifierGridSearch": ClassifierGridSearch,
+    }
 
     for model in args["models"]:
         console = Console(record=True)
@@ -37,7 +43,13 @@ if __name__ == "__main__":
             task_labels = karaone.get_task(labels, task=task)
             save_dir = os.path.join(model_dir, f"task-{task}")
 
-            clf = EvaluateClassifier(
+            classifier_name = args.get("classifier")
+            if classifier_name in classifier_map:
+                classifier = classifier_map[classifier_name]
+            else:
+                raise ValueError(f"Invalid classifier name: {classifier_name}")
+
+            clf = classifier(
                 eff_features,
                 task_labels,
                 save_dir=save_dir,
@@ -49,9 +61,7 @@ if __name__ == "__main__":
             )
 
             clf.get_model_config(model_file=os.path.join(model_dir, "model.py"))
-            clf.compile()
-            clf.evaluate(n_jobs=-1)
-            clf.save()
+            clf.run()
 
         with open(os.path.join(model_dir, "output.txt"), "w") as file:
             file.write(console.export_text())
