@@ -228,7 +228,7 @@ class ClassifierMixin:
             "model": str(self.model) if hasattr(self, "model") else None,
             "sampler": str(self.sampler) if hasattr(self, "sampler") else None,
             "param_grid": getattr(self, "param_grid", None),
-            "cv": getattr(self, "cv", None),
+            "cv": str(self.sampler) if hasattr(self, "cv") else None,
             "data": {
                 "train": str(self.X_train.shape) if hasattr(self, "X_train") else None,
                 "test": str(self.X_test.shape) if hasattr(self, "X_test") else None,
