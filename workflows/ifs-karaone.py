@@ -38,16 +38,16 @@ if __name__ == "__main__":
         eff_features = features_ifs.extract_effective_information()
         karaone.dataset_info(eff_features, labels)
 
+        classifier_name = args.get("classifier")
+        if classifier_name in classifier_map:
+            classifier = classifier_map[classifier_name]
+        else:
+            raise ValueError(f"Invalid classifier name: {classifier_name}")
+
         for task in args["tasks"]:
             console.rule(title=f"[bold blue3][Task-{task}][/]", style="blue3")
             task_labels = karaone.get_task(labels, task=task)
-            save_dir = os.path.join(model_dir, f"task-{task}")
-
-            classifier_name = args.get("classifier")
-            if classifier_name in classifier_map:
-                classifier = classifier_map[classifier_name]
-            else:
-                raise ValueError(f"Invalid classifier name: {classifier_name}")
+            save_dir = os.path.join(model_dir, classifier_name, f"task-{task}")
 
             clf = classifier(
                 eff_features,
@@ -63,5 +63,5 @@ if __name__ == "__main__":
             clf.get_model_config(model_file=os.path.join(model_dir, "model.py"))
             clf.run()
 
-        with open(os.path.join(model_dir, "output.txt"), "w") as file:
+        with open(os.path.join(model_dir, classifier_name, "output.txt"), "w") as file:
             file.write(console.export_text())

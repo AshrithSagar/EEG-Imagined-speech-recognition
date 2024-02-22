@@ -562,6 +562,18 @@ class ClassifierGridSearch(ClassifierMixin):
         super().save(verbose)
         self.get_model(verbose=False)
 
+        filename = os.path.join(self.save_dir, "model.joblib")
+        joblib.dump(self.model, filename)
+
+        filename = os.path.join(self.save_dir, "metrics.yaml")
+        with open(filename, "w") as file:
+            yaml.dump(self.format_metrics(as_str=False), file, default_flow_style=False)
+
+        filename = os.path.join(self.save_dir, "confusion_matrix.png")
+        self.plot_confusion_matrix(
+            self.metrics["confusion_matrix"], self.classes, save_path=filename
+        )
+
         gs = {
             "best_params": self.grid_search.best_params_,
             "best_score": float(f"{self.grid_search.best_score_:g}"),
