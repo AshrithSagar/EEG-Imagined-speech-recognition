@@ -403,7 +403,7 @@ class RegularClassifier(ClassifierMixin):
     def run(self):
         self.compile()
         self.train()
-        self.evaluate(verbose=True)
+        self.evaluate()
         self.save()
 
 
@@ -588,7 +588,7 @@ class ClassifierGridSearch(ClassifierMixin):
     def run(self):
         self.compile(scoring="accuracy")
         self.train()
-        self.evaluate(verbose=True)
+        self.evaluate()
         self.grid_search_info()
         self.save()
 
@@ -653,6 +653,7 @@ class EvaluateClassifier(ClassifierMixin):
         y=None,
         return_train_score=False,
         return_estimator=False,
+        show_plots=False,
         n_jobs=None,
         verbose=None,
     ):
@@ -671,9 +672,9 @@ class EvaluateClassifier(ClassifierMixin):
             verbose=verbose if verbose is not None else False,
         )
         verbose = self.set_verbose(verbose)
-        self.evaluation_metrics_info(verbose=verbose)
+        self.evaluation_metrics_info(show_plots=show_plots, verbose=verbose)
 
-    def evaluation_metrics_info(self, verbose=None):
+    def evaluation_metrics_info(self, show_plots=False, verbose=None):
         verbose = self.set_verbose(verbose)
 
         metrics_mean = {
@@ -704,6 +705,34 @@ class EvaluateClassifier(ClassifierMixin):
 
             self.console.print(table)
 
+        if show_plots:
+            self.plot_scores_boxplot()
+
+    def plot_scores_boxplot(self, scores=None, save_path=None):
+        scores = scores if scores is not None else self.scores
+
+        test_scores = {
+            key: value for key, value in scores.items() if key.startswith("test_")
+        }
+
+        plt.clf()
+        plt.figure(figsize=(15, 8))
+        plt.boxplot(
+            test_scores.values(),
+            labels=[
+                key.lstrip("test_").replace("_", "\n") for key in test_scores.keys()
+            ],
+        )
+        plt.title("Cross-Validation Scores")
+        plt.xlabel("Metrics")
+        plt.ylabel("Score")
+        plt.tight_layout()
+        if save_path:
+            plt.savefig(save_path)
+            plt.close()
+        else:
+            plt.show()
+
     def save(self, verbose=False):
         super().save(verbose)
 
@@ -713,7 +742,10 @@ class EvaluateClassifier(ClassifierMixin):
         filename = os.path.join(self.save_dir, "cv_metrics.csv")
         self.cv_metrics_df.to_csv(filename, index=False)
 
+        filename = os.path.join(self.save_dir, "cv_scores_boxplot.png")
+        self.plot_scores_boxplot(save_path=filename)
+
     def run(self):
         self.compile()
-        self.evaluate(n_jobs=-1, verbose=True)
+        self.evaluate(n_jobs=-1, show_plots=False, verbose=True)
         self.save()
