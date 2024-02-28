@@ -77,6 +77,14 @@ class KaraOneDataLoader:
             self.subjects_info()
 
     def get_subjects(self, subjects):
+        """Retrieve a list of subjects based on input criteria.
+
+        'subjects' parameter can be one of the following:
+            - "all": Retrieve all available subjects.
+            - A list of integers: Retrieve subjects by their indices.
+            - A list of subject names: Retrieve subjects by their names.
+        """
+
         if subjects == "all":
             return all_subjects
         elif isinstance(subjects, list):
@@ -302,7 +310,7 @@ class KaraOneDataLoader:
 
     def epochs_apply_baseline_correction(self, baseline=(0, 0), verbose=None):
         """
-        baseline = (0, 0)  # Baseline from the beginning of the epoch to t=0 seconds
+        baseline = (0, 0) ==> Baseline from the beginning of the epoch to t=0 seconds
         """
         verbose = verbose if verbose is not None else self.verbose
         wbc_epochs = self.epochs.copy()  # Without baseline correction epochs
@@ -448,8 +456,10 @@ class KaraOneDataLoader:
 
     def save_raw(self, save_dir, overwrite=False, verbose=None):
         """Save the raw data to disk"""
+
         subject_dir = os.path.join(save_dir, self.subject)
         os.makedirs(subject_dir, exist_ok=True)
+
         raw_filename = os.path.join(subject_dir, "raw.fif")
         if overwrite or not os.path.exists(raw_filename):
             self.raw.save(raw_filename, overwrite=overwrite, verbose=verbose)
@@ -496,15 +506,18 @@ class KaraOneDataLoader:
 
     def window_data(self, data: np.ndarray, split: int = 10):
         """Windows the data with a stride length of 1."""
+
         w_len = data.shape[1] // split
         stride = w_len // 2
+
         no_offset_windows = np.split(data, split, axis=1)
         offset_windows = np.split(data[:, stride:-stride], split - 1, axis=1)
+
         windows = [0] * (2 * split - 1)
         windows[::2] = no_offset_windows
         windows[1::2] = offset_windows
-        windows = np.array(windows, dtype=np.float32)
-        return windows
+
+        return np.array(windows, dtype=np.float32)
 
     def make_simple_feats(self, windowed_data: np.ndarray, flatten: bool = True):
         feats = [self.features_per_window(window, flatten) for window in windowed_data]
@@ -644,6 +657,12 @@ class KaraOneDataLoader:
         return self.feature_functions
 
     def add_deltas(self, feats_array: np.ndarray):
+        """Calculates the first-order delta and second-order delta (double delta) features
+        and concatenate them horizontally to the input feature array.
+
+        The shape of the returned array is (3 * n_windows - 2, n_features);
+        """
+
         deltas = np.diff(feats_array, axis=0)
         double_deltas = np.diff(deltas, axis=0)
         # all_feats = np.hstack((feats_array[2:], deltas[1:], double_deltas))
@@ -686,6 +705,10 @@ class KaraOneDataLoader:
         return self.features
 
     def flatten(self, features=None, labels=None, reshape=False, verbose=None):
+        """
+        Flatten the features and concatenate labels.
+        """
+
         verbose = verbose if verbose is not None else self.verbose
         features = features if features is not None else self.features
         labels = labels if labels is not None else self.get_all_epoch_labels()
@@ -741,7 +764,7 @@ class KaraOneDataLoader:
             self.console.print(table)
 
     def apply_laplacian_filter(self, num_neighbors=4, task=None, verbose=None):
-        """Apply Laplacian filtering to EEG data.
+        """Apply a spatial neighbourhood Laplacian filter to EEG data.
 
         Parameters:
         - eeg_data: ndarray, shape (num_channels, num_samples)
