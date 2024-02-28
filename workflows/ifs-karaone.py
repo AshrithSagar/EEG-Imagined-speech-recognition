@@ -4,10 +4,10 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
+from utils.classifier import ClassifierGridSearch, EvaluateClassifier, RegularClassifier
 from utils.config import line_separator, load_config
 from utils.ifs import InformationSet
 from utils.karaone import KaraOneDataLoader
-from utils.classifier import RegularClassifier, ClassifierGridSearch, EvaluateClassifier
 
 
 if __name__ == "__main__":
