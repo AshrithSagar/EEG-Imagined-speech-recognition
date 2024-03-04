@@ -23,30 +23,11 @@ from utils.karaone import KaraOneDataLoader
 if __name__ == "__main__":
     args = load_config(key="karaone")
 
-    subjects = [
-        "MM05",
-        "MM08",
-        "MM09",
-        "MM10",
-        "MM11",
-        "MM12",
-        "MM14",
-        "MM15",
-        "MM16",
-        "MM18",
-        "MM19",
-        "MM20",
-        "MM21",
-        "P02",
-    ]
-
     pick_channels = ["FC6", "FT8", "C5", "CP3", "P3", "T7", "CP5", "C3", "CP1", "C4"]
 
     karaone = KaraOneDataLoader(
         data_dir=args["data_dir"],
-        subjects=subjects[:1],
-        sampling_freq=1000,
-        num_milliseconds_per_trial=4900,
+        subjects=args["subjects"],
         verbose=False,
     )
 

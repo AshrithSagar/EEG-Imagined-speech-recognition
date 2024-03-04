@@ -12,6 +12,7 @@ karaone:
   model_base_dir: null
   models: null
   raw_data_dir: null
+  subjects: null
   tasks: null
   tfr_dataset_dir: null
   trial_size: null

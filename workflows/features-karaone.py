@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     karaone = KaraOneDataLoader(
         raw_data_dir=args["raw_data_dir"],
-        subjects="all",
+        subjects=args["subjects"],
         sampling_freq=1000,
         num_milliseconds_per_trial=4900,
         verbose=True,
