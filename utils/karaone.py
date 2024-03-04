@@ -695,7 +695,10 @@ class KaraOneDataLoader:
 
         for subject in self.subjects:
             filename = os.path.join(features_dir, subject, f"{epoch_type}.npy")
-            subject_features = np.load(filename)
+            if os.path.exists(filename):
+                subject_features = np.load(filename)
+            else:
+                raise FileNotFoundError(f"File not found: {filename}")
             self.features.append(subject_features)
 
         if verbose:
