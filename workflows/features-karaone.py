@@ -2,6 +2,7 @@
 features-karaone.py
 Extraction of features from KaraOne dataset.
 """
+
 import os
 import sys
 
@@ -33,7 +34,9 @@ if __name__ == "__main__":
     karaone.epochs_info(verbose=True)
     labels = karaone.all_epoch_labels
 
-    karaone.extract_features(features_dir=args["features_dir"], epoch_type="thinking")
+    karaone.extract_features(
+        save_dir=args["features_dir"], epoch_type="thinking", split=10
+    )
 
     features = karaone.load_features(epoch_type="thinking", verbose=True)
 
