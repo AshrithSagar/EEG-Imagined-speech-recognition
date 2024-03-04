@@ -475,3 +475,22 @@ class FEISDataLoader:
                 table.add_row(str(subject), str(feats.shape), str(labels.shape))
 
             self.console.print(table)
+
+    def get_task(self, labels, task=None, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+        labels = labels if labels is not None else self.extract_labels()
+
+        # Task-0: [±voice]
+        voiceless = ["p", "t", "k", "f", "s", "sh"]
+        voiced = ["v", "z", "zh", "m", "n", "ng"]
+
+        task_labels = np.zeros_like(labels, dtype=np.int8)
+        for index, label in enumerate(labels):
+            if label in voiced:
+                task_labels[index] = 1
+            elif label in voiceless:
+                task_labels[index] = 0
+            else:
+                task_labels[index] = -1
+
+        return task_labels
