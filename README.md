@@ -33,6 +33,11 @@ Follow these steps to get started.
 
 2. Train the model: Train a machine learning model using the preprocessed EEG data. Experiment with different algorithms and hyperparameters to optimize performance.
 
+## References
+
+- https://www.cs.toronto.edu/~complingweb/data/karaOne/karaOne.html
+- https://github.com/scottwellington/FEIS
+
 ## License
 
 This project falls under the [MIT License](LICENSE).
