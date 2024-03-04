@@ -464,7 +464,9 @@ class KaraOneDataLoader:
         if overwrite or not os.path.exists(raw_filename):
             self.raw.save(raw_filename, overwrite=overwrite, verbose=verbose)
 
-    def extract_features(self, save_dir, epoch_type=None, skip_if_exists=True):
+    def extract_features(
+        self, save_dir, epoch_type=None, split=10, skip_if_exists=True
+    ):
         with self.create_progress_bar() as self.progress:
             task_subjects = self.progress.add_task(
                 "Subjects ...",
@@ -487,15 +489,17 @@ class KaraOneDataLoader:
 
                 subject_epochs = self.all_epochs[index].get_data(copy=True)
                 self.progress.update(task_features, total=len(subject_epochs))
-                features = self.compute_features(subject_epochs, task=task_features)
+                features = self.compute_features(
+                    subject_epochs, split=split, task=task_features
+                )
                 self.progress.reset(task_features)
                 self.save_features(subject, features)
                 self.progress.update(task_subjects, advance=1)
 
-    def compute_features(self, epochs, task=None):
+    def compute_features(self, epochs, split=10, task=None):
         features = []
         for epoch in epochs:
-            windowed_epoch = self.window_data(epoch, split=10)
+            windowed_epoch = self.window_data(epoch, split=split)
             feats = self.make_simple_feats(windowed_epoch, flatten=False)
             all_feats = self.add_deltas(feats)
             features.append(all_feats)
