@@ -1,8 +1,13 @@
 ---
 feis:
+  classifier: null
   data_dir: null
   features_dir: null
-  model_dir: null
+  model_base_dir: null
+  models: null
+  subjects: null
+  tasks: null
+  trial_size: null
 karaone:
   classifier: null
   evaluate_only: null
