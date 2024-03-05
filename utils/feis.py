@@ -481,8 +481,8 @@ class FEISDataLoader:
         labels = labels if labels is not None else self.extract_labels()
 
         # Task-0: [±voice]
-        voiceless = ["p", "t", "k", "f", "s", "sh"]
-        voiced = ["v", "z", "zh", "m", "n", "ng"]
+        voiceless = {"p", "t", "k", "f", "s", "sh"}
+        voiced = {"v", "z", "zh", "m", "n", "ng"}
 
         task_labels = np.zeros_like(labels, dtype=np.int8)
         for index, label in enumerate(labels):

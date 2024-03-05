@@ -301,11 +301,6 @@ class KaraOneDataLoader:
             )
             line_separator(self.console)
 
-        # epochs_psd = self.epochs.compute_psd()
-        # epochs_psd.shape
-        # epochs_psd.get_data().shape
-        # epochs.plot()
-
         return self.epochs
 
     def epochs_apply_baseline_correction(self, baseline=(0, 0), verbose=None):
@@ -335,20 +330,6 @@ class KaraOneDataLoader:
             else:
                 self.console.print("The signal may not be centered around zero.")
             line_separator(self.console)
-
-        # epochs.average().plot()
-        # plt.show()
-
-        # wbc_epochs.average().plot()
-        # plt.show()
-
-        # mne.viz.plot_events(epochs.events)
-        # plt.show()
-
-        # mne.viz.plot_epochs(epochs, scalings="auto")
-        # plt.show()
-
-        # epochs.save(+'.fif', verbose='error')
 
         return self.epochs
 
@@ -828,13 +809,13 @@ class KaraOneDataLoader:
         return self.raw
 
     def get_task(self, labels=None, task=None, verbose=None):
-        """
+        """Classiﬁcation of phonological categories.
         Classes:
         - 0: Vowel only (0) vs Consonant (1)
         - 1: Non-nasal (0) vs Nasal (1)
         - 2: Non-bilabial (0) vs Bilabial (1)
-        - 3: Non-iy (0) vs iy (1)
-        - 4: Non-uw (0) vs uw (1)
+        - 3: Non-iy (0) vs iy (1)  [High-front vowel]
+        - 4: Non-uw (0) vs uw (1)  [High-back vowel]
         """
         verbose = verbose if verbose is not None else self.verbose
         labels = labels if labels is not None else self.all_epoch_labels
