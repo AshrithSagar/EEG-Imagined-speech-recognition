@@ -13,6 +13,7 @@ import pandas as pd
 import yaml
 from rich.console import Console
 from rich.table import Table
+from scipy.stats import pearsonr
 from sklearn.feature_selection import f_classif
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
@@ -126,6 +127,29 @@ class ClassifierMixin:
 
             for i, (f_stat, p_val) in enumerate(zip(self.f_statistic, self.p_values)):
                 table.add_row(features_info[i], f"{f_stat:.4f}", f"{p_val:.4f}")
+
+            self.console.print(table)
+
+    def get_pearsonr(self, X=None, y=None, features_info=None, verbose=None):
+        verbose = self.set_verbose(verbose)
+        features_info = (
+            features_info if features_info is not None else self.features_info
+        )
+        X = X if X is not None else self.X
+        y = y if y is not None else self.y
+
+        num_features = X.shape[1]
+        correlation_coeffs = [
+            pearsonr(X[:, feature], y)[0] for feature in range(num_features)
+        ]
+
+        if verbose:
+            table = Table(title="[bold underline]Pearson Correlation:[/]")
+            table.add_column("Feature", justify="right", style="magenta", no_wrap=True)
+            table.add_column("\u03C1-Value", style="cyan")
+
+            for i, coeff in enumerate(correlation_coeffs):
+                table.add_row(features_info[i], f"{coeff:.4f}")
 
             self.console.print(table)
 
@@ -689,6 +713,7 @@ class EvaluateClassifier(ClassifierMixin):
         self.y = np.concatenate((y_train, y_test))
 
         self.get_anova_f()
+        self.get_pearsonr()
         self.get_scoring()
         self.get_model_config()
         self.model = model if model else self.model_config.model()
