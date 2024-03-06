@@ -13,6 +13,7 @@ import pandas as pd
 import yaml
 from rich.console import Console
 from rich.table import Table
+from sklearn.feature_selection import f_classif
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     accuracy_score,
@@ -89,6 +90,34 @@ class ClassifierMixin:
         self.sampler = sampler
         X, y = self.sampler.fit_resample(X, y)
         return X, y
+
+    def get_anova_f(self, X=None, y=None, feature_functions=None, verbose=None):
+        """ANOVA F-Test"""
+        verbose = self.set_verbose(verbose)
+        X = X if X is not None else self.X
+        y = y if y is not None else self.y
+
+        self.f_statistic, self.p_values = f_classif(X, y)
+
+        if verbose:
+            table = Table(title="[bold underline]ANOVA F-Test Results:[/]")
+            table.add_column("Feature", justify="right", style="magenta", no_wrap=True)
+            table.add_column(
+                "F-Statistic", justify="center", style="cyan", no_wrap=True
+            )
+            table.add_column("p-Value", justify="center", style="cyan", no_wrap=True)
+
+            for i, (f_stat, p_val) in enumerate(
+                zip(self.f_statistic, self.p_values), start=1
+            ):
+                feat_str = (
+                    f"{feature_functions[i - 1].__name__} \u2502 {i:2}"
+                    if feature_functions
+                    else f"Feature {i}"
+                )
+                table.add_row(feat_str, f"{f_stat:.4f}", f"{p_val:.4f}")
+
+            self.console.print(table)
 
     def get_scoring(self, scoring=None):
         if scoring is not None:
@@ -602,6 +631,7 @@ class EvaluateClassifier(ClassifierMixin):
         test_size=0.2,
         random_state=42,
         trial_size=None,
+        feature_functions=None,
         verbose=False,
         console=None,
     ):
@@ -615,6 +645,7 @@ class EvaluateClassifier(ClassifierMixin):
             verbose=verbose,
             console=console,
         )
+        self.feature_functions = feature_functions
 
     def compile(self, model=None, sampler=None, cv=None, verbose=None):
         verbose = self.set_verbose(verbose)
@@ -638,6 +669,7 @@ class EvaluateClassifier(ClassifierMixin):
         self.X = np.concatenate((X_train, X_test))
         self.y = np.concatenate((y_train, y_test))
 
+        self.get_anova_f(feature_functions=self.feature_functions)
         self.get_scoring()
         self.get_model_config()
         self.model = model if model else self.model_config.model()
