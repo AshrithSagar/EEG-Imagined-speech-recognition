@@ -56,7 +56,7 @@ if __name__ == "__main__":
                 test_size=0.2,
                 random_state=42,
                 trial_size=args["trial_size"] or None,
-                feature_functions=karaone.get_features_functions(),
+                features_info=karaone.get_features_functions(),
                 verbose=True,
                 console=console,
             )

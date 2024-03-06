@@ -41,6 +41,7 @@ class ClassifierMixin:
         test_size=0.2,
         random_state=42,
         trial_size=None,
+        features_info=None,
         verbose=False,
         console=None,
     ):
@@ -53,6 +54,7 @@ class ClassifierMixin:
         self.test_size = test_size
         self.random_state = random_state
         self.trial_size = trial_size
+        self.features_info = features_info
         self.verbose = verbose
         self.console = console if console else Console()
         self.model = None
@@ -91,9 +93,12 @@ class ClassifierMixin:
         X, y = self.sampler.fit_resample(X, y)
         return X, y
 
-    def get_anova_f(self, X=None, y=None, feature_functions=None, verbose=None):
+    def get_anova_f(self, X=None, y=None, features_info=None, verbose=None):
         """ANOVA F-Test"""
         verbose = self.set_verbose(verbose)
+        features_info = (
+            features_info if features_info is not None else self.features_info
+        )
         X = X if X is not None else self.X
         y = y if y is not None else self.y
 
@@ -111,8 +116,8 @@ class ClassifierMixin:
                 zip(self.f_statistic, self.p_values), start=1
             ):
                 feat_str = (
-                    f"{feature_functions[i - 1].__name__} \u2502 {i:2}"
-                    if feature_functions
+                    f"{features_info[i - 1].__name__} \u2502 {i:2}"
+                    if features_info
                     else f"Feature {i}"
                 )
                 table.add_row(feat_str, f"{f_stat:.4f}", f"{p_val:.4f}")
@@ -321,6 +326,7 @@ class RegularClassifier(ClassifierMixin):
         test_size=0.2,
         random_state=42,
         trial_size=None,
+        features_info=None,
         verbose=False,
         console=None,
     ):
@@ -331,6 +337,7 @@ class RegularClassifier(ClassifierMixin):
             test_size=test_size,
             random_state=random_state,
             trial_size=trial_size,
+            features_info=features_info,
             verbose=verbose,
             console=console,
         )
@@ -376,6 +383,7 @@ class RegularClassifier(ClassifierMixin):
             stratify=self.y,
         )
 
+        self.get_anova_f()
         self.get_scoring()
         self.get_model_config()
         self.model = model if model else self.model_config.model()
@@ -445,6 +453,7 @@ class ClassifierGridSearch(ClassifierMixin):
         test_size=0.2,
         random_state=42,
         trial_size=None,
+        features_info=None,
         verbose=False,
         console=None,
     ):
@@ -455,6 +464,7 @@ class ClassifierGridSearch(ClassifierMixin):
             test_size=test_size,
             random_state=random_state,
             trial_size=trial_size,
+            features_info=features_info,
             verbose=verbose,
             console=console,
         )
@@ -513,6 +523,7 @@ class ClassifierGridSearch(ClassifierMixin):
             stratify=self.y,
         )
 
+        self.get_anova_f()
         self.get_scoring(scoring)
         self.get_model_config()
         self.model = model if model else self.model_config.model()
@@ -631,7 +642,7 @@ class EvaluateClassifier(ClassifierMixin):
         test_size=0.2,
         random_state=42,
         trial_size=None,
-        feature_functions=None,
+        features_info=None,
         verbose=False,
         console=None,
     ):
@@ -642,10 +653,10 @@ class EvaluateClassifier(ClassifierMixin):
             test_size=test_size,
             random_state=random_state,
             trial_size=trial_size,
+            features_info=features_info,
             verbose=verbose,
             console=console,
         )
-        self.feature_functions = feature_functions
 
     def compile(self, model=None, sampler=None, cv=None, verbose=None):
         verbose = self.set_verbose(verbose)
@@ -669,7 +680,7 @@ class EvaluateClassifier(ClassifierMixin):
         self.X = np.concatenate((X_train, X_test))
         self.y = np.concatenate((y_train, y_test))
 
-        self.get_anova_f(feature_functions=self.feature_functions)
+        self.get_anova_f()
         self.get_scoring()
         self.get_model_config()
         self.model = model if model else self.model_config.model()
