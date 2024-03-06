@@ -107,6 +107,14 @@ class ClassifierMixin:
         y = y if y is not None else self.y
 
         self.f_statistic, self.p_values = f_classif(X, y)
+        self.anova_f = pd.DataFrame(
+            {
+                "Feature": features_info,
+                "F-Statistic": self.f_statistic,
+                "p-Value": self.p_values,
+            },
+            index=range(1, len(features_info) + 1),
+        )
 
         if verbose:
             table = Table(title="[bold underline]ANOVA F-Test:[/]")
@@ -312,6 +320,9 @@ class ClassifierMixin:
         filename = os.path.join(self.save_dir, "model_params.yaml")
         with open(filename, "w") as file:
             yaml.dump(self.model.get_params(), file, default_flow_style=False)
+
+        filename = os.path.join(self.save_dir, "anova_f.csv")
+        self.anova_f.to_csv(filename, index=True)
 
 
 class RegularClassifier(ClassifierMixin):
