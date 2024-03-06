@@ -54,7 +54,11 @@ class ClassifierMixin:
         self.test_size = test_size
         self.random_state = random_state
         self.trial_size = trial_size
-        self.features_info = features_info
+        self.features_info = (
+            [f"Feature-{i}" for i in range(1, X.shape[1] + 1)]
+            if features_info is None
+            else features_info
+        )
         self.verbose = verbose
         self.console = console if console else Console()
         self.model = None
@@ -105,22 +109,15 @@ class ClassifierMixin:
         self.f_statistic, self.p_values = f_classif(X, y)
 
         if verbose:
-            table = Table(title="[bold underline]ANOVA F-Test Results:[/]")
+            table = Table(title="[bold underline]ANOVA F-Test:[/]")
             table.add_column("Feature", justify="right", style="magenta", no_wrap=True)
             table.add_column(
                 "F-Statistic", justify="center", style="cyan", no_wrap=True
             )
             table.add_column("p-Value", justify="center", style="cyan", no_wrap=True)
 
-            for i, (f_stat, p_val) in enumerate(
-                zip(self.f_statistic, self.p_values), start=1
-            ):
-                feat_str = (
-                    f"{features_info[i - 1].__name__} \u2502 {i:2}"
-                    if features_info
-                    else f"Feature {i}"
-                )
-                table.add_row(feat_str, f"{f_stat:.4f}", f"{p_val:.4f}")
+            for i, (f_stat, p_val) in enumerate(zip(self.f_statistic, self.p_values)):
+                table.add_row(features_info[i], f"{f_stat:.4f}", f"{p_val:.4f}")
 
             self.console.print(table)
 

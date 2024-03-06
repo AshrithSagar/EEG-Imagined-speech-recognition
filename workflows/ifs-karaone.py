@@ -33,6 +33,7 @@ if __name__ == "__main__":
 
         karaone.load_features(epoch_type="thinking", features_dir=args["features_dir"])
         features, labels = karaone.flatten()
+        features_info = [feat.__name__ for feat in karaone.get_features_functions()]
 
         features_ifs = InformationSet(features, verbose=True, console=console)
         eff_features = features_ifs.extract_effective_information()
@@ -56,7 +57,7 @@ if __name__ == "__main__":
                 test_size=0.2,
                 random_state=42,
                 trial_size=args["trial_size"] or None,
-                features_info=karaone.get_features_functions(),
+                features_info=features_info,
                 verbose=True,
                 console=console,
             )
