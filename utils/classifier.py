@@ -98,23 +98,20 @@ class ClassifierMixin:
         X, y = self.sampler.fit_resample(X, y)
         return X, y
 
-    def get_anova_f(self, X=None, y=None, features_info=None, verbose=None):
+    def get_anova_f(self, X=None, y=None, verbose=None):
         """ANOVA F-Test"""
         verbose = self.set_verbose(verbose)
-        features_info = (
-            features_info if features_info is not None else self.features_info
-        )
         X = X if X is not None else self.X
         y = y if y is not None else self.y
 
         self.f_statistic, self.p_values = f_classif(X, y)
         self.anova_f = pd.DataFrame(
             {
-                "Feature": features_info,
+                "Feature": self.features_info,
                 "F-Statistic": self.f_statistic,
                 "p-Value": self.p_values,
             },
-            index=range(1, len(features_info) + 1),
+            index=range(1, len(self.features_info) + 1),
         )
 
         if verbose:
@@ -126,20 +123,17 @@ class ClassifierMixin:
             table.add_column("p-Value", justify="center", style="cyan", no_wrap=True)
 
             for i, (f_stat, p_val) in enumerate(zip(self.f_statistic, self.p_values)):
-                table.add_row(features_info[i], f"{f_stat:.4f}", f"{p_val:.4f}")
+                table.add_row(self.features_info[i], f"{f_stat:.4f}", f"{p_val:.4f}")
 
             self.console.print(table)
 
-    def get_pearsonr(self, X=None, y=None, features_info=None, verbose=None):
+    def get_pearsonr(self, X=None, y=None, verbose=None):
         verbose = self.set_verbose(verbose)
-        features_info = (
-            features_info if features_info is not None else self.features_info
-        )
         X = X if X is not None else self.X
         y = y if y is not None else self.y
 
         num_features = X.shape[1]
-        correlation_coeffs = [
+        self.correlation_coeffs = [
             pearsonr(X[:, feature], y)[0] for feature in range(num_features)
         ]
 
@@ -148,8 +142,8 @@ class ClassifierMixin:
             table.add_column("Feature", justify="right", style="magenta", no_wrap=True)
             table.add_column("\u03C1-Value", style="cyan")
 
-            for i, coeff in enumerate(correlation_coeffs):
-                table.add_row(features_info[i], f"{coeff:.4f}")
+            for i, coeff in enumerate(self.correlation_coeffs):
+                table.add_row(self.features_info[i], f"{coeff:.4f}")
 
             self.console.print(table)
 
