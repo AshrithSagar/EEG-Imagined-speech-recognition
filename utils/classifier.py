@@ -147,6 +147,26 @@ class ClassifierMixin:
 
             self.console.print(table)
 
+    def select_features(self, X=None, y=None, select=None, verbose=None):
+        """Select specific features from the feature matrix.
+
+        Parameters:
+        - select (list, optional): List of indices of features to select.
+        Defaults to selecting all features.
+        """
+        verbose = self.set_verbose(verbose)
+        X = X if X is not None else self.X
+        y = y if y is not None else self.y
+
+        X_select = X[:, select] if select is not None else X
+
+        if verbose:
+            self.console.print(
+                f"[bold underline]Feature selection:[/]\n{X_select.shape[1]} / {X.shape[1]} selected"
+            )
+
+        return X_select
+
     def get_scoring(self, scoring=None):
         if scoring is not None:
             self.scoring = scoring
@@ -708,6 +728,7 @@ class EvaluateClassifier(ClassifierMixin):
 
         self.get_anova_f()
         self.get_pearsonr()
+        self.X = self.select_features()
         self.get_scoring()
         self.get_model_config()
         self.model = model if model else self.model_config.model()
