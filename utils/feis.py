@@ -67,7 +67,7 @@ class FEISDataLoader:
 
     def __init__(
         self,
-        data_dir,
+        raw_data_dir,
         subjects="all",
         sampling_freq=256,
         num_seconds_per_trial=5,
@@ -75,12 +75,12 @@ class FEISDataLoader:
         verbose=False,
     ):
         """Parameters:
-        - data_dir (str): Path to the data folder.
+        - raw_data_dir (str): Path to the data folder.
         - subjects (list): List of subjects to load. Use "all" for all subjects (default)
         - sampling_freq (int): Sampling frequency for EEG data (default: 256 Hz).
         - num_seconds_per_trial (int): Number of seconds per trial (default: 5 seconds).
         """
-        self.data_dir = data_dir
+        self.data_dir = raw_data_dir
         self.subjects = self.get_subjects(subjects)
         self.sampling_freq = sampling_freq
         self.num_seconds_per_trial = num_seconds_per_trial
