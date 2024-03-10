@@ -2,10 +2,10 @@
 dataset: null
 feis:
   classifier: null
-  data_dir: null
   features_dir: null
   model_base_dir: null
   models: null
+  raw_data_dir: null
   subjects: null
   tasks: null
   trial_size: null
