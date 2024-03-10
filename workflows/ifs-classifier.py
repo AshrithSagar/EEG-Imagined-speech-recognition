@@ -7,11 +7,23 @@ sys.path.append(os.getcwd())
 from utils.classifier import ClassifierGridSearch, EvaluateClassifier, RegularClassifier
 from utils.config import line_separator, load_config
 from utils.ifs import InformationSet
+from utils.feis import FEISDataLoader
 from utils.karaone import KaraOneDataLoader
 
 
 if __name__ == "__main__":
-    args = load_config(config_file="config.yaml", key="karaone")
+    args = load_config(config_file="config.yaml")
+    dataset_name = args["dataset"]
+
+    if dataset_name in ["feis", "karaone"]:
+        args = args[dataset_name]
+    else:
+        raise ValueError("Invalid dataset name")
+
+    dataset_map = {
+        "feis": FEISDataLoader,
+        "karaone": KaraOneDataLoader,
+    }
 
     classifier_map = {
         "RegularClassifier": RegularClassifier,
@@ -24,20 +36,21 @@ if __name__ == "__main__":
         model_dir = os.path.join(args["model_base_dir"], model)
         Console().rule(title=f"[bold blue3][Model: {model}][/]", style="blue3")
 
-        karaone = KaraOneDataLoader(
+        dataset = dataset_map[dataset_name]
+        ds = dataset(
             raw_data_dir=args["raw_data_dir"],
             subjects=args["subjects"],
             verbose=True,
             console=console,
         )
 
-        karaone.load_features(epoch_type="thinking", features_dir=args["features_dir"])
-        features, labels = karaone.flatten()
-        features_info = [feat.__name__ for feat in karaone.get_features_functions()]
+        ds.load_features(epoch_type="thinking", features_dir=args["features_dir"])
+        features, labels = ds.flatten()
+        features_info = [feat.__name__ for feat in ds.get_features_functions()]
 
         features_ifs = InformationSet(features, verbose=True, console=console)
         eff_features = features_ifs.extract_effective_information()
-        karaone.dataset_info(eff_features, labels)
+        ds.dataset_info(eff_features, labels)
 
         classifier_name = args.get("classifier")
         if classifier_name in classifier_map:
@@ -47,7 +60,7 @@ if __name__ == "__main__":
 
         for task in args["tasks"]:
             console.rule(title=f"[bold blue3][Task-{task}][/]", style="blue3")
-            task_labels = karaone.get_task(labels, task=task)
+            task_labels = ds.get_task(labels, task=task)
             save_dir = os.path.join(model_dir, classifier_name, f"task-{task}")
 
             clf = classifier(
