@@ -63,9 +63,10 @@ if __name__ == "__main__":
             task_labels = ds.get_task(labels, task=task)
             save_dir = os.path.join(model_dir, classifier_name, f"task-{task}")
 
+            mask = ~(task_labels == -1)
             clf = classifier(
-                eff_features,
-                task_labels,
+                eff_features[mask],
+                task_labels[mask],
                 save_dir=save_dir,
                 test_size=0.2,
                 random_state=42,
