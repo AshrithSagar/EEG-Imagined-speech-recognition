@@ -88,6 +88,7 @@ class FEISDataLoader:
         self.verbose = verbose
         self.progress = None
         if verbose:
+            self.console.rule(title="[bold blue3][FEIS Dataset][/]", style="blue3")
             self.subjects_info()
 
     def get_subjects(self, subjects):
