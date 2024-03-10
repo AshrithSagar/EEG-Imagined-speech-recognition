@@ -10,26 +10,22 @@ from utils.ifs import InformationSet
 from utils.feis import FEISDataLoader
 from utils.karaone import KaraOneDataLoader
 
+dataset_map = {"feis": FEISDataLoader, "karaone": KaraOneDataLoader}
+classifier_map = {
+    "RegularClassifier": RegularClassifier,
+    "EvaluateClassifier": EvaluateClassifier,
+    "ClassifierGridSearch": ClassifierGridSearch,
+}
+
 
 if __name__ == "__main__":
     args = load_config(config_file="config.yaml")
-    dataset_name = args["dataset"]
 
-    if dataset_name in ["feis", "karaone"]:
+    dataset_name = args.get("dataset")
+    if dataset_name in dataset_map:
         args = args[dataset_name]
     else:
         raise ValueError("Invalid dataset name")
-
-    dataset_map = {
-        "feis": FEISDataLoader,
-        "karaone": KaraOneDataLoader,
-    }
-
-    classifier_map = {
-        "RegularClassifier": RegularClassifier,
-        "EvaluateClassifier": EvaluateClassifier,
-        "ClassifierGridSearch": ClassifierGridSearch,
-    }
 
     for model in args["models"]:
         console = Console(record=True)
@@ -37,20 +33,20 @@ if __name__ == "__main__":
         Console().rule(title=f"[bold blue3][Model: {model}][/]", style="blue3")
 
         dataset = dataset_map[dataset_name]
-        ds = dataset(
+        dset = dataset(
             raw_data_dir=args["raw_data_dir"],
             subjects=args["subjects"],
             verbose=True,
             console=console,
         )
 
-        ds.load_features(epoch_type="thinking", features_dir=args["features_dir"])
-        features, labels = ds.flatten()
-        features_info = [feat.__name__ for feat in ds.get_features_functions()]
+        dset.load_features(epoch_type="thinking", features_dir=args["features_dir"])
+        features, labels = dset.flatten()
+        features_info = [feat.__name__ for feat in dset.get_features_functions()]
 
         features_ifs = InformationSet(features, verbose=True, console=console)
         eff_features = features_ifs.extract_effective_information()
-        ds.dataset_info(eff_features, labels)
+        dset.dataset_info(eff_features, labels)
 
         classifier_name = args.get("classifier")
         if classifier_name in classifier_map:
@@ -60,7 +56,7 @@ if __name__ == "__main__":
 
         for task in args["tasks"]:
             console.rule(title=f"[bold blue3][Task-{task}][/]", style="blue3")
-            task_labels = ds.get_task(labels, task=task)
+            task_labels = dset.get_task(labels, task=task)
             save_dir = os.path.join(model_dir, classifier_name, f"task-{task}")
 
             mask = ~(task_labels == -1)
