@@ -424,6 +424,8 @@ class FEISDataLoader:
             else features
         )
         flattened_features = np.vstack(flattened_features)
+        if not reshape:
+            flattened_features = np.transpose(flattened_features, (0, 1, 3, 2))
 
         flattened_labels = np.tile(labels, len(features))
 
