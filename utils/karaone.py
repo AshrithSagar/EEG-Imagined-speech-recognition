@@ -153,11 +153,10 @@ class KaraOneDataLoader:
 
         return self.raw
 
-    @staticmethod
-    def split_data(inds, data):
+    def split_data(self, inds, data):
         n_epochs = inds.shape[1]
         n_channels = data.shape[0]
-        n_times = 4900  # Making fixed dimension n_times
+        n_times = self.num_milliseconds_per_trial  # Making fixed dimension n_times
 
         # epoched_data = []
         epoched_data = np.zeros([n_epochs, n_channels, n_times])
