@@ -270,7 +270,7 @@ class KaraOneDataLoader:
         )
         self.epoch_inds = scipy.io.loadmat(epoch_inds_file)
 
-        data = self.raw.get_data(copy=True)
+        data = self.raw.get_data()
         data = data * 10**6  # Use microVolts instead of Volts
 
         self.all_mats = {
@@ -498,26 +498,27 @@ class KaraOneDataLoader:
     def window_data(
         self,
         data: np.ndarray,
-        length: int = None,
         length_factor: float = 0.1,
         overlap: float = 0.5,
     ):
         """Windows the data
         Parameters:
-        - data (np.ndarray): EEG data of shape (n_channels, n_samples).
+        - data (np.ndarray): EEG data of shape (n_channels, n_time_samples).
         - length (int): Length of the window.
         - length_factor (float): Factor to calculate the window length.
         - overlap (float): Overlap factor between consecutive windows.
         """
-        if length:
-            w_len = length
-        elif length_factor:
-            w_len = int(data.shape[1] * length_factor)
-        else:
-            raise ValueError("Invalid window length")
-
+        w_len = int(data.shape[1] * length_factor)
         stride = int(w_len * overlap)
-        split = (data.shape[1] - w_len) // stride + 1
+        if stride == 0:
+            raise ValueError(
+                "Non-zero stride required. Either overlap factor is too high or window length is too low."
+            )
+        split = data.shape[1] // w_len
+        n_splits = (data.shape[1] - w_len) // stride + 1
+        print(
+            f"Split: {split}, n_splits: {n_splits}, Stride: {stride}, Window length: {w_len}"
+        )
 
         no_offset_windows = np.split(data, split, axis=1)
         offset_windows = np.split(data[:, stride:-stride], split - 1, axis=1)
@@ -669,13 +670,14 @@ class KaraOneDataLoader:
         """Calculates the first-order delta and second-order delta (double delta) features
         and concatenate them horizontally to the input feature array.
 
-        The shape of the returned array is (3 * n_windows - 2, n_features);
+        The shape of the returned array is (n_windows - 2, n_features), with n_features
+        being three times the n_features in the input feats_array.
         """
 
         deltas = np.diff(feats_array, axis=0)
         double_deltas = np.diff(deltas, axis=0)
-        # all_feats = np.hstack((feats_array[2:], deltas[1:], double_deltas))
-        all_feats = np.concatenate((feats_array, deltas, double_deltas), axis=0)
+        all_feats = np.hstack((feats_array[2:], deltas[1:], double_deltas))
+        # all_feats = np.concatenate((feats_array, deltas, double_deltas), axis=0)
         return all_feats
 
     def save_features(self, subject: str, features: np.ndarray):
