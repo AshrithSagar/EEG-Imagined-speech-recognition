@@ -38,6 +38,8 @@ if __name__ == "__main__":
     karaone.extract_features(
         features_dir=args["features_dir"],
         epoch_type="thinking",
+        length_factor=0.1,
+        overlap=0.5,
     )
 
     features = karaone.load_features(epoch_type="thinking", verbose=True)

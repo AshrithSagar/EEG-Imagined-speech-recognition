@@ -445,7 +445,12 @@ class KaraOneDataLoader:
             self.raw.save(raw_filename, overwrite=overwrite, verbose=verbose)
 
     def extract_features(
-        self, save_dir, epoch_type=None, split=10, skip_if_exists=True
+        self,
+        save_dir,
+        epoch_type=None,
+        length_factor=0.1,
+        overlap=0.5,
+        skip_if_exists=True,
     ):
         with self.create_progress_bar() as self.progress:
             task_subjects = self.progress.add_task(
@@ -470,16 +475,16 @@ class KaraOneDataLoader:
                 subject_epochs = self.all_epochs[index].get_data(copy=True)
                 self.progress.update(task_features, total=len(subject_epochs))
                 features = self.compute_features(
-                    subject_epochs, split=split, task=task_features
+                    subject_epochs, length_factor, overlap, task=task_features
                 )
                 self.progress.reset(task_features)
                 self.save_features(subject, features)
                 self.progress.update(task_subjects, advance=1)
 
-    def compute_features(self, epochs, split=10, task=None):
+    def compute_features(self, epochs, length_factor=0.1, overlap=0.5, task=None):
         features = []
         for epoch in epochs:
-            windowed_epoch = self.window_data(epoch, split=split)
+            windowed_epoch = self.window_data(epoch, length_factor, overlap)
             feats = self.make_simple_feats(windowed_epoch, flatten=False)
             all_feats = self.add_deltas(feats)
             features.append(all_feats)

@@ -15,17 +15,14 @@ if __name__ == "__main__":
     args = load_config(key="karaone")
 
     karaone = KaraOneDataLoader(
-        raw_data_dir=args["raw_data_dir"],
-        subjects=args["subjects"],
-        sampling_freq=1000,
-        num_milliseconds_per_trial=4900,
-        verbose=True,
+        raw_data_dir=args["raw_data_dir"], subjects=args["subjects"], verbose=True
     )
 
     karaone.process_raw_data(
         save_dir=args["filtered_data_dir"],
         pick_channels=[-1],
-        num_neighbors=4,
+        l_freq=0.5,
+        h_freq=50.0,
         overwrite=False,
         verbose=True,
     )
@@ -35,7 +32,10 @@ if __name__ == "__main__":
     labels = karaone.all_epoch_labels
 
     karaone.extract_features(
-        save_dir=args["features_dir"], epoch_type="thinking", split=10
+        save_dir=args["features_dir"],
+        epoch_type="thinking",
+        length_factor=0.1,
+        overlap=0.5,
     )
 
     features = karaone.load_features(epoch_type="thinking", verbose=True)
