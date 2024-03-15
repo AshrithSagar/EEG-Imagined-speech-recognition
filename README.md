@@ -1,6 +1,6 @@
 # EEG Imagined Speech Recognition
 
-![GitHub](https://img.shields.io/github/license/AshrithSagar/EEG-Imagined-speech-recognition) ![GitHub repo size](https://img.shields.io/github/repo-size/AshrithSagar/EEG-Imagined-speech-recognition)
+![GitHub](https://img.shields.io/github/license/AshrithSagar/EEG-Imagined-speech-recognition) ![GitHub repo size](https://img.shields.io/github/repo-size/AshrithSagar/EEG-Imagined-speech-recognition) [![CodeFactor](https://www.codefactor.io/repository/github/AshrithSagar/EEG-Imagined-speech-recognition/badge)](https://www.codefactor.io/repository/github/AshrithSagar/EEG-Imagined-speech-recognition)
 
 Imagined speech recognition through EEG signals
 
@@ -9,7 +9,7 @@ Imagined speech recognition through EEG signals
 Follow these steps to get started.
 
 1. **Clone the repository:**
-   
+
    First, clone the GitHub repository to your local machine:
 
    ```bash
