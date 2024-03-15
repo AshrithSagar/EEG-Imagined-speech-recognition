@@ -628,7 +628,7 @@ class KaraOneDataLoader:
         def dfa(x):
             return antropy.detrended_fluctuation(x)
 
-        self.feature_functions = [
+        feature_functions = [
             mean,
             absmean,
             maximum,
@@ -657,6 +657,13 @@ class KaraOneDataLoader:
             rootmeansquare,
             dfa,
         ]
+
+        self.feature_functions = [
+            f"{prefix}{func.__name__}"
+            for func in feature_functions
+            for prefix in ["", "d_", "dd_"]
+        ]
+
         return self.feature_functions
 
     def add_deltas(self, feats_array: np.ndarray):

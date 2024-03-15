@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
         dset.load_features(epoch_type="thinking", features_dir=args["features_dir"])
         features, labels = dset.flatten()
-        features_info = [feat.__name__ for feat in dset.get_features_functions()]
+        features_info = dset.get_features_functions()
 
         features_ifs = InformationSet(features, verbose=True, console=console)
         eff_features = features_ifs.extract_effective_information()
