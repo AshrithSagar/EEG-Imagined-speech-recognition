@@ -296,7 +296,7 @@ class KaraOneDataLoader:
         if verbose:
             line_separator(self.console)
             self.console.print(
-                f"Epochs shape: [black]{self.epochs.get_data().shape}[/]"
+                f"Epochs shape: [black]{self.epochs.get_data(copy=True).shape}[/]"
             )
             line_separator(self.console)
 
