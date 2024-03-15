@@ -148,7 +148,9 @@ class KaraOneDataLoader:
 
         self.raw.pick_channels(self.channels, verbose=verbose)
         if verbose:
-            self.console.print(f"Raw data shape: [black]{self.raw.get_data().shape}[/]")
+            self.console.print(
+                f"Raw data shape: [black]{self.raw.get_data(copy=True).shape}[/]"
+            )
             line_separator(self.console)
 
         return self.raw
@@ -251,7 +253,7 @@ class KaraOneDataLoader:
     def apply_bandpass_filter(self, l_freq=0.5, h_freq=50.0, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         raw_data = mne.filter.filter_data(
-            self.raw.get_data(),
+            self.raw.get_data(copy=True),
             sfreq=self.raw.info["sfreq"],
             l_freq=l_freq,
             h_freq=h_freq,
@@ -268,7 +270,7 @@ class KaraOneDataLoader:
         )
         self.epoch_inds = scipy.io.loadmat(epoch_inds_file)
 
-        data = self.raw.get_data()
+        data = self.raw.get_data(copy=True)
         data = data * 10**6  # Use microVolts instead of Volts
 
         self.all_mats = {
@@ -787,7 +789,7 @@ class KaraOneDataLoader:
             Filtered EEG data matrix.
         """
 
-        filtered_data = self.raw.get_data().copy()
+        filtered_data = self.raw.get_data(copy=True)
         num_channels, num_samples = filtered_data.shape
         if task:
             self.progress.reset(task)
