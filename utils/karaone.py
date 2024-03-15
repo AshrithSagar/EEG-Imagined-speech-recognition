@@ -514,18 +514,11 @@ class KaraOneDataLoader:
             raise ValueError(
                 "Non-zero stride required. Either overlap factor is too high or window length is too low."
             )
-        split = data.shape[1] // w_len
-        n_splits = (data.shape[1] - w_len) // stride + 1
-        print(
-            f"Split: {split}, n_splits: {n_splits}, Stride: {stride}, Window length: {w_len}"
-        )
 
-        no_offset_windows = np.split(data, split, axis=1)
-        offset_windows = np.split(data[:, stride:-stride], split - 1, axis=1)
-
-        windows = [0] * (2 * split - 1)
-        windows[::2] = no_offset_windows
-        windows[1::2] = offset_windows
+        windows = []
+        for i in range(0, data.shape[1] - w_len + 1, stride):
+            window = data[:, i : i + w_len]
+            windows.append(window)
 
         return np.array(windows, dtype=np.float32)
 
@@ -676,8 +669,9 @@ class KaraOneDataLoader:
 
         deltas = np.diff(feats_array, axis=0)
         double_deltas = np.diff(deltas, axis=0)
-        all_feats = np.hstack((feats_array[2:], deltas[1:], double_deltas))
-        # all_feats = np.concatenate((feats_array, deltas, double_deltas), axis=0)
+        all_feats = np.concatenate(
+            (feats_array[:-2], deltas[:-1], double_deltas), axis=-1
+        )
         return all_feats
 
     def save_features(self, subject: str, features: np.ndarray):
