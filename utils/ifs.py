@@ -4,6 +4,7 @@ Information Set Theory Utility scripts
 """
 
 import os
+
 import numpy as np
 from rich.console import Console
 
@@ -58,8 +59,8 @@ class InformationSet:
             return np.exp(-(z**2) / 2.0)
 
         if isinstance(function, str):
-            if function == "gaussian":
-                function = gaussian
+            if function in ["gaussian"]:
+                function = locals()[function]
             else:
                 raise NotImplementedError(f"Function '{function}' not implemented")
 
