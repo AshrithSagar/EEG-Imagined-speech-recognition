@@ -660,8 +660,8 @@ class KaraOneDataLoader:
 
         self.feature_functions = [
             f"{prefix}{func.__name__}"
-            for func in feature_functions
             for prefix in ["", "d_", "dd_"]
+            for func in feature_functions
         ]
 
         return self.feature_functions
