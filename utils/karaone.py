@@ -489,11 +489,29 @@ class KaraOneDataLoader:
 
         return np.asarray(features, dtype=np.float32)
 
-    def window_data(self, data: np.ndarray, split: int = 10):
-        """Windows the data with a stride length of 1."""
+    def window_data(
+        self,
+        data: np.ndarray,
+        length: int = None,
+        length_factor: float = 0.1,
+        overlap: float = 0.5,
+    ):
+        """Windows the data
+        Parameters:
+        - data (np.ndarray): EEG data of shape (n_channels, n_samples).
+        - length (int): Length of the window.
+        - length_factor (float): Factor to calculate the window length.
+        - overlap (float): Overlap factor between consecutive windows.
+        """
+        if length:
+            w_len = length
+        elif length_factor:
+            w_len = int(data.shape[1] * length_factor)
+        else:
+            raise ValueError("Invalid window length")
 
-        w_len = data.shape[1] // split
-        stride = w_len // 2
+        stride = int(w_len * overlap)
+        split = (data.shape[1] - w_len) // stride + 1
 
         no_offset_windows = np.split(data, split, axis=1)
         offset_windows = np.split(data[:, stride:-stride], split - 1, axis=1)
