@@ -26,20 +26,30 @@ class InformationSet:
         """
         verbose = verbose if verbose is not None else self.verbose
 
-        self.features = []
-        for information_source_matrix in self.Set:
-            first_fold_information = self.compute_information_values(
-                information_source_matrix, function="gaussian", axis=0
-            )
-            second_fold_information = self.compute_information_values(
-                information_source_matrix, function="gaussian", axis=1
-            )
-            two_fold_information = first_fold_information + second_fold_information
-            effective_information = np.mean(two_fold_information, axis=(0, 1))
-            self.features.append(effective_information)
+        effective_information = [
+            self.compute_effective_information(information_source_matrix)
+            for information_source_matrix in self.Set
+        ]
 
-        self.features = np.asarray(self.features)
-        return self.features
+        self.information = np.asarray(effective_information)
+        return self.information
+
+    def compute_effective_information(self, information_source_matrix, verbose=None):
+        """
+        Compute the effective information on the information set
+        (n.windows, n.channels, n.features)
+        """
+        verbose = verbose if verbose is not None else self.verbose
+
+        temporal_fold_information = self.compute_information_values(
+            information_source_matrix, function="gaussian", axis=0
+        )
+        spatial_fold_information = self.compute_information_values(
+            information_source_matrix, function="gaussian", axis=1
+        )
+        fusion_information = temporal_fold_information + spatial_fold_information
+        effective_information = np.mean(fusion_information, axis=(0, 1))
+        return effective_information
 
     def compute_information_values(self, information_source_matrix, function, axis):
         membership_function = self.get_function(function, axis)
