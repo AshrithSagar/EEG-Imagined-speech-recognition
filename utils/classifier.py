@@ -159,13 +159,14 @@ class ClassifierMixin:
         y = y if y is not None else self.y
 
         X_select = X[:, select] if select is not None else X
+        y_select = y[:, select] if select is not None else y
 
         if verbose:
             self.console.print(
                 f"[bold underline]Feature selection:[/]\n{X_select.shape[1]} / {X.shape[1]} selected"
             )
 
-        return X_select
+        return X_select, y_select
 
     def get_scoring(self, scoring=None):
         if scoring is not None:
@@ -728,7 +729,7 @@ class EvaluateClassifier(ClassifierMixin):
 
         self.get_anova_f()
         self.get_pearsonr()
-        self.X = self.select_features()
+        self.X, self.y = self.select_features()
         self.get_scoring()
         self.get_model_config()
         self.model = model if model else self.model_config.model()
