@@ -1,37 +1,39 @@
 """
 classification-tf-1.py
 """
+
 import os
 import sys
 
-sys.path.append(
-    "/Users/ashrith/Documents/Hons/Repos/_/EEG-Imagined speech recognition/"
-)
-print(sys.path)
-import keras
-import matplotlib.pyplot as plt
+sys.path.append(os.getcwd())
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import layers
-from tensorflow.keras.utils import to_categorical
 
-from utils.tfr_dataset import TFRDataset
+from utils.config import load_config
+from utils.feis import FEISDataLoader
+from utils.karaone import KaraOneDataLoader
+from utils.tfr import TFRDataset
 
-keras.backend.clear_session()
-
+tf.keras.backend.clear_session()
 print("Num GPUs Available: ", len(tf.config.list_physical_devices("GPU")))
 tf.config.experimental.set_memory_growth(
     tf.config.list_physical_devices("GPU")[0], True
 )
 
+dataset_map = {"feis": FEISDataLoader, "karaone": KaraOneDataLoader}
+
 
 if __name__ == "__main__":
-    SEED = 42
-    channels = ["FC6", "FT8", "C5", "CP3", "P3", "T7", "CP5", "C3", "CP1", "C4"]
+    args = load_config(config_file="config.yaml")
 
-    tfr_dataset_dir = "/Users/ashrith/Documents/Hons/Datasets/KaraOne/TFR_dataset-1"
+    dataset_name = args.get("dataset")
+    if dataset_name in dataset_map:
+        args = args[dataset_name]
+    else:
+        raise ValueError("Invalid dataset name")
+
+    channels = ["FC6", "FT8", "C5", "CP3", "P3", "T7", "CP5", "C3", "CP1", "C4"]
     channel = "FC6"
 
     num_classes = 11
@@ -42,7 +44,7 @@ if __name__ == "__main__":
 
     testing = True
 
-    tfr_ds = TFRDataset(dataset_dir=tfr_dataset_dir)
+    tfr_ds = TFRDataset(dataset_dir=args["tfr_dataset_dir"])
     tfr_ds.load(channel=channel, verbose=False)
     tfr_ds.dataset_info()
 
@@ -51,7 +53,7 @@ if __name__ == "__main__":
         tfr_ds.class_labels,
         test_size=0.2,
         shuffle=True,
-        random_state=SEED,
+        random_state=42,
         stratify=tfr_ds.class_labels,
     )
 
@@ -60,8 +62,8 @@ if __name__ == "__main__":
     x_test = np.expand_dims(x_test, axis=-1)
 
     # One hot encoding
-    y_train = to_categorical(y_train, num_classes)
-    y_test = to_categorical(y_test, num_classes)
+    y_train = tf.keras.utils.to_categorical(y_train, num_classes)
+    y_test = tf.keras.utils.to_categorical(y_test, num_classes)
 
     if testing:
         subset_size = 5
@@ -70,18 +72,18 @@ if __name__ == "__main__":
 
     tfr_ds.split_info(x_train, x_test, y_train, y_test)
 
-    model = keras.Sequential(
+    model = tf.keras.Sequential(
         [
-            keras.Input(shape=input_shape),
-            layers.Conv2D(96, kernel_size=(3, 3), activation="relu"),
-            layers.MaxPooling2D(pool_size=(2, 2)),
-            layers.Conv2D(128, kernel_size=(7, 7), activation="relu"),
-            layers.Dropout(0.30),
-            layers.Conv2D(216, kernel_size=(7, 7), activation="relu"),
-            layers.MaxPooling2D(pool_size=(2, 2)),
-            layers.Conv2D(256, kernel_size=(9, 9), activation="relu"),
-            layers.Flatten(),
-            layers.Dense(num_classes, activation="softmax"),
+            tf.keras.Input(shape=input_shape),
+            tf.keras.layers.Conv2D(96, kernel_size=(3, 3), activation="relu"),
+            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            tf.keras.layers.Conv2D(128, kernel_size=(7, 7), activation="relu"),
+            tf.keras.layers.Dropout(0.30),
+            tf.keras.layers.Conv2D(216, kernel_size=(7, 7), activation="relu"),
+            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            tf.keras.layers.Conv2D(256, kernel_size=(9, 9), activation="relu"),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(num_classes, activation="softmax"),
         ]
     )
 
