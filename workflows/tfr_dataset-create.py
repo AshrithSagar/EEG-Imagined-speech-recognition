@@ -1,34 +1,25 @@
 """
 tfr_dataset-create.py
 """
+
 import numpy as np
 from rich.console import Console
 
-from utils.config import line_separator
+from utils.config import line_separator, load_config
 from utils.karaone import KaraOneDataLoader, subjects
-from utils.tfr_dataset import TFRDataset
+from utils.tfr import TFRDataset
 
 
 if __name__ == "__main__":
     console = Console()
+    args = load_config(config_file="config.yaml", key="karaone")
 
     karaone = KaraOneDataLoader(
-        data_folder="/Users/ashrith/Documents/Hons/Datasets/KaraOne/EEG_data/",
+        data_folder=args["tfr_dataset_dir"],
         console=console,
     )
 
-    pick_channels = [
-        "FC6",
-        "FT8",
-        "C5",
-        "CP3",
-        "P3",
-        "T7",
-        "CP5",
-        "C3",
-        "CP1",
-        "C4",
-    ]
+    pick_channels = ["FC6", "FT8", "C5", "CP3", "P3", "T7", "CP5", "C3", "CP1", "C4"]
 
     for subject in subjects[:]:
         karaone.load_data(subject=subject, pick_channels=pick_channels)
@@ -38,7 +29,7 @@ if __name__ == "__main__":
 
         tfr_ds = TFRDataset(
             data=karaone,
-            dataset_dir="/Users/ashrith/Documents/Hons/Datasets/KaraOne/TFR_dataset",
+            dataset_dir=args["tfr_dataset_dir"],
             console=console,
         )
         tfr_data, epoch_labels = tfr_ds.create(
