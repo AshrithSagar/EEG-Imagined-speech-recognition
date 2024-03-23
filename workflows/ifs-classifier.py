@@ -42,7 +42,6 @@ if __name__ == "__main__":
 
         dset.load_features(epoch_type="thinking", features_dir=args["features_dir"])
         features, labels = dset.flatten()
-        features_info = dset.get_features_functions()
 
         features_ifs = InformationSet(features, verbose=True, console=console)
         eff_features = features_ifs.extract_effective_information()
@@ -67,7 +66,7 @@ if __name__ == "__main__":
                 test_size=0.2,
                 random_state=42,
                 trial_size=args["trial_size"] or None,
-                features_info=features_info,
+                features_info=dset.features_names,
                 verbose=True,
                 console=console,
             )

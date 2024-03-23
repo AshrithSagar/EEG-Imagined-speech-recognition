@@ -42,7 +42,7 @@ class ClassifierMixin:
         test_size=0.2,
         random_state=42,
         trial_size=None,
-        features_info=None,
+        features_names=None,
         verbose=False,
         console=None,
     ):
@@ -55,10 +55,10 @@ class ClassifierMixin:
         self.test_size = test_size
         self.random_state = random_state
         self.trial_size = trial_size
-        self.features_info = (
+        self.features_names = (
             [f"Feature-{i}" for i in range(1, X.shape[1] + 1)]
-            if features_info is None
-            else features_info
+            if features_names is None
+            else features_names
         )
         self.verbose = verbose
         self.console = console if console else Console()
@@ -107,11 +107,11 @@ class ClassifierMixin:
         self.f_statistic, self.p_values = f_classif(X, y)
         self.anova_f = pd.DataFrame(
             {
-                "Feature": self.features_info,
+                "Feature": self.features_names,
                 "F-Statistic": self.f_statistic,
                 "p-Value": self.p_values,
             },
-            index=range(1, len(self.features_info) + 1),
+            index=range(1, len(self.features_names) + 1),
         )
 
         if verbose:
@@ -123,7 +123,7 @@ class ClassifierMixin:
             table.add_column("p-Value", justify="center", style="cyan", no_wrap=True)
 
             for i, (f_stat, p_val) in enumerate(zip(self.f_statistic, self.p_values)):
-                table.add_row(self.features_info[i], f"{f_stat:.4f}", f"{p_val:.4f}")
+                table.add_row(self.features_names[i], f"{f_stat:.4f}", f"{p_val:.4f}")
 
             self.console.print(table)
 
@@ -143,7 +143,7 @@ class ClassifierMixin:
             table.add_column("\u03C1-Value", style="cyan")
 
             for i, coeff in enumerate(self.correlation_coeffs):
-                table.add_row(self.features_info[i], f"{coeff:.4f}")
+                table.add_row(self.features_names[i], f"{coeff:.4f}")
 
             self.console.print(table)
 
@@ -373,7 +373,7 @@ class RegularClassifier(ClassifierMixin):
         test_size=0.2,
         random_state=42,
         trial_size=None,
-        features_info=None,
+        features_names=None,
         verbose=False,
         console=None,
     ):
@@ -384,7 +384,7 @@ class RegularClassifier(ClassifierMixin):
             test_size=test_size,
             random_state=random_state,
             trial_size=trial_size,
-            features_info=features_info,
+            features_names=features_names,
             verbose=verbose,
             console=console,
         )
@@ -500,7 +500,7 @@ class ClassifierGridSearch(ClassifierMixin):
         test_size=0.2,
         random_state=42,
         trial_size=None,
-        features_info=None,
+        features_names=None,
         verbose=False,
         console=None,
     ):
@@ -511,7 +511,7 @@ class ClassifierGridSearch(ClassifierMixin):
             test_size=test_size,
             random_state=random_state,
             trial_size=trial_size,
-            features_info=features_info,
+            features_names=features_names,
             verbose=verbose,
             console=console,
         )
@@ -689,7 +689,7 @@ class EvaluateClassifier(ClassifierMixin):
         test_size=0.2,
         random_state=42,
         trial_size=None,
-        features_info=None,
+        features_names=None,
         verbose=False,
         console=None,
     ):
@@ -700,7 +700,7 @@ class EvaluateClassifier(ClassifierMixin):
             test_size=test_size,
             random_state=random_state,
             trial_size=trial_size,
-            features_info=features_info,
+            features_names=features_names,
             verbose=verbose,
             console=console,
         )

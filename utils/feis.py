@@ -5,10 +5,9 @@ FEIS Dataset Utility scripts
 
 import os
 import subprocess
+
 import numpy as np
 import pandas as pd
-from scipy import integrate, stats
-import antropy
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -20,6 +19,7 @@ from rich.progress import (
 from rich.table import Table
 
 from utils.config import line_separator
+from utils.features import get_feature_functions
 
 
 # Subjects: 01-21 and "chinese-1", "chinese-2"
@@ -168,7 +168,14 @@ class FEISDataLoader:
 
             self.epoch_type = epoch_type
             self.features_dir = save_dir
-            self.get_features_functions()
+            self.feature_functions, features_names = get_feature_functions(
+                self.sampling_freq
+            )
+            self.features_names = [
+                f"{prefix}{feat_name}"
+                for prefix in ["", "d_", "dd_"]
+                for feat_name in features_names
+            ]
 
             for subject in self.subjects:
                 if skip_if_exists:
@@ -242,124 +249,6 @@ class FEISDataLoader:
             outvec = outvec.reshape(-1)
 
         return outvec
-
-    def get_features_functions(self):
-        def mean(x):
-            return np.mean(x)
-
-        def absmean(x):
-            return np.mean(np.abs(x))
-
-        def maximum(x):
-            return np.max(x)
-
-        def absmax(x):
-            return np.max(np.abs(x))
-
-        def minimum(x):
-            return np.min(x)
-
-        def absmin(x):
-            return np.min(np.abs(x))
-
-        def minplusmax(x):
-            return np.max(x) + np.min(x)
-
-        def maxminusmin(x):
-            return np.max(x) - np.min(x)
-
-        def curvelength(x):
-            cl = 0
-            for i in range(x.shape[0] - 1):
-                cl += abs(x[i] - x[i + 1])
-            return cl
-
-        def energy(x):
-            return np.sum(np.multiply(x, x))
-
-        def nonlinear_energy(x):
-            # NLE(x[n]) = x**2[n] - x[n+1]*x[n-1]
-            x_squared = x[1:-1] ** 2
-            subtrahend = x[2:] * x[:-2]
-            return np.sum(x_squared - subtrahend)
-
-        def spec_entropy(x):
-            return antropy.spectral_entropy(
-                x, self.sampling_freq, method="welch", normalize=True, nperseg=len(x)
-            )
-
-        def integral(x):
-            return integrate.simps(x)
-
-        def stddeviation(x):
-            return np.std(x)
-
-        def variance(x):
-            return np.var(x)
-
-        def skew(x):
-            return stats.skew(x)
-
-        def kurtosis(x):
-            return stats.kurtosis(x)
-
-        def sample_entropy(x):
-            return antropy.sample_entropy(x, order=2, metric="chebyshev")
-
-        def perm_entropy(x):
-            return antropy.perm_entropy(x, order=3, normalize=True)
-
-        def svd_entropy(x):
-            return antropy.svd_entropy(x, order=3, delay=1, normalize=True)
-
-        def app_entropy(x):
-            return antropy.app_entropy(x, order=2, metric="chebyshev")
-
-        def petrosian(x):
-            return antropy.petrosian_fd(x)
-
-        def katz(x):
-            return antropy.katz_fd(x)
-
-        def higuchi(x):
-            return antropy.higuchi_fd(x, kmax=10)
-
-        def rootmeansquare(x):
-            return np.sqrt(np.mean(x**2))
-
-        def dfa(x):
-            return antropy.detrended_fluctuation(x)
-
-        self.feature_functions = [
-            mean,
-            absmean,
-            maximum,
-            absmax,
-            minimum,
-            absmin,
-            minplusmax,
-            maxminusmin,
-            curvelength,
-            energy,
-            nonlinear_energy,
-            integral,
-            stddeviation,
-            variance,
-            skew,
-            kurtosis,
-            np.sum,
-            spec_entropy,
-            sample_entropy,
-            perm_entropy,
-            svd_entropy,
-            app_entropy,
-            petrosian,
-            katz,
-            higuchi,
-            rootmeansquare,
-            dfa,
-        ]
-        return self.feature_functions
 
     def add_deltas(self, feats_array: np.ndarray):
         deltas = np.diff(feats_array, axis=0)
