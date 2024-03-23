@@ -66,7 +66,7 @@ if __name__ == "__main__":
                 test_size=0.2,
                 random_state=42,
                 trial_size=args["trial_size"] or None,
-                features_info=dset.features_names,
+                features_names=dset.features_names,
                 verbose=True,
                 console=console,
             )

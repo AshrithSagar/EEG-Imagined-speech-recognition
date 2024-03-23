@@ -168,14 +168,7 @@ class FEISDataLoader:
 
             self.epoch_type = epoch_type
             self.features_dir = save_dir
-            self.feature_functions, features_names = get_feature_functions(
-                self.sampling_freq
-            )
-            self.features_names = [
-                f"{prefix}{feat_name}"
-                for prefix in ["", "d_", "dd_"]
-                for feat_name in features_names
-            ]
+            self.feature_functions = get_features_functions()
 
             for subject in self.subjects:
                 if skip_if_exists:
@@ -264,6 +257,16 @@ class FEISDataLoader:
         filename = os.path.join(subject_features_dir, f"{self.epoch_type}.npy")
         np.save(filename, features)
 
+    def get_features_functions(self):
+        self.feature_functions, features_names = get_feature_functions(
+            self.sampling_freq
+        )
+        self.features_names = [
+            f"{prefix}{feat_name}"
+            for prefix in ["", "d_", "dd_"]
+            for feat_name in features_names
+        ]
+
     def load_features(self, features_dir=None, epoch_type: str = None, verbose=None):
         """Parameters:
         - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
@@ -275,6 +278,7 @@ class FEISDataLoader:
         self.features_dir = features_dir or self.features_dir
         epoch_type = epoch_type or self.epoch_type
         verbose = verbose if verbose is not None else self.verbose
+        self.get_features_functions()
 
         for subject in self.subjects:
             filename = os.path.join(self.features_dir, subject, f"{epoch_type}.npy")

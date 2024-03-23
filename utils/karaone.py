@@ -463,14 +463,7 @@ class KaraOneDataLoader:
 
             epoch_type = epoch_type or self.epoch_type
             self.features_dir = save_dir
-            self.feature_functions, features_names = get_feature_functions(
-                self.sampling_freq
-            )
-            self.features_names = [
-                f"{prefix}{feat_name}"
-                for prefix in ["", "d_", "dd_"]
-                for feat_name in features_names
-            ]
+            self.get_features_functions()
 
             for index, subject in enumerate(self.subjects):
                 if skip_if_exists:
@@ -569,6 +562,16 @@ class KaraOneDataLoader:
         filename = os.path.join(subject_features_dir, f"{self.epoch_type}.npy")
         np.save(filename, features)
 
+    def get_features_functions(self):
+        self.feature_functions, features_names = get_feature_functions(
+            self.sampling_freq
+        )
+        self.features_names = [
+            f"{prefix}{feat_name}"
+            for prefix in ["", "d_", "dd_"]
+            for feat_name in features_names
+        ]
+
     def load_features(self, features_dir=None, epoch_type: str = None, verbose=None):
         """Parameters:
         - features_dir (str): Path to the features directory.
@@ -581,6 +584,7 @@ class KaraOneDataLoader:
         features_dir = features_dir or self.features_dir
         epoch_type = epoch_type or self.epoch_type
         verbose = verbose if verbose is not None else self.verbose
+        self.get_features_functions()
 
         for subject in self.subjects:
             filename = os.path.join(features_dir, subject, f"{epoch_type}.npy")
