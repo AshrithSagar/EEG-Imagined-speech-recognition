@@ -19,7 +19,7 @@ from rich.progress import (
 from rich.table import Table
 
 from utils.config import line_separator
-from utils.features import get_feature_functions
+from utils.features import FeatureFunctions
 
 
 # Subjects: 01-21 and "chinese-1", "chinese-2"
@@ -258,9 +258,8 @@ class FEISDataLoader:
         np.save(filename, features)
 
     def get_features_functions(self):
-        self.feature_functions, features_names = get_feature_functions(
-            self.sampling_freq
-        )
+        ff = FeatureFunctions(self.sampling_freq)
+        self.feature_functions, features_names = ff.get()
         self.features_names = [
             f"{prefix}{feat_name}"
             for prefix in ["", "d_", "dd_"]

@@ -22,7 +22,7 @@ from rich.table import Table
 from scipy.spatial.distance import cdist
 
 from utils.config import line_separator
-from utils.features import get_feature_functions
+from utils.features import FeatureFunctions
 
 
 all_subjects = [
@@ -563,9 +563,8 @@ class KaraOneDataLoader:
         np.save(filename, features)
 
     def get_features_functions(self):
-        self.feature_functions, features_names = get_feature_functions(
-            self.sampling_freq
-        )
+        ff = FeatureFunctions(self.sampling_freq)
+        self.feature_functions, features_names = ff.get()
         self.features_names = [
             f"{prefix}{feat_name}"
             for prefix in ["", "d_", "dd_"]

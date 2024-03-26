@@ -8,134 +8,138 @@ from scipy import integrate, stats
 import antropy as ant
 
 
-def get_feature_functions(sampling_freq):
-    """
-    Returns a list of feature functions to be used in the feature extraction process.
-    """
+class FeatureFunctions:
+    """Feature functions to be used in the feature extraction process."""
 
-    def mean(x):
-        return np.mean(x)
+    def __init__(self, sampling_freq):
+        self.sampling_freq = sampling_freq
 
-    def absmean(x):
-        return np.mean(np.abs(x))
+    def get(self):
+        """Returns a list of feature functions to be used in the feature extraction process."""
 
-    def maximum(x):
-        return np.max(x)
+        def mean(x):
+            return np.mean(x)
 
-    def absmax(x):
-        return np.max(np.abs(x))
+        def absmean(x):
+            return np.mean(np.abs(x))
 
-    def minimum(x):
-        return np.min(x)
+        def maximum(x):
+            return np.max(x)
 
-    def absmin(x):
-        return np.min(np.abs(x))
+        def absmax(x):
+            return np.max(np.abs(x))
 
-    def minplusmax(x):
-        return np.max(x) + np.min(x)
+        def minimum(x):
+            return np.min(x)
 
-    def maxminusmin(x):
-        return np.max(x) - np.min(x)
+        def absmin(x):
+            return np.min(np.abs(x))
 
-    def curvelength(x):
-        cl = 0
-        for i in range(x.shape[0] - 1):
-            cl += abs(x[i] - x[i + 1])
-        return cl
+        def minplusmax(x):
+            return np.max(x) + np.min(x)
 
-    def energy(x):
-        return np.sum(np.multiply(x, x))
+        def maxminusmin(x):
+            return np.max(x) - np.min(x)
 
-    def nonlinear_energy(x):
-        # NLE(x[n]) = x**2[n] - x[n+1]*x[n-1]
-        x_squared = x[1:-1] ** 2
-        subtrahend = x[2:] * x[:-2]
-        return np.sum(x_squared - subtrahend)
+        def curvelength(x):
+            cl = 0
+            for i in range(x.shape[0] - 1):
+                cl += abs(x[i] - x[i + 1])
+            return cl
 
-    def spectral_entropy(x):
-        return ant.spectral_entropy(
-            x,
-            sampling_freq,
-            method="welch",
-            normalize=True,
-            nperseg=len(x),
-        )
+        def energy(x):
+            return np.sum(np.multiply(x, x))
 
-    def integral(x):
-        return integrate.simps(x)
+        def nonlinear_energy(x):
+            # NLE(x[n]) = x**2[n] - x[n+1]*x[n-1]
+            x_squared = x[1:-1] ** 2
+            subtrahend = x[2:] * x[:-2]
+            return np.sum(x_squared - subtrahend)
 
-    def stddeviation(x):
-        return np.std(x)
+        def spectral_entropy(x):
+            return ant.spectral_entropy(
+                x,
+                self.sampling_freq,
+                method="welch",
+                normalize=True,
+                nperseg=len(x),
+            )
 
-    def variance(x):
-        return np.var(x)
+        def integral(x):
+            return integrate.simps(x)
 
-    def skewness(x):
-        return stats.skew(x)
+        def stddeviation(x):
+            return np.std(x)
 
-    def kurtosis(x):
-        return stats.kurtosis(x)
+        def variance(x):
+            return np.var(x)
 
-    def sum(x):
-        return np.sum(x)
+        def skewness(x):
+            return stats.skew(x)
 
-    def sample_entropy(x):
-        return ant.sample_entropy(x, order=2, metric="chebyshev")
+        def kurtosis(x):
+            return stats.kurtosis(x)
 
-    def permutation_entropy(x):
-        return ant.perm_entropy(x, order=3, normalize=True)
+        def sum(x):
+            return np.sum(x)
 
-    def svd_entropy(x):
-        return ant.svd_entropy(x, order=3, delay=1, normalize=True)
+        def sample_entropy(x):
+            return ant.sample_entropy(x, order=2, metric="chebyshev")
 
-    def approximate_entropy(x):
-        return ant.app_entropy(x, order=2, metric="chebyshev")
+        def permutation_entropy(x):
+            return ant.perm_entropy(x, order=3, normalize=True)
 
-    def petrosian_fd(x):
-        return ant.petrosian_fd(x)
+        def svd_entropy(x):
+            return ant.svd_entropy(x, order=3, delay=1, normalize=True)
 
-    def katz_fd(x):
-        return ant.katz_fd(x)
+        def approximate_entropy(x):
+            return ant.app_entropy(x, order=2, metric="chebyshev")
 
-    def higuchi_fd(x):
-        return ant.higuchi_fd(x, kmax=10)
+        def petrosian_fd(x):
+            return ant.petrosian_fd(x)
 
-    def rootmeansquare(x):
-        return np.sqrt(np.mean(x**2))
+        def katz_fd(x):
+            return ant.katz_fd(x)
 
-    def detrended_fluctuation(x):
-        return ant.detrended_fluctuation(x)
+        def higuchi_fd(x):
+            return ant.higuchi_fd(x, kmax=10)
 
-    feature_functions = [
-        mean,
-        absmean,
-        maximum,
-        absmax,
-        minimum,
-        absmin,
-        minplusmax,
-        maxminusmin,
-        curvelength,
-        energy,
-        nonlinear_energy,
-        integral,
-        stddeviation,
-        variance,
-        skewness,
-        kurtosis,
-        sum,
-        spectral_entropy,
-        sample_entropy,
-        permutation_entropy,
-        svd_entropy,
-        approximate_entropy,
-        petrosian_fd,
-        katz_fd,
-        higuchi_fd,
-        rootmeansquare,
-        detrended_fluctuation,
-    ]
+        def rootmeansquare(x):
+            return np.sqrt(np.mean(x**2))
 
-    features_names = [f"{func.__name__}" for func in feature_functions]
+        def detrended_fluctuation(x):
+            return ant.detrended_fluctuation(x)
 
-    return feature_functions, features_names
+        feature_functions = [
+            mean,
+            absmean,
+            maximum,
+            absmax,
+            minimum,
+            absmin,
+            minplusmax,
+            maxminusmin,
+            curvelength,
+            energy,
+            nonlinear_energy,
+            integral,
+            stddeviation,
+            variance,
+            skewness,
+            kurtosis,
+            sum,
+            spectral_entropy,
+            sample_entropy,
+            permutation_entropy,
+            svd_entropy,
+            approximate_entropy,
+            petrosian_fd,
+            katz_fd,
+            higuchi_fd,
+            rootmeansquare,
+            detrended_fluctuation,
+        ]
+
+        features_names = [f"{func.__name__}" for func in feature_functions]
+
+        return feature_functions, features_names
