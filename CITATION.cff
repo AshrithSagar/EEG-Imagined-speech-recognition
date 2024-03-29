@@ -1,0 +1,30 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: EEG-Imagined-Speech-recognition
+message: 'If you use this software, please cite it as follows'
+type: software
+authors:
+  - given-names: Ashrith
+    name-particle: Sagar
+    family-names: Yedlapalli
+    email: ashrith9sagar@gmail.com
+    affiliation: 'Manipal Institute of Technology, Manipal'
+identifiers:
+  - type: url
+    value: >-
+      https://github.com/AshrithSagar/EEG-Imagined-speech-recognition
+    description: GitHub Repo
+repository-code: >-
+  https://github.com/AshrithSagar/EEG-Imagined-speech-recognition
+url: >-
+  https://github.com/AshrithSagar/EEG-Imagined-speech-recognition
+abstract: Imagined speech recognition through EEG signals
+keywords:
+  - EEG
+  - Imagined speech
+  - Classification
+  - Machine learning
+  - KaraOne
+license: MIT
