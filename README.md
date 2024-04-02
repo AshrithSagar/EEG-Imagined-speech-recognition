@@ -27,12 +27,13 @@ Follow these steps to get started.
 
 ## Usage
 
-1. Preprocess EEG data:
-Preprocess the EEG data to extract relevant features and prepare it for model training.
+Run the different workflows to preprocess the EEG data and train the model.
 
-1. Train the model:
-Train a machine learning model using the preprocessed EEG data.
-Experiment with different algorithms and hyperparameters to optimize performance.
+1. `features-karaone.py`:
+Preprocess the EEG data to extract relevant features.
+
+1. `ifs-classifier.py`:
+Train a machine learning classifier using the preprocessed EEG data.
 
 ## References
 
