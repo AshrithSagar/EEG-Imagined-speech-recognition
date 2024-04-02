@@ -1,26 +1,27 @@
 ---
-dataset: null
-feis:
+_select:
+  # classifier: [RegularClassifier, ClassifierGridSearch, EvaluateClassifier]
   classifier: null
+  # dataset: [karaone, feis]
+  dataset: null
+classifier:
+  evaluate_only: null
+  grid_search: null
+  models: null
+  trial_size: null
+feis:
   features_dir: null
   model_base_dir: null
-  models: null
   raw_data_dir: null
   subjects: null
   tasks: null
-  trial_size: null
 karaone:
-  classifier: null
-  evaluate_only: null
   features_dir: null
   filtered_data_dir: null
-  grid_search: null
   model_base_dir: null
-  models: null
   raw_data_dir: null
   subjects: null
   tasks: null
   tfr_dataset_dir: null
-  trial_size: null
 utils:
   path: null
