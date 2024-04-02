@@ -8,6 +8,8 @@ classifier:
   evaluate_only: null
   model_base_dir: null
   models: null
+  random_state: null
+  test_size: null
   trial_size: null
 feis:
   epoch_type: null
