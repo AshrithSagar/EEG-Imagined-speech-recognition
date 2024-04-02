@@ -4,21 +4,8 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.classifier import ClassifierGridSearch, EvaluateClassifier, RegularClassifier
-from utils.config import line_separator, load_config
+from utils.config import fetch_select, line_separator, load_config
 from utils.ifs import InformationSet
-from utils.feis import FEISDataLoader
-from utils.karaone import KaraOneDataLoader
-
-dataset_map = {
-    "FEIS": FEISDataLoader,
-    "KaraOne": KaraOneDataLoader,
-}
-classifier_map = {
-    "RegularClassifier": RegularClassifier,
-    "EvaluateClassifier": EvaluateClassifier,
-    "ClassifierGridSearch": ClassifierGridSearch,
-}
 
 
 if __name__ == "__main__":
@@ -26,23 +13,17 @@ if __name__ == "__main__":
     c_args = load_config(config_file="config.yaml", key="classifier")
 
     dataset_name = args.get("_select").get("dataset")
-    if dataset_name in dataset_map:
-        d_args = args[dataset_name.lower()]
-    else:
-        raise ValueError("Invalid dataset name")
+    dataset = fetch_select("dataset", dataset_name)
+    d_args = args[dataset_name.lower()]
 
     classifier_name = args.get("_select").get("classifier")
-    if classifier_name in classifier_map:
-        classifier = classifier_map[classifier_name]
-    else:
-        raise ValueError(f"Invalid classifier name: {classifier_name}")
+    classifier = fetch_select("classifier", classifier_name)
 
     for model in c_args["models"]:
         console = Console(record=True)
         model_dir = os.path.join(c_args["model_base_dir"], model, dataset_name)
         Console().rule(title=f"[bold blue3][Model: {model}][/]", style="blue3")
 
-        dataset = dataset_map[dataset_name]
         dset = dataset(
             raw_data_dir=d_args["raw_data_dir"],
             subjects=d_args["subjects"],

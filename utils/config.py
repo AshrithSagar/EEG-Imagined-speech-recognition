@@ -2,7 +2,7 @@
 config.py
 Configuration utils
 """
-import os
+
 import yaml
 from rich.console import Console
 
@@ -37,3 +37,33 @@ def load_config(config_file="config.yaml", key=None):
         return config.get(key, {})
     else:
         return config
+
+
+def fetch_select(key, choice):
+    from utils.classifier import (
+        ClassifierGridSearch,
+        EvaluateClassifier,
+        RegularClassifier,
+    )
+    from utils.feis import FEISDataLoader
+    from utils.karaone import KaraOneDataLoader
+
+    options = {
+        "dataset": {
+            "FEIS": FEISDataLoader,
+            "KaraOne": KaraOneDataLoader,
+        },
+        "classifier": {
+            "RegularClassifier": RegularClassifier,
+            "EvaluateClassifier": EvaluateClassifier,
+            "ClassifierGridSearch": ClassifierGridSearch,
+        },
+    }
+
+    if key not in options:
+        raise ValueError(f"Invalid key: {key}")
+
+    if choice not in options[key]:
+        raise ValueError(f"Invalid {key} name: {choice}")
+
+    return options[key][choice]
