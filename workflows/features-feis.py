@@ -15,11 +15,11 @@ if __name__ == "__main__":
     dataset = fetch_select("dataset", "FEIS")
 
     dset = dataset(
-        data_dir=d_args["raw_data_dir"],
+        raw_data_dir=d_args["raw_data_dir"],
         subjects=d_args["subjects"],
         verbose=True,
     )
-    dset.unzip_data_eeg(delete_zip=True)
+    dset.unzip_data_eeg(delete_zip=False)
 
     dset.extract_features(
         save_dir=d_args["features_dir"],
@@ -31,5 +31,4 @@ if __name__ == "__main__":
     dset.extract_labels()
     labels = dset.load_labels()
 
-    print(f"{features.shape=}")
     flattened_features, flattened_labels = dset.flatten(features, labels, verbose=True)
