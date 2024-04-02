@@ -7,18 +7,20 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from utils.config import load_config, line_separator
-from utils.karaone import KaraOneDataLoader
+from utils.config import fetch_select, line_separator, load_config
 
 
 if __name__ == "__main__":
-    args = load_config(key="karaone")
+    args = load_config(config_file="config.yaml", key="karaone")
+    dataset = fetch_select("dataset", "KaraOne")
 
-    karaone = KaraOneDataLoader(
-        raw_data_dir=args["raw_data_dir"], subjects=args["subjects"], verbose=True
+    dset = dataset(
+        raw_data_dir=args["raw_data_dir"],
+        subjects=args["subjects"],
+        verbose=True,
     )
 
-    karaone.process_raw_data(
+    dset.process_raw_data(
         save_dir=args["filtered_data_dir"],
         pick_channels=[-1],
         l_freq=0.5,
@@ -27,19 +29,17 @@ if __name__ == "__main__":
         verbose=True,
     )
 
-    karaone.process_epochs(epoch_type="thinking")
-    karaone.epochs_info(verbose=True)
-    labels = karaone.all_epoch_labels
+    dset.process_epochs(epoch_type=args["epoch_type"])
+    dset.epochs_info(verbose=True)
+    labels = dset.all_epoch_labels
 
-    karaone.extract_features(
+    dset.extract_features(
         save_dir=args["features_dir"],
-        epoch_type="thinking",
+        epoch_type=args["epoch_type"],
         length_factor=0.1,
         overlap=0.5,
     )
 
-    features = karaone.load_features(epoch_type="thinking", verbose=True)
+    features = dset.load_features(epoch_type=args["epoch_type"], verbose=True)
 
-    flattened_features, flattened_labels = karaone.flatten(
-        features, labels, verbose=True
-    )
+    flattened_features, flattened_labels = dset.flatten(features, labels, verbose=True)
