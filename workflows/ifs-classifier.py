@@ -31,7 +31,9 @@ if __name__ == "__main__":
             console=console,
         )
 
-        dset.load_features(epoch_type="thinking", features_dir=d_args["features_dir"])
+        dset.load_features(
+            epoch_type=d_args["epoch_type"], features_dir=d_args["features_dir"]
+        )
         features, labels = dset.flatten()
 
         features_ifs = InformationSet(features, verbose=True, console=console)

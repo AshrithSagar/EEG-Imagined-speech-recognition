@@ -10,11 +10,13 @@ classifier:
   models: null
   trial_size: null
 feis:
+  epoch_type: null
   features_dir: null
   raw_data_dir: null
   subjects: null
   tasks: null
 karaone:
+  epoch_type: null
   features_dir: null
   filtered_data_dir: null
   raw_data_dir: null
