@@ -145,11 +145,9 @@ class KaraOneDataLoader:
             self.console.print("Chosen channels: [", ", ".join(self.channels), "]")
             line_separator(self.console)
 
-        self.raw.pick_channels(self.channels, verbose=verbose)
+        self.raw.pick(self.channels, verbose=verbose)
         if verbose:
-            self.console.print(
-                f"Raw data shape: [black]{self.raw.get_data(copy=True).shape}[/]"
-            )
+            self.console.print(f"Raw data shape: [black]{self.raw.get_data().shape}[/]")
             line_separator(self.console)
 
         return self.raw
@@ -252,7 +250,7 @@ class KaraOneDataLoader:
     def apply_bandpass_filter(self, l_freq=0.5, h_freq=50.0, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         raw_data = mne.filter.filter_data(
-            self.raw.get_data(copy=True),
+            self.raw.get_data(),
             sfreq=self.raw.info["sfreq"],
             l_freq=l_freq,
             h_freq=h_freq,
@@ -297,7 +295,7 @@ class KaraOneDataLoader:
         if verbose:
             line_separator(self.console)
             self.console.print(
-                f"Epochs shape: [black]{self.epochs.get_data(copy=True).shape}[/]"
+                f"Epochs shape: [black]{self.epochs.get_data().shape}[/]"
             )
             line_separator(self.console)
 
@@ -676,7 +674,7 @@ class KaraOneDataLoader:
             Filtered EEG data matrix.
         """
 
-        filtered_data = self.raw.get_data(copy=True)
+        filtered_data = self.raw.get_data()
         num_channels, num_samples = filtered_data.shape
         if task:
             self.progress.reset(task)
