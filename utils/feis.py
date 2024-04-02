@@ -168,7 +168,7 @@ class FEISDataLoader:
 
             self.epoch_type = epoch_type
             self.features_dir = save_dir
-            self.feature_functions = get_features_functions()
+            self.get_features_functions()
 
             for subject in self.subjects:
                 if skip_if_exists:
