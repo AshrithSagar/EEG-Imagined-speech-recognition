@@ -2,23 +2,21 @@
 _select:
   # classifier: [RegularClassifier, ClassifierGridSearch, EvaluateClassifier]
   classifier: null
-  # dataset: [karaone, feis]
+  # dataset: [KaraOne, FEIS]
   dataset: null
 classifier:
   evaluate_only: null
-  grid_search: null
+  model_base_dir: null
   models: null
   trial_size: null
 feis:
   features_dir: null
-  model_base_dir: null
   raw_data_dir: null
   subjects: null
   tasks: null
 karaone:
   features_dir: null
   filtered_data_dir: null
-  model_base_dir: null
   raw_data_dir: null
   subjects: null
   tasks: null

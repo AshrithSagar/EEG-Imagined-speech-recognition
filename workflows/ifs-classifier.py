@@ -11,8 +11,8 @@ from utils.feis import FEISDataLoader
 from utils.karaone import KaraOneDataLoader
 
 dataset_map = {
-    "feis": FEISDataLoader,
-    "karaone": KaraOneDataLoader,
+    "FEIS": FEISDataLoader,
+    "KaraOne": KaraOneDataLoader,
 }
 classifier_map = {
     "RegularClassifier": RegularClassifier,
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     dataset_name = args.get("_select").get("dataset")
     if dataset_name in dataset_map:
-        d_args = args[dataset_name]
+        d_args = args[dataset_name.lower()]
     else:
         raise ValueError("Invalid dataset name")
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     for model in c_args["models"]:
         console = Console(record=True)
-        model_dir = os.path.join(d_args["model_base_dir"], model)
+        model_dir = os.path.join(c_args["model_base_dir"], model, dataset_name)
         Console().rule(title=f"[bold blue3][Model: {model}][/]", style="blue3")
 
         dataset = dataset_map[dataset_name]
@@ -75,7 +75,9 @@ if __name__ == "__main__":
                 console=console,
             )
 
-            clf.get_model_config(model_file=os.path.join(model_dir, "model.py"))
+            clf.get_model_config(
+                model_file=os.path.join(c_args["model_base_dir"], model, "model.py")
+            )
             clf.run()
 
         with open(os.path.join(model_dir, classifier_name, "output.txt"), "w") as file:
