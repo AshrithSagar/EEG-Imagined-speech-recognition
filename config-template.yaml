@@ -21,6 +21,8 @@ karaone:
   epoch_type: null
   features_dir: null
   filtered_data_dir: null
+  length_factor: null
+  overlap: null
   raw_data_dir: null
   subjects: null
   tasks: null

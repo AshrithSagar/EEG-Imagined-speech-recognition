@@ -36,8 +36,8 @@ if __name__ == "__main__":
     dset.extract_features(
         save_dir=d_args["features_dir"],
         epoch_type=d_args["epoch_type"],
-        length_factor=0.1,
-        overlap=0.5,
+        length_factor=d_args["length_factor"],
+        overlap=d_args["overlap"],
     )
 
     features = dset.load_features(epoch_type=d_args["epoch_type"], verbose=True)
