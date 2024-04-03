@@ -501,12 +501,11 @@ class KaraOneDataLoader:
         """Windows the data
         Parameters:
         - data (np.ndarray): EEG data of shape (n_channels, n_time_samples).
-        - length (int): Length of the window.
         - length_factor (float): Factor to calculate the window length.
         - overlap (float): Overlap factor between consecutive windows.
         """
         w_len = int(data.shape[1] * length_factor)
-        stride = int(w_len * overlap)
+        stride = int(w_len * (1 - overlap))
         if stride == 0:
             raise ValueError(
                 "Non-zero stride required. Either overlap factor is too high or window length is too low."
