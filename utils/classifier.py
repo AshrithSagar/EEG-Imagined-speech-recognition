@@ -708,24 +708,24 @@ class EvaluateClassifier(ClassifierMixin):
     def compile(self, model=None, sampler=None, cv=None, verbose=None):
         verbose = self.set_verbose(verbose)
 
-        X, y = self.resample(self.X_raw, self.y_raw, sampler)
-
         if self.trial_size is None:
-            self.trial_size = len(X)
+            self.trial_size = len(self.X_raw)
         elif isinstance(self.trial_size, float) and self.trial_size <= 1.0:
-            self.trial_size = int(self.trial_size * len(X))
+            self.trial_size = int(self.trial_size * len(self.X_raw))
 
         # Stratified sampling
         X_train, X_test, y_train, y_test = train_test_split(
-            X,
-            y,
+            self.X_raw,
+            self.y_raw,
             train_size=int(self.trial_size * (1 - self.test_size)),
             test_size=int(self.trial_size * self.test_size),
             random_state=self.random_state,
-            stratify=y,
+            stratify=self.y_raw,
         )
         self.X = np.concatenate((X_train, X_test))
         self.y = np.concatenate((y_train, y_test))
+
+        self.X, self.y = self.resample(self.X, self.y, sampler)
 
         self.get_anova_f()
         self.get_pearsonr()
