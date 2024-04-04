@@ -1,9 +1,18 @@
 """
 sampler.py
-Sampler classes
+Collection of sampler instances.
 """
 
-from imblearn.over_sampling import ADASYN, SMOTE, RandomOverSampler
+from imblearn.over_sampling import (
+    ADASYN,
+    RandomOverSampler,
+    KMeansSMOTE,
+    SMOTE,
+    BorderlineSMOTE,
+    SVMSMOTE,
+    SMOTENC,
+    SMOTEN,
+)
 
 
 def fetch_sampler(sampler_name):
@@ -26,13 +35,37 @@ def fetch_sampler(sampler_name):
         "SMOTE": SMOTE(
             random_state=42,
             k_neighbors=5,
-            n_jobs=1,
         ),
         "ADASYN": ADASYN(
             sampling_strategy="auto",
             random_state=42,
             n_neighbors=5,
-            n_jobs=1,
+        ),
+        "KMeansSMOTE": KMeansSMOTE(
+            random_state=42,
+            k_neighbors=5,
+        ),
+        "BorderlineSMOTE": BorderlineSMOTE(
+            random_state=42,
+            k_neighbors=5,
+            m_neighbors=10,
+            kind="borderline-1",
+        ),
+        "SVMSMOTE": SVMSMOTE(
+            random_state=42,
+            k_neighbors=5,
+            m_neighbors=10,
+        ),
+        "SMOTENC": SMOTENC(
+            categorical_features="auto",
+            sampling_strategy="auto",
+            random_state=42,
+            k_neighbors=5,
+        ),
+        "SMOTEN": SMOTEN(
+            sampling_strategy="auto",
+            random_state=42,
+            k_neighbors=5,
         ),
     }
 
