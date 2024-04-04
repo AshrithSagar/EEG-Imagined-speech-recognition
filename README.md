@@ -65,7 +65,7 @@ utils:
 
 ### Workflows
 
-Run the different workflows.
+Run the different workflows using `python3 workflows/*.py` from the project directory.
 
 1. `features-karaone.py`, `features-feis.py`:
 Preprocess the EEG data to extract relevant features.
