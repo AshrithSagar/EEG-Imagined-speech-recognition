@@ -65,8 +65,12 @@ class ClassifierMixin:
         self.model = None
         self.model_config = None
 
+    def get_value(self, value, default):
+        """Handle None values"""
+        return value if value is not None else default
+
     def set_verbose(self, verbose=None):
-        verbose = verbose if verbose is not None else self.verbose
+        verbose = self.get_value(verbose, self.verbose)
         return verbose
 
     def get_model_config(self, model_file=None, reload=False):
@@ -101,8 +105,8 @@ class ClassifierMixin:
     def get_anova_f(self, X=None, y=None, verbose=None):
         """ANOVA F-Test"""
         verbose = self.set_verbose(verbose)
-        X = X if X is not None else self.X
-        y = y if y is not None else self.y
+        X = self.get_value(X, self.X)
+        y = self.get_value(y, self.y)
 
         self.f_statistic, self.p_values = f_classif(X, y)
         self.anova_f = pd.DataFrame(
@@ -129,8 +133,8 @@ class ClassifierMixin:
 
     def get_pearsonr(self, X=None, y=None, verbose=None):
         verbose = self.set_verbose(verbose)
-        X = X if X is not None else self.X
-        y = y if y is not None else self.y
+        X = self.get_value(X, self.X)
+        y = self.get_value(y, self.y)
 
         num_features = X.shape[1]
         self.correlation_coeffs = [
@@ -155,8 +159,8 @@ class ClassifierMixin:
         Defaults to selecting all features.
         """
         verbose = self.set_verbose(verbose)
-        X = X if X is not None else self.X
-        y = y if y is not None else self.y
+        X = self.get_value(X, self.X)
+        y = self.get_value(y, self.y)
 
         X_select = X[:, select] if select is not None else X
         y_select = y[:, select] if select is not None else y
@@ -207,8 +211,8 @@ class ClassifierMixin:
 
     def get_metrics(self, y_test=None, y_pred=None, show_plots=False, verbose=None):
         verbose = self.set_verbose(verbose)
-        y_test = y_test if y_test is not None else self.y_test
-        y_pred = y_pred if y_pred is not None else self.y_pred
+        y_test = self.get_value(y_test, self.y_test)
+        y_pred = self.get_value(y_pred, self.y_pred)
 
         accuracy = accuracy_score(y_test, y_pred)
         precision = precision_score(y_test, y_pred, average="weighted", zero_division=0)
@@ -451,8 +455,8 @@ class RegularClassifier(ClassifierMixin):
 
     def predict(self, X=None, y=None, model=None, verbose=None):
         verbose = self.set_verbose(verbose)
-        X_test = X if X is not None else self.X_test
-        y_test = y if y is not None else self.y_test
+        X_test = self.get_value(X, self.X_test)
+        y_test = self.get_value(y, self.y_test)
 
         self.get_model(model)
         self.y_pred = self.model.predict(X_test)
@@ -608,8 +612,8 @@ class ClassifierGridSearch(ClassifierMixin):
 
     def predict(self, X=None, y=None, model=None, verbose=None):
         verbose = self.set_verbose(verbose)
-        X_test = X if X is not None else self.X_test
-        y_test = y if y is not None else self.y_test
+        X_test = self.get_value(X, self.X_test)
+        y_test = self.get_value(y, self.y_test)
 
         self.get_model(model)
         self.y_pred = self.model.predict(X_test)
