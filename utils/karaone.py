@@ -7,9 +7,11 @@ import glob
 import math
 import os
 
+import dask.array as da
 import mne
 import numpy as np
 import scipy.io
+from dask.distributed import Client, LocalCluster
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -473,12 +475,45 @@ class KaraOneDataLoader:
 
                 subject_epochs = self.all_epochs[index].get_data(copy=True)
                 self.progress.update(task_features, total=len(subject_epochs))
-                features = self.compute_features(
+                features = self.compute_features_dask(
                     subject_epochs, length_factor, overlap, task=task_features
                 )
                 self.progress.reset(task_features)
                 self.save_features(subject, features)
                 self.progress.update(task_subjects, advance=1)
+
+    def compute_features_dask(self, epochs, length_factor=0.1, overlap=0.5, task=None):
+        windowed_epochs = np.asarray(
+            [self.window_data(epoch, length_factor, overlap) for epoch in epochs]
+        )
+
+        cluster = LocalCluster()
+        client = Client(cluster)
+
+        windowed_epochs_dask_future = client.scatter(windowed_epochs, broadcast=True)
+        windowed_epochs_dask = windowed_epochs_dask_future.result()
+        windowed_epochs_dask = da.from_array(
+            windowed_epochs_dask, chunks=(1, -1, -1, -1)
+        )
+
+        feats_epochs_dask = da.stack(
+            [
+                da.apply_along_axis(feat_func, 3, windowed_epochs_dask)
+                for feat_func in self.feature_functions[0:19]
+            ],
+            axis=-1,
+        )
+        feats_epochs_dask_result = feats_epochs_dask.compute()
+
+        client.close()
+        cluster.close()
+
+        features = np.asarray(
+            [self.add_deltas(epoch) for epoch in feats_epochs_dask_result],
+            dtype=np.float32,
+        )
+
+        return features
 
     def compute_features(self, epochs, length_factor=0.1, overlap=0.5, task=None):
         features = []
