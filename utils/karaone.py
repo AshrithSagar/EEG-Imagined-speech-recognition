@@ -132,6 +132,15 @@ class KaraOneDataLoader:
         return self.raw
 
     def pick_channels(self, pick_channels=[-1], verbose=None):
+        """
+        Pick specific channels from the EEG data.
+
+        Parameters:
+        - pick_channels (list): List of channel names or indices to select. Use [-1] to select all channels.
+
+        Returns:
+        - raw (mne.io.Raw): Raw data object containing the selected channels.
+        """
         verbose = verbose if verbose is not None else self.verbose
 
         if pick_channels == [-1]:
@@ -533,11 +542,18 @@ class KaraOneDataLoader:
         length_factor: float = 0.1,
         overlap: float = 0.5,
     ):
-        """Windows the data
+        """
+        Windowing of the data.
+
         Parameters:
-        - data (np.ndarray): EEG data of shape (n_channels, n_time_samples).
-        - length_factor (float): Factor to calculate the window length.
+        - data (np.ndarray): EEG data of shape (n.channels, n.time_samples).
+        - length_factor (float): Factor to determine the window length as a
+            fraction of the total time samples.
         - overlap (float): Overlap factor between consecutive windows.
+
+        Returns:
+        - windows (np.ndarray): Windowed data of shape
+            (n.windows, n.channels, n.time_samples_per_window).
         """
         w_len = int(data.shape[1] * length_factor)
         stride = int(w_len * (1 - overlap))
