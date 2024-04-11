@@ -5,7 +5,6 @@ Info Utility scripts
 
 import os
 
-import joblib
 import matplotlib.pyplot as plt
 import yaml
 from rich.console import Console

@@ -23,7 +23,6 @@ from sklearn.metrics import (
     cohen_kappa_score,
     confusion_matrix,
     f1_score,
-    log_loss,
     make_scorer,
     matthews_corrcoef,
     precision_score,

@@ -4,7 +4,7 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import fetch_select, line_separator, load_config
+from utils.config import fetch_select, load_config
 from utils.ifs import InformationSet
 
 

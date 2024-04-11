@@ -18,7 +18,6 @@ from rich.progress import (
 )
 from rich.table import Table
 
-from utils.config import line_separator
 from utils.features import FeatureFunctions
 
 

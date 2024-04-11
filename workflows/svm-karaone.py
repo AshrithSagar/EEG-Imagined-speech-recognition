@@ -1,9 +1,6 @@
 import os
 import sys
-import numpy as np
 import joblib
-import numpy as np
-import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import (
     accuracy_score,
@@ -12,11 +9,11 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
-from sklearn.model_selection import GridSearchCV, StratifiedKFold, train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.svm import SVC
 
 sys.path.append(os.getcwd())
-from utils.config import load_config, line_separator
+from utils.config import load_config
 from utils.karaone import KaraOneDataLoader
 
 
