@@ -1,4 +1,5 @@
 antropy
+dask
 imbalanced-learn
 mne
 numpy
