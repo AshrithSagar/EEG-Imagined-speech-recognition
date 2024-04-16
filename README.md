@@ -29,7 +29,9 @@ Follow these steps to get started.
 
 ### Configuration file
 
-The configuration file `config.yaml` contains the paths to the data files and the parameters for the different workflows. Refer to [config-template.yaml](config-template.yaml).
+The configuration file `config.yaml` contains the paths to the data files and the parameters for the different workflows.
+Create and populate it with the appropriate values.
+Refer to [config-template.yaml](config-template.yaml).
 
 ```yaml
 ---
@@ -46,19 +48,19 @@ classifier:
 feis:
   epoch_type: One from { thinking, speaking, stimuli }
   features_dir: (path) Preferably use files/Features/FEIS/features-1/
-  raw_data_dir: (path) Preferably use files/Data/FEIS/data_eeg
+  raw_data_dir: (path) Preferably use files/Data/FEIS/data_eeg/
   subjects: (all / list of int / list of str) Specify the subjects to be used. Use 'all' to use all subjects.
-  tasks: list of int) [0]
+  tasks: list of int) Available tasks:- [0]; Refer utils/feis.py:FEISDataLoader.get_task();
 karaone:
-  epoch_type: One from { thinking, speaking, stimuli. clearing }
+  epoch_type: One from { thinking, speaking, stimuli, clearing }
   features_dir: (path) Preferably use files/Features/KaraOne/features-1/
-  filtered_data_dir: (path) Preferably use files/Data/KaraOne/EEG_data-1
+  filtered_data_dir: (path) Preferably use files/Data/KaraOne/EEG_data-1/
   length_factor: (float) Determines the window length.
   overlap: (float) Determines the overlap between consecutive windows.
-  raw_data_dir: (path) Preferably use files/Data/KaraOne/EEG_raw
+  raw_data_dir: (path) Preferably use files/Data/KaraOne/EEG_raw/
   subjects: (all / list of int / list of str) Specify the subjects to be used. Use 'all' to use all subjects.
-  tasks: (list of int) [0, 1, 2, 3, 4]
-  tfr_dataset_dir: (path) Preferably use files/TFR/KaraOne/tfr_ds-1
+  tasks: (list of int) Available tasks:- [0, 1, 2, 3, 4]; Refer utils/karaone.py:KaraOneDataLoader.get_task();
+  tfr_dataset_dir: (path) Preferably use files/TFR/KaraOne/tfr_ds-1/
 utils:
   path: (path) Absolute path to the project directory utils folder
 ```
