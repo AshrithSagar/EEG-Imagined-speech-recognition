@@ -1,3 +1,8 @@
+"""
+ifs-classifier.py
+Run a classifier on the effective features extracted from the dataset.
+"""
+
 import os
 import sys
 
