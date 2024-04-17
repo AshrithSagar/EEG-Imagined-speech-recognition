@@ -31,7 +31,8 @@ class TFRDataset:
     def create(self, freq_bins=None, timestamps=None):
         self.get_labels()
         self.num_classes = len(self.labels)
-        self.num_epochs, self.num_channels, _ = self.data.epochs.get_data().shape
+        epochs = self.data.epochs.get_data(copy=True)
+        self.num_epochs, self.num_channels, _ = epochs.shape
         tfr_shape = (freq_bins, len(timestamps))
         tfr_data = np.zeros((self.num_epochs, self.num_channels, *tfr_shape))
 
@@ -50,7 +51,8 @@ class TFRDataset:
                 "[magenta]Processing channels...",
                 total=self.num_channels,
             )
-            for epoch_index, epoch_data in enumerate(self.data.epochs.get_data()):
+            epochs = self.data.epochs.get_data(copy=True)
+            for epoch_index, epoch_data in enumerate(epochs):
                 progress.update(epoch_task, advance=1)
                 for channel_index, channel in enumerate(self.data.epochs.ch_names):
                     progress.update(channel_task, advance=1)
@@ -72,7 +74,10 @@ class TFRDataset:
     def get_labels(self):
         self.labels = [
             key
-            for key, _ in sorted(self.data.epochs.event_id.items(), key=lambda x: x[1])
+            for key, _ in sorted(
+                self.data.epochs.event_id.items(),
+                key=lambda x: x[1],
+            )
         ]
         return self.labels
 

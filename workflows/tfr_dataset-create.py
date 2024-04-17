@@ -2,34 +2,51 @@
 tfr_dataset-create.py
 """
 
+import os
+import sys
+
 import numpy as np
 from rich.console import Console
 
+sys.path.append(os.getcwd())
 from utils.config import line_separator, load_config
-from utils.karaone import KaraOneDataLoader, subjects
+from utils.karaone import KaraOneDataLoader
 from utils.tfr import TFRDataset
 
 
 if __name__ == "__main__":
     console = Console()
-    args = load_config(config_file="config.yaml", key="karaone")
+    d_args = load_config(config_file="config.yaml", key="karaone")
 
     karaone = KaraOneDataLoader(
-        data_folder=args["tfr_dataset_dir"],
-        console=console,
+        raw_data_dir=d_args["raw_data_dir"],
+        subjects=d_args["subjects"],
+        verbose=True,
     )
-
     pick_channels = ["FC6", "FT8", "C5", "CP3", "P3", "T7", "CP5", "C3", "CP1", "C4"]
 
-    for subject in subjects[:]:
-        karaone.load_data(subject=subject, pick_channels=pick_channels)
-        karaone.apply_bandpass_filter(l_freq=0.5, h_freq=50.0)
-        karaone.make_epochs(sampling_freq=1000)
-        karaone.apply_baseline_correction(baseline=(0, 0))
+    karaone.process_raw_data(
+        save_dir=d_args["filtered_data_dir"],
+        pick_channels=pick_channels,
+        l_freq=0.5,
+        h_freq=50.0,
+        overwrite=False,
+        verbose=True,
+    )
+    karaone.process_epochs(
+        epoch_type=d_args["epoch_type"],
+        pick_channels=pick_channels,
+    )
+    karaone.epochs_info(verbose=True)
+    labels = karaone.all_epoch_labels
+    line_separator(line="thick")
+
+    for subject in d_args["subjects"]:
+        console.print(f"[bold]Subject: {subject}[/bold]")
 
         tfr_ds = TFRDataset(
+            dataset_dir=d_args["tfr_dataset_dir"],
             data=karaone,
-            dataset_dir=args["tfr_dataset_dir"],
             console=console,
         )
         tfr_data, epoch_labels = tfr_ds.create(
