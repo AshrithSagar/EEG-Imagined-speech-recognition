@@ -1,5 +1,6 @@
 """
-tfr_dataset-create.py
+tfr_ds-karaone.py
+Create a Time-Frequency Representation (TFR) dataset from KaraOne database.
 """
 
 import os
@@ -40,8 +41,9 @@ if __name__ == "__main__":
     labels = karaone.all_epoch_labels
     line_separator(line="thick")
 
-    for subject in d_args["subjects"]:
+    for subject in karaone.subjects:
         console.print(f"[bold]Subject: {subject}[/bold]")
+        karaone.subject = subject
 
         tfr_ds = TFRDataset(
             dataset_dir=d_args["tfr_dataset_dir"],
