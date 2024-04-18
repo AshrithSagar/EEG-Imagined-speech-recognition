@@ -10,9 +10,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-from utils.config import load_config
-from utils.feis import FEISDataLoader
-from utils.karaone import KaraOneDataLoader
+from utils.config import fetch_select, load_config
 from utils.tfr import TFRDataset
 
 tf.keras.backend.clear_session()
@@ -21,17 +19,13 @@ tf.config.experimental.set_memory_growth(
     tf.config.list_physical_devices("GPU")[0], True
 )
 
-dataset_map = {"feis": FEISDataLoader, "karaone": KaraOneDataLoader}
-
 
 if __name__ == "__main__":
     args = load_config(config_file="config.yaml")
 
-    dataset_name = args.get("dataset")
-    if dataset_name in dataset_map:
-        args = args[dataset_name]
-    else:
-        raise ValueError("Invalid dataset name")
+    dataset_name = args.get("_select").get("dataset")
+    dataset = fetch_select("dataset", dataset_name)
+    d_args = args[dataset_name.lower()]
 
     channels = ["FC6", "FT8", "C5", "CP3", "P3", "T7", "CP5", "C3", "CP1", "C4"]
     channel = "FC6"
@@ -44,7 +38,7 @@ if __name__ == "__main__":
 
     testing = True
 
-    tfr_ds = TFRDataset(dataset_dir=args["tfr_dataset_dir"])
+    tfr_ds = TFRDataset(dataset_dir=d_args["tfr_dataset_dir"])
     tfr_ds.load(channel=channel, verbose=False)
     tfr_ds.dataset_info()
 
@@ -90,7 +84,9 @@ if __name__ == "__main__":
     model.summary()
 
     model.compile(
-        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"],
     )
 
     history = model.fit(

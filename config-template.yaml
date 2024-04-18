@@ -17,6 +17,7 @@ feis:
   raw_data_dir: null
   subjects: null
   tasks: null
+  tfr_dataset_dir: null
 karaone:
   channels: null
   epoch_type: null
