@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     dset.process_raw_data(
         save_dir=d_args["filtered_data_dir"],
-        pick_channels=[-1],
+        pick_channels=d_args["channels"],
         l_freq=0.5,
         h_freq=50.0,
         overwrite=False,

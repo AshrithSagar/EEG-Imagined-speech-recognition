@@ -131,7 +131,7 @@ class KaraOneDataLoader:
 
         return self.raw
 
-    def pick_channels(self, channels=[-1], verbose=None):
+    def pick_channels(self, channels="all", verbose=None):
         """
         Pick specific channels from the EEG data.
 
@@ -144,7 +144,7 @@ class KaraOneDataLoader:
         """
         verbose = verbose if verbose is not None else self.verbose
 
-        if (channels == [-1] or channels == "all"):
+        if channels == "all" or channels == [-1]:
             self.channels = self.raw.ch_names  # All channels
         else:
             if not all(channel in self.raw.ch_names for channel in channels):
@@ -374,7 +374,7 @@ class KaraOneDataLoader:
     def process_raw_data(
         self,
         save_dir=None,
-        pick_channels=[-1],
+        pick_channels="all",
         l_freq=0.5,
         h_freq=50.0,
         num_neighbors=4,
@@ -410,7 +410,7 @@ class KaraOneDataLoader:
         self,
         epoch_type: str,
         data_dir=None,
-        pick_channels=[-1],
+        pick_channels="all",
         verbose=False,
     ):
         self.verbose = verbose
