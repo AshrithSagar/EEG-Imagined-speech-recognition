@@ -18,6 +18,7 @@ feis:
   subjects: null
   tasks: null
 karaone:
+  channels: null
   epoch_type: null
   features_dir: null
   filtered_data_dir: null

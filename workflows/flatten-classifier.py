@@ -10,7 +10,6 @@ from rich.console import Console
 
 sys.path.append(os.getcwd())
 from utils.config import fetch_select, load_config
-from utils.ifs import InformationSet
 
 
 if __name__ == "__main__":

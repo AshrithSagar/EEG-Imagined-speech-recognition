@@ -23,11 +23,10 @@ if __name__ == "__main__":
         subjects=d_args["subjects"],
         verbose=True,
     )
-    pick_channels = ["FC6", "FT8", "C5", "CP3", "P3", "T7", "CP5", "C3", "CP1", "C4"]
 
     karaone.process_raw_data(
         save_dir=d_args["filtered_data_dir"],
-        pick_channels=pick_channels,
+        pick_channels=d_args["channels"],
         l_freq=0.5,
         h_freq=50.0,
         overwrite=False,
@@ -35,7 +34,7 @@ if __name__ == "__main__":
     )
     karaone.process_epochs(
         epoch_type=d_args["epoch_type"],
-        pick_channels=pick_channels,
+        pick_channels=d_args["channels"],
     )
     karaone.epochs_info(verbose=True)
     labels = karaone.all_epoch_labels

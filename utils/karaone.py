@@ -131,24 +131,25 @@ class KaraOneDataLoader:
 
         return self.raw
 
-    def pick_channels(self, pick_channels=[-1], verbose=None):
+    def pick_channels(self, channels=[-1], verbose=None):
         """
         Pick specific channels from the EEG data.
 
         Parameters:
-        - pick_channels (list): List of channel names or indices to select. Use [-1] to select all channels.
+        - channels (str or list): List of channel names or indices to select.
+        Use [-1] / 'all' to select all channels.
 
         Returns:
         - raw (mne.io.Raw): Raw data object containing the selected channels.
         """
         verbose = verbose if verbose is not None else self.verbose
 
-        if pick_channels == [-1]:
+        if (channels == [-1] or channels == "all"):
             self.channels = self.raw.ch_names  # All channels
         else:
-            if not all(channel in self.raw.ch_names for channel in pick_channels):
+            if not all(channel in self.raw.ch_names for channel in channels):
                 raise ValueError("Invalid channel(s) specified.")
-            self.channels = pick_channels
+            self.channels = channels
 
         if verbose:
             self.console.print("All channels: \n[", ", ".join(self.raw.ch_names), "]")
