@@ -32,6 +32,7 @@ karaone:
 tfr:
   batch_size: null
   max_epochs: null
+  model_base_dir: null
   trial_size: null
 utils:
   path: null

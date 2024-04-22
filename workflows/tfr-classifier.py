@@ -88,6 +88,12 @@ if __name__ == "__main__":
         metrics=["accuracy"],
     )
 
+    model_dir = t_args["model_base_dir"]
+    os.makedirs(model_dir, exist_ok=True)
+
+    filename = os.path.join(model_dir, "model.png")
+    tf.keras.utils.plot_model(model, to_file=filename, show_shapes=True)
+
     history = model.fit(
         x_train,
         y_train,
@@ -100,5 +106,5 @@ if __name__ == "__main__":
     print("Test Loss:", results[0])
     print("Test Accuracy:", results[1])
 
-    model_save_path = os.path.join("files", "model.h5")
+    model_save_path = os.path.join(model_dir, "model.h5")
     model.save(model_save_path)
