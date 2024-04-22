@@ -1,5 +1,5 @@
 """
-classification-tf-1.py
+tfr-classifier.py
 """
 
 import os
@@ -22,21 +22,18 @@ tf.config.experimental.set_memory_growth(
 
 if __name__ == "__main__":
     args = load_config(config_file="config.yaml")
+    t_args = load_config(config_file="config.yaml", key="tfr")
 
     dataset_name = args.get("_select").get("dataset")
     dataset = fetch_select("dataset", dataset_name)
     d_args = args[dataset_name.lower()]
 
-    channels = ["FC6", "FT8", "C5", "CP3", "P3", "T7", "CP5", "C3", "CP1", "C4"]
-    channel = "FC6"
-
+    channel = d_args["channels"][0]
     num_classes = 11
     input_shape = (256, 256, 1)
-
-    max_epochs = 5
-    batch_size = 32
-
-    testing = True
+    max_epochs = t_args["max_epochs"]
+    batch_size = t_args["batch_size"]
+    trial_size = t_args["trial_size"]
 
     tfr_ds = TFRDataset(dataset_dir=d_args["tfr_dataset_dir"])
     tfr_ds.load(channel=channel, verbose=False)
@@ -59,11 +56,15 @@ if __name__ == "__main__":
     y_train = tf.keras.utils.to_categorical(y_train, num_classes)
     y_test = tf.keras.utils.to_categorical(y_test, num_classes)
 
-    if testing:
-        subset_size = 5
-        x_train, y_train = x_train[:subset_size], y_train[:subset_size]
-        x_test, y_test = x_test[:subset_size], y_test[:subset_size]
+    if trial_size is None:
+        subset_size = len(y_train)
+    elif isinstance(trial_size, float) and trial_size <= 1.0:
+        subset_size = int(trial_size * len(y_train))
+    else:
+        subset_size = trial_size
 
+    x_train, y_train = x_train[:subset_size], y_train[:subset_size]
+    x_test, y_test = x_test[:subset_size], y_test[:subset_size]
     tfr_ds.split_info(x_train, x_test, y_train, y_test)
 
     model = tf.keras.Sequential(
@@ -80,9 +81,7 @@ if __name__ == "__main__":
             tf.keras.layers.Dense(num_classes, activation="softmax"),
         ]
     )
-
     model.summary()
-
     model.compile(
         optimizer="adam",
         loss="categorical_crossentropy",

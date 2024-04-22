@@ -29,5 +29,9 @@ karaone:
   subjects: null
   tasks: null
   tfr_dataset_dir: null
+tfr:
+  batch_size: null
+  max_epochs: null
+  trial_size: null
 utils:
   path: null
