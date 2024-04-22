@@ -1,9 +1,11 @@
 antropy
 dask[complete]
+graphviz
 imbalanced-learn
 mne
 numpy
 pandas
+pydot
 rich
 scikit-learn
 scipy

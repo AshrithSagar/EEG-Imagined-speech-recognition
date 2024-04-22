@@ -25,6 +25,14 @@ Follow these steps to get started.
    pip install -r requirements.txt
    ```
 
+### Linux packages
+
+For Ubuntu: `sudo apt-get install graphviz`
+
+For macOS (with Homebrew): `brew install graphviz`
+
+For Windows: Download and install Graphviz from the [Graphviz website](https://graphviz.org/download/).
+
 ## Usage
 
 ### Configuration file
