@@ -21,6 +21,7 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 from rich.table import Table
+from scipy.io import wavfile
 from scipy.spatial.distance import cdist
 
 from utils.config import line_separator
@@ -769,7 +770,7 @@ class KaraOneDataLoader:
         return self.raw
 
     def get_task(self, labels=None, task=None, verbose=None):
-        """Classiﬁcation of phonological categories.
+        """Classification of phonological categories.
         Classes:
         - 0: Vowel only (0) vs Consonant (1)
         - 1: Non-nasal (0) vs Nasal (1)
@@ -796,3 +797,17 @@ class KaraOneDataLoader:
 
         task_labels = [class_dict[label][task] for label in labels]
         return np.asarray(task_labels)
+
+    def load_audio_data(self):
+        for subject in self.subjects:
+            kinect_dir = os.path.join(self.raw_data_dir, subject, "kinect_data")
+            wav_files = [
+                file for file in os.listdir(kinect_dir) if file.endswith(".wav")
+            ]
+
+            audio_data = []
+            for wav_file in wav_files:
+                fs, data = wavfile.read(str(wav_file))
+                audio_data.append(data)
+
+            return np.asarray(audio_data)
