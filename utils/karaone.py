@@ -464,17 +464,22 @@ class KaraOneDataLoader:
         overlap=0.5,
         skip_if_exists=True,
     ):
+        epoch_type = epoch_type or self.epoch_type
+        self.features_dir = save_dir
+        self.get_features_functions()
+
+        if epoch_type == "acoustic" and not self.audio_data:
+            self.load_audio_data()
+
         with self.create_progress_bar() as self.progress:
             task_subjects = self.progress.add_task(
                 "Subjects ...",
                 total=len(self.subjects),
                 completed=1,
             )
-            task_features = self.progress.add_task("Computing features ...")
-
-            epoch_type = epoch_type or self.epoch_type
-            self.features_dir = save_dir
-            self.get_features_functions()
+            task_features = self.progress.add_task(
+                "Computing {epoch_type} features ..."
+            )
 
             for index, subject in enumerate(self.subjects):
                 if skip_if_exists:
@@ -484,13 +489,22 @@ class KaraOneDataLoader:
                         self.progress.update(task_subjects, advance=1)
                         continue
 
-                subject_epochs = self.all_epochs[index].get_data(copy=True)
+                if epoch_type == "acoustic":
+                    # Add a channel dimension
+                    subject_epochs = np.asarray(self.audio_data[index]).reshape(1, -1)
+                elif epoch_type in ["clearing", "thinking", "stimuli", "speaking"]:
+                    subject_epochs = self.all_epochs[index].get_data(copy=True)
+                else:
+                    raise ValueError(
+                        "Invalid epoch type. Choose from 'acoustic', 'clearing', 'thinking', 'stimuli', 'speaking'."
+                    )
+
                 self.progress.update(task_features, total=len(subject_epochs))
                 features = self.compute_features_dask(
                     subject_epochs, length_factor, overlap, task=task_features
                 )
                 self.progress.reset(task_features)
-                self.save_features(subject, features)
+                self.save_features(subject, features, epoch_type=epoch_type)
                 self.progress.update(task_subjects, advance=1)
 
     def compute_features_dask(self, epochs, length_factor=0.1, overlap=0.5, task=None):
@@ -529,10 +543,6 @@ class KaraOneDataLoader:
     def compute_features(self, epochs, length_factor=0.1, overlap=0.5, task=None):
         features = []
         for epoch in epochs:
-            epoch = np.asarray(epoch)
-            if len(epoch.shape) == 1:  # Add a channel dimension for audio data
-                epoch = epoch.reshape(1, -1)
-
             windowed_epoch = self.window_data(epoch, length_factor, overlap)
             feats = self.make_simple_feats(windowed_epoch, flatten=False)
             all_feats = self.add_deltas(feats)
@@ -630,7 +640,7 @@ class KaraOneDataLoader:
     def load_features(self, features_dir=None, epoch_type: str = None, verbose=None):
         """Parameters:
         - features_dir (str): Path to the features directory.
-        - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking").
+        - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking"; "acoustic").
 
         Returns:
         - features (np.ndarray): Features of shape (n.subjects, n.epochs, n.windows, n.features_per_window).
@@ -655,7 +665,9 @@ class KaraOneDataLoader:
                 if "all_epoch_labels" in self.__dict__
                 else self.get_all_epoch_labels()
             )
-            self.features_info(self.features, labels, verbose=verbose)
+            self.features_info(
+                self.features, labels, epoch_type=epoch_type, verbose=verbose
+            )
 
         return self.features
 
@@ -704,8 +716,9 @@ class KaraOneDataLoader:
             message += ", ".join(self.subjects)
             self.console.print(message)
 
-    def features_info(self, features, labels, verbose=None):
+    def features_info(self, features, labels, epoch_type=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
+        epoch_type = epoch_type or self.epoch_type
 
         if verbose:
             table = Table(title="[bold underline]Features Info[/]")
@@ -716,6 +729,7 @@ class KaraOneDataLoader:
             for feats, subject, label in zip(features, self.subjects, labels):
                 table.add_row(str(subject), str(feats.shape), str(label.shape))
 
+            self.console.print(f"Epoch type: [bold]{epoch_type}[/]")
             self.console.print(table)
 
     def apply_laplacian_filter(self, num_neighbors=4, task=None, verbose=None):
@@ -816,41 +830,3 @@ class KaraOneDataLoader:
                 audio_data.append(data)
 
             self.audio_data.append(audio_data)
-
-    def extract_acoustic_features(
-        self,
-        save_dir,
-        epoch_type="acoustic",
-        length_factor=0.1,
-        overlap=0.5,
-        skip_if_exists=True,
-    ):
-        self.load_audio_data()
-        with self.create_progress_bar() as self.progress:
-            task_subjects = self.progress.add_task(
-                "Subjects ...",
-                total=len(self.subjects),
-                completed=1,
-            )
-            task_features = self.progress.add_task("Computing acoustic features ...")
-
-            self.epoch_type = epoch_type
-            self.features_dir = save_dir
-            self.get_features_functions()
-
-            for index, subject in enumerate(self.subjects):
-                if skip_if_exists:
-                    if os.path.exists(
-                        os.path.join(self.features_dir, subject, f"{epoch_type}.npy")
-                    ):
-                        self.progress.update(task_subjects, advance=1)
-                        continue
-
-                subject_epochs = self.audio_data[index]
-                self.progress.update(task_features, total=len(subject_epochs))
-                features = self.compute_features(
-                    subject_epochs, length_factor, overlap, task=task_features
-                )
-                self.progress.reset(task_features)
-                self.save_features(subject, features, epoch_type=epoch_type)
-                self.progress.update(task_subjects, advance=1)
