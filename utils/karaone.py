@@ -478,7 +478,7 @@ class KaraOneDataLoader:
                 completed=1,
             )
             task_features = self.progress.add_task(
-                "Computing {epoch_type} features ..."
+                f"Computing {epoch_type} features ..."
             )
 
             for index, subject in enumerate(self.subjects):
@@ -490,17 +490,22 @@ class KaraOneDataLoader:
                         continue
 
                 if epoch_type == "acoustic":
-                    # Add a channel dimension
-                    subject_epochs = np.asarray(self.audio_data[index]).reshape(1, -1)
+                    # Add a channel dimension to the audio data
+                    subject_epochs = [
+                        np.asarray(epoch).reshape(1, -1)
+                        for epoch in self.audio_data[index]
+                    ]
+                    compute_features = self.compute_features
                 elif epoch_type in ["clearing", "thinking", "stimuli", "speaking"]:
                     subject_epochs = self.all_epochs[index].get_data(copy=True)
+                    compute_features = self.compute_features_dask
                 else:
                     raise ValueError(
                         "Invalid epoch type. Choose from 'acoustic', 'clearing', 'thinking', 'stimuli', 'speaking'."
                     )
 
                 self.progress.update(task_features, total=len(subject_epochs))
-                features = self.compute_features_dask(
+                features = compute_features(
                     subject_epochs, length_factor, overlap, task=task_features
                 )
                 self.progress.reset(task_features)
@@ -819,6 +824,7 @@ class KaraOneDataLoader:
         return np.asarray(task_labels)
 
     def load_audio_data(self):
+        """Load audio data from KaraOne folder"""
         self.audio_data = []
         for subject in self.subjects:
             kinect_dir = os.path.join(self.raw_data_dir, subject, "kinect_data")
