@@ -529,6 +529,10 @@ class KaraOneDataLoader:
     def compute_features(self, epochs, length_factor=0.1, overlap=0.5, task=None):
         features = []
         for epoch in epochs:
+            epoch = np.asarray(epoch)
+            if len(epoch.shape) == 1:  # Add a channel dimension for audio data
+                epoch = epoch.reshape(1, -1)
+
             windowed_epoch = self.window_data(epoch, length_factor, overlap)
             feats = self.make_simple_feats(windowed_epoch, flatten=False)
             all_feats = self.add_deltas(feats)
@@ -605,11 +609,13 @@ class KaraOneDataLoader:
         )
         return all_feats
 
-    def save_features(self, subject: str, features: np.ndarray):
+    def save_features(self, subject: str, features: np.ndarray, epoch_type: str = None):
+        epoch_type = epoch_type or self.epoch_type
+
         subject_features_dir = os.path.join(self.features_dir, subject)
         os.makedirs(subject_features_dir, exist_ok=True)
 
-        filename = os.path.join(subject_features_dir, f"{self.epoch_type}.npy")
+        filename = os.path.join(subject_features_dir, f"{epoch_type}.npy")
         np.save(filename, features)
 
     def get_features_functions(self):
@@ -799,15 +805,52 @@ class KaraOneDataLoader:
         return np.asarray(task_labels)
 
     def load_audio_data(self):
+        self.audio_data = []
         for subject in self.subjects:
             kinect_dir = os.path.join(self.raw_data_dir, subject, "kinect_data")
-            wav_files = [
-                file for file in os.listdir(kinect_dir) if file.endswith(".wav")
-            ]
+            wav_files = glob.glob(os.path.join(kinect_dir, "*.wav"))
 
             audio_data = []
             for wav_file in wav_files:
-                fs, data = wavfile.read(str(wav_file))
+                fs, data = wavfile.read(os.path.join(kinect_dir, wav_file))
                 audio_data.append(data)
 
-            return np.asarray(audio_data)
+            self.audio_data.append(audio_data)
+
+    def extract_acoustic_features(
+        self,
+        save_dir,
+        epoch_type="acoustic",
+        length_factor=0.1,
+        overlap=0.5,
+        skip_if_exists=True,
+    ):
+        self.load_audio_data()
+        with self.create_progress_bar() as self.progress:
+            task_subjects = self.progress.add_task(
+                "Subjects ...",
+                total=len(self.subjects),
+                completed=1,
+            )
+            task_features = self.progress.add_task("Computing acoustic features ...")
+
+            self.epoch_type = epoch_type
+            self.features_dir = save_dir
+            self.get_features_functions()
+
+            for index, subject in enumerate(self.subjects):
+                if skip_if_exists:
+                    if os.path.exists(
+                        os.path.join(self.features_dir, subject, f"{epoch_type}.npy")
+                    ):
+                        self.progress.update(task_subjects, advance=1)
+                        continue
+
+                subject_epochs = self.audio_data[index]
+                self.progress.update(task_features, total=len(subject_epochs))
+                features = self.compute_features(
+                    subject_epochs, length_factor, overlap, task=task_features
+                )
+                self.progress.reset(task_features)
+                self.save_features(subject, features, epoch_type=epoch_type)
+                self.progress.update(task_subjects, advance=1)
