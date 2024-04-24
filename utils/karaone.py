@@ -468,7 +468,7 @@ class KaraOneDataLoader:
         self.features_dir = save_dir
         self.get_features_functions()
 
-        if epoch_type == "acoustic" and not self.audio_data:
+        if epoch_type == "acoustic" and not hasattr(self, "audio_data"):
             self.load_audio_data()
 
         with self.create_progress_bar() as self.progress:
