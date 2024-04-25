@@ -677,10 +677,7 @@ class KaraOneDataLoader:
         return self.features
 
     def flatten(self, features=None, labels=None, reshape=False, verbose=None):
-        """
-        Flatten the features and concatenate labels.
-        """
-
+        """Flatten the features and concatenate labels"""
         verbose = verbose if verbose is not None else self.verbose
         features = features if features is not None else self.features
         labels = labels if labels is not None else self.get_all_epoch_labels()
@@ -699,7 +696,7 @@ class KaraOneDataLoader:
 
         return flattened_features, flattened_labels
 
-    def dataset_info(self, features=None, labels=None, verbose=None):
+    def dataset_info(self, features=None, labels=None, epoch_type=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         features = features if features is not None else self.features
         labels = labels if labels is not None else self.get_all_epoch_labels()
@@ -711,6 +708,9 @@ class KaraOneDataLoader:
             table.add_row("Features", str(features.shape))
             table.add_row("Labels", str(labels.shape))
 
+            if epoch_type is not None:
+                epoch_type = epoch_type or self.epoch_type
+                self.console.print(f"Epoch type: [bold]{epoch_type}[/]")
             self.console.print(table)
 
     def subjects_info(self, verbose=None):
@@ -723,7 +723,7 @@ class KaraOneDataLoader:
 
     def features_info(self, features, labels, epoch_type=None, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
-        epoch_type = epoch_type or self.epoch_type
+        epoch_type = epoch_type if epoch_type is not None else self.epoch_type
 
         if verbose:
             table = Table(title="[bold underline]Features Info[/]")

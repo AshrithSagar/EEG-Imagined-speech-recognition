@@ -14,7 +14,7 @@ import yaml
 from rich.console import Console
 from rich.table import Table
 from scipy.stats import pearsonr
-from sklearn.feature_selection import f_classif
+from sklearn.feature_selection import f_classif, SelectKBest
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     accuracy_score,
@@ -43,6 +43,7 @@ class ClassifierMixin:
         random_state=42,
         trial_size=None,
         features_names=None,
+        top_n_pearsonr=None,
         verbose=False,
         console=None,
     ):
@@ -55,11 +56,12 @@ class ClassifierMixin:
         self.test_size = test_size
         self.random_state = random_state
         self.trial_size = trial_size
-        self.features_names = (
+        self.features_names = np.array(
             [f"Feature-{i}" for i in range(1, X.shape[1] + 1)]
             if features_names is None
             else features_names
         )
+        self.top_n_pearsonr = top_n_pearsonr
         self.verbose = verbose
         self.console = console if console else Console()
         self.model = None
@@ -131,15 +133,25 @@ class ClassifierMixin:
 
             self.console.print(table)
 
+    @staticmethod
+    def pearsonr_score(X, y):
+        """Absolute Pearson correlation coefficients"""
+        num_features = X.shape[1]
+        correlation_coeffs = [
+            pearsonr(X[:, feature], y)[0] for feature in range(num_features)
+        ]
+        return np.abs(correlation_coeffs)
+
     def get_pearsonr(self, X=None, y=None, verbose=None):
         verbose = self.set_verbose(verbose)
         X = self.get_value(X, self.X)
         y = self.get_value(y, self.y)
 
-        num_features = X.shape[1]
-        self.correlation_coeffs = [
-            pearsonr(X[:, feature], y)[0] for feature in range(num_features)
-        ]
+        self.correlation_coeffs = self.pearsonr_score(X, y)
+        self.pearsonr_df = pd.DataFrame(
+            {"Feature": self.features_names, "Pearsonr": self.correlation_coeffs},
+            index=range(1, len(self.features_names) + 1),
+        )
 
         if verbose:
             table = Table(title="[bold underline]Pearson Correlation:[/]")
@@ -151,7 +163,21 @@ class ClassifierMixin:
 
             self.console.print(table)
 
-    def select_features(self, X=None, y=None, select=None, verbose=None):
+    def select_top_n_pearsonr(self, X=None, y=None, k=10, verbose=None):
+        verbose = self.set_verbose(verbose)
+        X = self.get_value(X, self.X)
+        y = self.get_value(y, self.y)
+
+        if self.top_n_pearsonr is None:
+            return X
+
+        selector = SelectKBest(score_func=self.pearsonr_score, k=self.top_n_pearsonr)
+        X_select = selector.fit_transform(X, y)
+        select_indices = selector.get_support(indices=True)
+        self.features_names = self.features_names[select_indices]
+        return X_select
+
+    def select_features(self, X=None, select=None, verbose=None):
         """Select specific features from the feature matrix.
 
         Parameters:
@@ -160,17 +186,15 @@ class ClassifierMixin:
         """
         verbose = self.set_verbose(verbose)
         X = self.get_value(X, self.X)
-        y = self.get_value(y, self.y)
 
         X_select = X[:, select] if select is not None else X
-        y_select = y[:, select] if select is not None else y
 
         if verbose:
             self.console.print(
                 f"[bold underline]Feature selection:[/]\n{X_select.shape[1]} / {X.shape[1]} selected"
             )
 
-        return X_select, y_select
+        return X_select
 
     def get_scoring(self, scoring=None):
         if scoring is not None:
@@ -368,8 +392,13 @@ class ClassifierMixin:
         with open(filename, "w") as file:
             yaml.dump(self.model.get_params(), file, default_flow_style=False)
 
-        filename = os.path.join(self.save_dir, "anova_f.csv")
-        self.anova_f.to_csv(filename, index=True)
+        if hasattr(self, "anova_f"):
+            filename = os.path.join(self.save_dir, "anova_f.csv")
+            self.anova_f.to_csv(filename, index=True)
+
+        if hasattr(self, "pearsonr_df"):
+            filename = os.path.join(self.save_dir, "pearsonr.csv")
+            self.pearsonr_df.to_csv(filename, index=True)
 
 
 class RegularClassifier(ClassifierMixin):
@@ -382,6 +411,7 @@ class RegularClassifier(ClassifierMixin):
         random_state=42,
         trial_size=None,
         features_names=None,
+        top_n_pearsonr=None,
         verbose=False,
         console=None,
     ):
@@ -393,6 +423,7 @@ class RegularClassifier(ClassifierMixin):
             random_state=random_state,
             trial_size=trial_size,
             features_names=features_names,
+            top_n_pearsonr=top_n_pearsonr,
             verbose=verbose,
             console=console,
         )
@@ -438,7 +469,10 @@ class RegularClassifier(ClassifierMixin):
 
         self.X_train, self.y_train = self.resample(X_train, y_train, sampler)
 
+        self.X = self.select_top_n_pearsonr()
         self.get_anova_f()
+        self.get_pearsonr()
+        self.X = self.select_features()
         self.get_scoring()
         self.get_model_config()
         self.model = model if model else self.model_config.model()
@@ -509,6 +543,7 @@ class ClassifierGridSearch(ClassifierMixin):
         random_state=42,
         trial_size=None,
         features_names=None,
+        top_n_pearsonr=None,
         verbose=False,
         console=None,
     ):
@@ -520,6 +555,7 @@ class ClassifierGridSearch(ClassifierMixin):
             random_state=random_state,
             trial_size=trial_size,
             features_names=features_names,
+            top_n_pearsonr=top_n_pearsonr,
             verbose=verbose,
             console=console,
         )
@@ -578,7 +614,10 @@ class ClassifierGridSearch(ClassifierMixin):
 
         self.X_train, self.y_train = self.resample(X_train, y_train, sampler)
 
+        self.X = self.select_top_n_pearsonr()
         self.get_anova_f()
+        self.get_pearsonr()
+        self.X = self.select_features()
         self.get_scoring(scoring)
         self.get_model_config()
         self.model = model if model else self.model_config.model()
@@ -698,6 +737,7 @@ class EvaluateClassifier(ClassifierMixin):
         random_state=42,
         trial_size=None,
         features_names=None,
+        top_n_pearsonr=None,
         verbose=False,
         console=None,
     ):
@@ -709,6 +749,7 @@ class EvaluateClassifier(ClassifierMixin):
             random_state=random_state,
             trial_size=trial_size,
             features_names=features_names,
+            top_n_pearsonr=top_n_pearsonr,
             verbose=verbose,
             console=console,
         )
@@ -735,9 +776,10 @@ class EvaluateClassifier(ClassifierMixin):
 
         self.X, self.y = self.resample(self.X, self.y, sampler)
 
+        self.X = self.select_top_n_pearsonr()
         self.get_anova_f()
         self.get_pearsonr()
-        self.X, self.y = self.select_features()
+        self.X = self.select_features()
         self.get_scoring()
         self.get_model_config()
         self.model = model if model else self.model_config.model()
