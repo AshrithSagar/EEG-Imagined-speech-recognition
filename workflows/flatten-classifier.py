@@ -55,7 +55,7 @@ if __name__ == "__main__":
                 test_size=c_args["test_size"],
                 random_state=c_args["random_state"],
                 trial_size=c_args["trial_size"] or None,
-                top_n_pearsonr=c_args["top_n_pearsonr"],
+                features_select_k_best=c_args["features_select_k_best"],
                 verbose=True,
                 console=console,
             )

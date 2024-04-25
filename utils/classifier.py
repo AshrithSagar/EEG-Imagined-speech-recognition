@@ -43,7 +43,7 @@ class ClassifierMixin:
         random_state=42,
         trial_size=None,
         features_names=None,
-        top_n_pearsonr=None,
+        features_select_k_best=None,
         verbose=False,
         console=None,
     ):
@@ -61,11 +61,13 @@ class ClassifierMixin:
             if features_names is None
             else features_names
         )
-        self.top_n_pearsonr = top_n_pearsonr
+        self.features_select_k_best = features_select_k_best
         self.verbose = verbose
         self.console = console if console else Console()
         self.model = None
         self.model_config = None
+        self.score_func = None
+        self.selected_features_indices = None
 
     def get_value(self, value, default):
         """Handle None values"""
@@ -163,21 +165,7 @@ class ClassifierMixin:
 
             self.console.print(table)
 
-    def select_top_n_pearsonr(self, X=None, y=None, k=10, verbose=None):
-        verbose = self.set_verbose(verbose)
-        X = self.get_value(X, self.X)
-        y = self.get_value(y, self.y)
-
-        if self.top_n_pearsonr is None:
-            return X
-
-        selector = SelectKBest(score_func=self.pearsonr_score, k=self.top_n_pearsonr)
-        X_select = selector.fit_transform(X, y)
-        select_indices = selector.get_support(indices=True)
-        self.features_names = self.features_names[select_indices]
-        return X_select
-
-    def select_features(self, X=None, select=None, verbose=None):
+    def select_features(self, X=None, y=None, select=None, k_best=None, verbose=None):
         """Select specific features from the feature matrix.
 
         Parameters:
@@ -186,6 +174,24 @@ class ClassifierMixin:
         """
         verbose = self.set_verbose(verbose)
         X = self.get_value(X, self.X)
+        y = self.get_value(y, self.y)
+        k_best = self.get_value(k_best, self.features_select_k_best)
+
+        def fetch_score_func(score_func):
+            self.score_func = None
+            if score_func == "pearsonr":
+                self.score_func = self.pearsonr_score
+            elif score_func == "f_classif":
+                self.score_func = f_classif
+            return self.score_func
+
+        if k_best is not None:
+            fetch_score_func(k_best["score_func"])
+            if self.score_func:
+                selector = SelectKBest(score_func=self.score_func, k=k_best["k"])
+                X = selector.fit_transform(X, y)
+                select_indices = selector.get_support(indices=True)
+                self.features_names = self.features_names[select_indices]
 
         X_select = X[:, select] if select is not None else X
 
@@ -411,7 +417,7 @@ class RegularClassifier(ClassifierMixin):
         random_state=42,
         trial_size=None,
         features_names=None,
-        top_n_pearsonr=None,
+        features_select_k_best=None,
         verbose=False,
         console=None,
     ):
@@ -423,7 +429,7 @@ class RegularClassifier(ClassifierMixin):
             random_state=random_state,
             trial_size=trial_size,
             features_names=features_names,
-            top_n_pearsonr=top_n_pearsonr,
+            features_select_k_best=features_select_k_best,
             verbose=verbose,
             console=console,
         )
@@ -469,10 +475,10 @@ class RegularClassifier(ClassifierMixin):
 
         self.X_train, self.y_train = self.resample(X_train, y_train, sampler)
 
-        self.X = self.select_top_n_pearsonr()
+        self.X = self.select_features(k_best=self.features_select_k_best)
         self.get_anova_f()
         self.get_pearsonr()
-        self.X = self.select_features()
+        self.X = self.select_features(select=self.selected_features_indices)
         self.get_scoring()
         self.get_model_config()
         self.model = model if model else self.model_config.model()
@@ -543,7 +549,7 @@ class ClassifierGridSearch(ClassifierMixin):
         random_state=42,
         trial_size=None,
         features_names=None,
-        top_n_pearsonr=None,
+        features_select_k_best=None,
         verbose=False,
         console=None,
     ):
@@ -555,7 +561,7 @@ class ClassifierGridSearch(ClassifierMixin):
             random_state=random_state,
             trial_size=trial_size,
             features_names=features_names,
-            top_n_pearsonr=top_n_pearsonr,
+            features_select_k_best=features_select_k_best,
             verbose=verbose,
             console=console,
         )
@@ -614,10 +620,10 @@ class ClassifierGridSearch(ClassifierMixin):
 
         self.X_train, self.y_train = self.resample(X_train, y_train, sampler)
 
-        self.X = self.select_top_n_pearsonr()
+        self.X = self.select_features(k_best=self.features_select_k_best)
         self.get_anova_f()
         self.get_pearsonr()
-        self.X = self.select_features()
+        self.X = self.select_features(select=self.selected_features_indices)
         self.get_scoring(scoring)
         self.get_model_config()
         self.model = model if model else self.model_config.model()
@@ -737,7 +743,7 @@ class EvaluateClassifier(ClassifierMixin):
         random_state=42,
         trial_size=None,
         features_names=None,
-        top_n_pearsonr=None,
+        features_select_k_best=None,
         verbose=False,
         console=None,
     ):
@@ -749,7 +755,7 @@ class EvaluateClassifier(ClassifierMixin):
             random_state=random_state,
             trial_size=trial_size,
             features_names=features_names,
-            top_n_pearsonr=top_n_pearsonr,
+            features_select_k_best=features_select_k_best,
             verbose=verbose,
             console=console,
         )
@@ -776,10 +782,10 @@ class EvaluateClassifier(ClassifierMixin):
 
         self.X, self.y = self.resample(self.X, self.y, sampler)
 
-        self.X = self.select_top_n_pearsonr()
+        self.X = self.select_features(k_best=self.features_select_k_best)
         self.get_anova_f()
         self.get_pearsonr()
-        self.X = self.select_features()
+        self.X = self.select_features(select=self.selected_features_indices)
         self.get_scoring()
         self.get_model_config()
         self.model = model if model else self.model_config.model()

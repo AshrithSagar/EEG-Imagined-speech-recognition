@@ -6,11 +6,13 @@ _select:
   dataset: null
 classifier:
   evaluate_only: null
+  features_select_k_best:
+    k: null
+    score_func: null
   model_base_dir: null
   models: null
   random_state: null
   test_size: null
-  top_n_pearsonr: null
   trial_size: null
 feis:
   epoch_type: null

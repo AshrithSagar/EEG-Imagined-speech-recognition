@@ -58,6 +58,7 @@ if __name__ == "__main__":
                 test_size=c_args["test_size"],
                 random_state=c_args["random_state"],
                 trial_size=c_args["trial_size"] or None,
+                features_select_k_best=c_args["features_select_k_best"],
                 features_names=dset.features_names,
                 verbose=True,
                 console=console,
