@@ -54,7 +54,7 @@ if __name__ == "__main__":
     channel_correlations = np.array(channel_correlations)
     mean_correlations = channel_correlations.mean(axis=0)
 
-    df = pd.DataFrame(
+    all_df = pd.DataFrame(
         {
             "Channel": dset.channels,
             "Pearson r": mean_correlations[:, 0],
@@ -62,14 +62,17 @@ if __name__ == "__main__":
         }
     )
     filename = os.path.join(d_args["features_dir"], "eeg-acoustic-correlation.csv")
-    df.to_csv(filename)
+    all_df.to_csv(filename, index=False)
+    top_df = all_df.nlargest(10, "Pearson r")
 
     table = Table(title="[bold underline]Mean correlations:[/]")
     table.add_column("Channel", justify="right", style="magenta", no_wrap=True)
     table.add_column("Pearson r", justify="center", style="cyan", no_wrap=True)
     table.add_column("p-Value", justify="center", style="cyan", no_wrap=True)
-    for channel, (r_val, p_val) in zip(dset.channels, mean_correlations):
-        table.add_row(channel, f"{r_val:.4f}", f"{p_val:.4f}")
+    for _, row in top_df.iterrows():
+        table.add_row(
+            row["Channel"], f"{row['Pearson r']:.4f}", f"{row['p-Value']:.4f}"
+        )
     console.print(table)
 
     filename = os.path.join(d_args["features_dir"], "eeg-acoustic-correlation.txt")
