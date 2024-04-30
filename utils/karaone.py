@@ -633,6 +633,10 @@ class KaraOneDataLoader:
         filename = os.path.join(subject_features_dir, f"{epoch_type}.npy")
         np.save(filename, features)
 
+        filename = os.path.join(self.features_dir, "channels.txt")
+        with open(filename, "w") as file:
+            file.write("\n".join(self.channels))
+
     def get_features_functions(self):
         ff = FeatureFunctions(self.sampling_freq)
         self.feature_functions, features_names = ff.get()
@@ -663,6 +667,10 @@ class KaraOneDataLoader:
             else:
                 raise FileNotFoundError(f"File not found: {filename}")
             self.features.append(subject_features)
+
+        filename = os.path.join(features_dir, "channels.txt")
+        with open(filename, "r") as file:
+            self.channels = file.read().splitlines()
 
         if verbose:
             labels = (
