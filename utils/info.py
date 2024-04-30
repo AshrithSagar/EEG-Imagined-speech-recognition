@@ -6,6 +6,7 @@ Info Utility scripts
 import os
 
 import matplotlib.pyplot as plt
+import pandas as pd
 import yaml
 from rich.console import Console
 from rich.table import Table
@@ -80,3 +81,60 @@ class ModelSummary:
 
         plt.tight_layout()
         plt.show()
+
+
+class KBestSummary:
+    def __init__(self, task_dir, save_ext="png"):
+        self.task_dir = task_dir
+        self.save_ext = save_ext
+        self.save_dir = os.path.join(task_dir, "Summary")
+        os.makedirs(self.save_dir, exist_ok=True)
+        self.results = None
+
+    def get_results(self):
+        results = {}
+        for k_dir_name in os.listdir(self.task_dir):
+            k_dir = os.path.join(self.task_dir, k_dir_name)
+            if not os.path.isdir(k_dir) or "k_best-" not in k_dir_name:
+                continue
+
+            k = k_dir_name.replace("k_best-", "")
+            cv_metrics = pd.read_csv(os.path.join(k_dir, "cv_metrics.csv"))
+            cv_metrics["k"] = k
+            results.update({k: cv_metrics})
+
+        self.results = pd.concat(results, ignore_index=True)
+        self.results.set_index(["k", self.results.index], inplace=True)
+
+        index = sorted(self.results.index, key=lambda x: int(x[0]))
+        index = [x[0] for x in index]
+        self.results.index = index
+        return self.results
+
+    def get_metrics(self, metric=None):
+        df = self.get_results()
+        metric_df = df[df["Metric"] == metric].drop(columns=["Metric"])
+        return metric_df
+
+    def plot(self, metrics=None):
+        if metrics == "all":
+            metrics = self.results["Metric"].unique()
+        elif not metrics:
+            metrics = ["accuracy"]  # Default
+
+        for metric in metrics:
+            df = self.get_metrics(metric=metric)
+
+            plt.clf()
+            plt.plot(df.index, df["Mean"], label=metric)
+            plt.fill_between(
+                df.index, df["Mean"] - df["Std"], df["Mean"] + df["Std"], alpha=0.3
+            )
+            plt.xlabel("Number of features")
+            plt.ylabel(metric.capitalize())
+            plt.legend()
+            plt.tight_layout()
+
+            filename = os.path.join(self.save_dir, f"{metric}.{self.save_ext}")
+            plt.savefig(filename)
+            plt.close()

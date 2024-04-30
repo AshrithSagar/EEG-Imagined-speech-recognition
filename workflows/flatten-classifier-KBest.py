@@ -11,6 +11,7 @@ from rich.console import Console
 
 sys.path.append(os.getcwd())
 from utils.config import fetch_select, load_config
+from utils.info import KBestSummary
 
 
 if __name__ == "__main__":
@@ -70,6 +71,9 @@ if __name__ == "__main__":
 
                 clf.get_model_config(model_file=model_file)
                 clf.run()
+
+            summary = KBestSummary(task_dir=task_dir)
+            summary.plot(metrics="all")
 
         with open(os.path.join(model_dir, classifier_name, "output.txt"), "w") as file:
             file.write(console.export_text())
