@@ -27,6 +27,7 @@ if __name__ == "__main__":
     for model in c_args["models"]:
         console = Console(record=True)
         model_dir = os.path.join(c_args["model_base_dir"], model, dataset_name)
+        model_file = os.path.join(c_args["model_base_dir"], model, "model.py")
         Console().rule(title=f"[bold blue3][Model: {model}][/]", style="blue3")
 
         dset = dataset(
@@ -64,9 +65,7 @@ if __name__ == "__main__":
                 console=console,
             )
 
-            clf.get_model_config(
-                model_file=os.path.join(c_args["model_base_dir"], model, "model.py")
-            )
+            clf.get_model_config(model_file=model_file)
             clf.run()
 
         with open(os.path.join(model_dir, classifier_name, "output.txt"), "w") as file:
