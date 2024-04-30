@@ -23,7 +23,6 @@ from sklearn.metrics import (
     cohen_kappa_score,
     confusion_matrix,
     f1_score,
-    log_loss,
     make_scorer,
     matthews_corrcoef,
     precision_score,
@@ -235,7 +234,6 @@ class ClassifierMixin:
                 recall_score, average="weighted", zero_division=0
             ),
             "roc_auc": make_scorer(roc_auc_score),
-            "log_loss": make_scorer(log_loss),
         }
 
         return self.scoring
@@ -255,7 +253,6 @@ class ClassifierMixin:
         mcc = matthews_corrcoef(y_test, y_pred)
         kappa = cohen_kappa_score(y_test, y_pred)
         balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
-        log_loss_score = log_loss(y_test, y_pred)
 
         self.metrics = {
             "accuracy": float(accuracy),
@@ -268,7 +265,6 @@ class ClassifierMixin:
             "matthews_corrcoef": float(mcc),
             "cohen_kappa": float(kappa),
             "balanced_accuracy": float(balanced_accuracy),
-            "log_loss": float(log_loss_score),
         }
 
         self.metrics_info(show_plots=show_plots, verbose=verbose)
@@ -285,7 +281,6 @@ class ClassifierMixin:
             "matthews_corrcoef": lambda x: (f"{x:.4f}" if as_str else round(x, 4)),
             "cohen_kappa": lambda x: f"{x:.4f}" if as_str else round(x, 4),
             "balanced_accuracy": lambda x: (f"{x:.2%}" if as_str else round(x, 4)),
-            "log_loss": lambda x: f"{x:.4f}" if as_str else round(x, 4),
         }
 
         return {
