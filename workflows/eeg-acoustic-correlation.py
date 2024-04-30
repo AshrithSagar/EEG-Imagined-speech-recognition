@@ -8,6 +8,7 @@ import os
 import sys
 
 import numpy as np
+import pandas as pd
 from rich.console import Console
 from rich.table import Table
 from scipy.stats import pearsonr
@@ -51,13 +52,24 @@ if __name__ == "__main__":
             [pearsonr(acoustic_feats, channel_feats) for channel_feats in eeg_feats]
         )
     channel_correlations = np.array(channel_correlations)
-    mean_correlations = channel_correlations.mean(axis=0)[:, 0]
+    mean_correlations = channel_correlations.mean(axis=0)
+
+    df = pd.DataFrame(
+        {
+            "Channel": dset.channels,
+            "Pearson r": mean_correlations[:, 0],
+            "p-Value": mean_correlations[:, 1],
+        }
+    )
+    filename = os.path.join(d_args["features_dir"], "eeg-acoustic-correlation.csv")
+    df.to_csv(filename)
 
     table = Table(title="[bold underline]Mean correlations:[/]")
     table.add_column("Channel", justify="right", style="magenta", no_wrap=True)
-    table.add_column("r", justify="center", style="cyan", no_wrap=True)
-    for channel, r_val in zip(dset.channels, mean_correlations):
-        table.add_row(channel, f"{r_val:.4f}")
+    table.add_column("Pearson r", justify="center", style="cyan", no_wrap=True)
+    table.add_column("p-Value", justify="center", style="cyan", no_wrap=True)
+    for channel, (r_val, p_val) in zip(dset.channels, mean_correlations):
+        table.add_row(channel, f"{r_val:.4f}", f"{p_val:.4f}")
     console.print(table)
 
     filename = os.path.join(d_args["features_dir"], "eeg-acoustic-correlation.txt")
