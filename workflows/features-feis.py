@@ -24,6 +24,7 @@ if __name__ == "__main__":
     feis.extract_features(
         save_dir=d_args["features_dir"],
         epoch_type=d_args["epoch_type"],
+        skip_if_exists=True,
     )
 
     features = feis.load_features(epoch_type=d_args["epoch_type"])

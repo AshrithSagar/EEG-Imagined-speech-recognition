@@ -48,6 +48,7 @@ if __name__ == "__main__":
         epoch_type=d_args["epoch_type"],
         length_factor=d_args["length_factor"],
         overlap=d_args["overlap"],
+        skip_if_exists=True,
     )
 
     features = karaone.load_features(epoch_type=d_args["epoch_type"], verbose=True)
