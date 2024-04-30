@@ -20,18 +20,25 @@ if __name__ == "__main__":
         verbose=True,
     )
 
-    dset.process_raw_data(
-        save_dir=d_args["filtered_data_dir"],
-        pick_channels=d_args["channels"],
-        l_freq=0.5,
-        h_freq=50.0,
-        overwrite=False,
-        verbose=True,
-    )
+    if d_args["epoch_type"] == "acoustic":
+        dset.load_audio_data()
+    elif d_args["epoch_type"] in ["clearing", "thinking", "stimuli", "speaking"]:
+        dset.process_raw_data(
+            save_dir=d_args["filtered_data_dir"],
+            pick_channels=d_args["channels"],
+            l_freq=0.5,
+            h_freq=50.0,
+            overwrite=False,
+            verbose=True,
+        )
 
-    dset.process_epochs(epoch_type=d_args["epoch_type"])
-    dset.epochs_info(verbose=True)
-    labels = dset.all_epoch_labels
+        dset.process_epochs(epoch_type=d_args["epoch_type"])
+        dset.epochs_info(verbose=True)
+        labels = dset.all_epoch_labels
+    else:
+        raise ValueError(
+            "Invalid epoch type. Choose from 'acoustic', 'clearing', 'thinking', 'stimuli', 'speaking'."
+        )
 
     dset.extract_features(
         save_dir=d_args["features_dir"],

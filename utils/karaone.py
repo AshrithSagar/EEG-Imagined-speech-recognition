@@ -468,9 +468,6 @@ class KaraOneDataLoader:
         self.features_dir = save_dir
         self.get_features_functions()
 
-        if epoch_type == "acoustic" and not hasattr(self, "audio_data"):
-            self.load_audio_data()
-
         with self.create_progress_bar() as self.progress:
             task_subjects = self.progress.add_task(
                 "Subjects ...",
@@ -633,9 +630,10 @@ class KaraOneDataLoader:
         filename = os.path.join(subject_features_dir, f"{epoch_type}.npy")
         np.save(filename, features)
 
-        filename = os.path.join(self.features_dir, "channels.txt")
-        with open(filename, "w") as file:
-            file.write("\n".join(self.channels))
+        if epoch_type in ["clearing", "thinking", "stimuli", "speaking"]:
+            filename = os.path.join(self.features_dir, "channels.txt")
+            with open(filename, "w") as file:
+                file.write("\n".join(self.channels))
 
     def get_features_functions(self):
         ff = FeatureFunctions(self.sampling_freq)
