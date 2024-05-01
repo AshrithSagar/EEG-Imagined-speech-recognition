@@ -11,7 +11,7 @@ import pandas as pd
 import yaml
 from rich.console import Console
 from rich.table import Table
-from sklearn.model_selection import LearningCurveDisplay, learning_curve
+from sklearn.model_selection import LearningCurveDisplay, ValidationCurveDisplay
 
 
 class ModelSummary:
@@ -142,60 +142,38 @@ class KBestSummary:
             plt.close()
 
 
-class LearningCurvePlotter:
-    def __init__(self, estimator, X, y, cv, num_samples=10):
+class CurvePlotter:
+    def __init__(self, estimator, X, y, cv):
         self.estimator = estimator
         self.X, self.y = X, y
         self.cv = cv
-        self.params = {
-            "train_sizes": np.linspace(0.1, 1.0, num_samples),
+
+    def plot_learning_curve(self, num_samples=5):
+        params = {
+            "estimator": self.estimator,
+            "X": self.X,
+            "y": self.y,
             "cv": self.cv,
+            "train_sizes": np.linspace(0.1, 1.0, num_samples),
             "scoring": "accuracy",
-            "n_jobs": -1,
             "random_state": 42,
+            "n_jobs": -1,
         }
-
-    def plot(self):
-        train_sizes, train_scores, test_scores = learning_curve(
-            self.estimator, self.X, self.y, **self.params
-        )
-        train_scores_mean = np.mean(train_scores, axis=1)
-        train_scores_std = np.std(train_scores, axis=1)
-        test_scores_mean = np.mean(test_scores, axis=1)
-        test_scores_std = np.std(test_scores, axis=1)
-
-        plt.figure(figsize=(10, 6))
-        plt.fill_between(
-            train_sizes,
-            train_scores_mean - train_scores_std,
-            train_scores_mean + train_scores_std,
-            alpha=0.1,
-            color="blue",
-        )
-        plt.fill_between(
-            train_sizes,
-            test_scores_mean - test_scores_std,
-            test_scores_mean + test_scores_std,
-            alpha=0.1,
-            color="green",
-        )
-        plt.plot(
-            train_sizes,
-            train_scores_mean,
-            "o-",
-            color="blue",
-            label="Training Score",
-        )
-        plt.plot(
-            train_sizes,
-            test_scores_mean,
-            "o-",
-            color="green",
-            label="Cross-validation Score",
-        )
-        plt.xlabel("Training Examples")
-        plt.ylabel("Score")
+        LearningCurveDisplay.from_estimator(**params)
         plt.title(f"Learning Curve for {self.estimator.__class__.__name__}")
-        plt.legend(loc="best")
-        plt.grid(True)
+        plt.show()
+
+    def plot_validation_curve(self, param_name, param_range):
+        params = {
+            "estimator": self.estimator,
+            "X": self.X,
+            "y": self.y,
+            "cv": self.cv,
+            "param_name": param_name,
+            "param_range": param_range,
+            "score_name": "Accuracy",
+            "n_jobs": -1,
+        }
+        ValidationCurveDisplay.from_estimator(**params)
+        plt.title(f"Validation Curve for {self.estimator.__class__.__name__}")
         plt.show()
