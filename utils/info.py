@@ -143,27 +143,28 @@ class KBestSummary:
 
 
 class CurvePlotter:
-    def __init__(self, estimator, X, y, cv):
+    def __init__(self, estimator, X, y, cv=5):
         self.estimator = estimator
         self.X, self.y = X, y
         self.cv = cv
 
-    def plot_learning_curve(self, num_samples=5):
+    def plot_learning_curve(self, **kwargs):
         params = {
             "estimator": self.estimator,
             "X": self.X,
             "y": self.y,
             "cv": self.cv,
-            "train_sizes": np.linspace(0.1, 1.0, num_samples),
+            "train_sizes": np.linspace(0.1, 1.0, 5),
             "scoring": "accuracy",
             "random_state": 42,
             "n_jobs": -1,
+            **kwargs,
         }
         LearningCurveDisplay.from_estimator(**params)
         plt.title(f"Learning Curve for {self.estimator.__class__.__name__}")
         plt.show()
 
-    def plot_validation_curve(self, param_name, param_range):
+    def plot_validation_curve(self, param_name, param_range, **kwargs):
         params = {
             "estimator": self.estimator,
             "X": self.X,
@@ -173,6 +174,7 @@ class CurvePlotter:
             "param_range": param_range,
             "score_name": "Accuracy",
             "n_jobs": -1,
+            **kwargs,
         }
         ValidationCurveDisplay.from_estimator(**params)
         plt.title(f"Validation Curve for {self.estimator.__class__.__name__}")
