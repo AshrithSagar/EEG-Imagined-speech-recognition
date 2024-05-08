@@ -68,4 +68,5 @@ if __name__ == "__main__":
             clf.get_model_config(model_file=model_file)
             clf.run()
 
-        save_console(console, os.path.join(model_dir, classifier_name, "output.txt"))
+        file = os.path.join(model_dir, classifier_name, "output.txt")
+        save_console(console, file)

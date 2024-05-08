@@ -75,4 +75,5 @@ if __name__ == "__main__":
             summary = KBestSummary(task_dir=task_dir)
             summary.plot(metrics="all")
 
-        save_console(console, os.path.join(model_dir, classifier_name, "output.txt"))
+        file = os.path.join(model_dir, classifier_name, "output.txt")
+        save_console(console, file)

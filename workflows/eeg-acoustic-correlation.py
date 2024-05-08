@@ -75,6 +75,5 @@ if __name__ == "__main__":
         )
     console.print(table)
 
-    save_console(
-        console, os.path.join(d_args["features_dir"], "eeg-acoustic-correlation.txt")
-    )
+    file = os.path.join(d_args["features_dir"], "eeg-acoustic-correlation.txt")
+    save_console(console, file)
