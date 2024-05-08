@@ -14,7 +14,7 @@ from rich.table import Table
 from scipy.stats import pearsonr
 
 sys.path.append(os.getcwd())
-from utils.config import fetch_select, load_config
+from utils.config import fetch_select, load_config, save_console
 
 
 if __name__ == "__main__":
@@ -75,6 +75,6 @@ if __name__ == "__main__":
         )
     console.print(table)
 
-    filename = os.path.join(d_args["features_dir"], "eeg-acoustic-correlation.txt")
-    with open(filename, "w") as file:
-        file.write(console.export_text())
+    save_console(
+        console, os.path.join(d_args["features_dir"], "eeg-acoustic-correlation.txt")
+    )

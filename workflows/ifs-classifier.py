@@ -9,7 +9,7 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import fetch_select, load_config
+from utils.config import fetch_select, load_config, save_console
 from utils.ifs import InformationSet
 
 
@@ -68,5 +68,4 @@ if __name__ == "__main__":
             clf.get_model_config(model_file=model_file)
             clf.run()
 
-        with open(os.path.join(model_dir, classifier_name, "output.txt"), "w") as file:
-            file.write(console.export_text())
+        save_console(console, os.path.join(model_dir, classifier_name, "output.txt"))

@@ -67,3 +67,14 @@ def fetch_select(key, choice):
         raise ValueError(f"Invalid {key} name: {choice}")
 
     return options[key][choice]
+
+
+def save_console(console, file, mode="w"):
+    """Save the rich Console output to a file.
+    Args:
+    - console: The rich Console object to be saved.
+    - file: The path to the file where the console output will be saved.
+    - mode: The mode in which the file will be opened. Defaults to "w" (write mode).
+    """
+    with open(file, mode) as file_handle:
+        file_handle.write(console.export_text())
