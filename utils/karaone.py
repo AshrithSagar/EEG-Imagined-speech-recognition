@@ -6,6 +6,7 @@ KaraOne Utility scripts
 import glob
 import math
 import os
+import requests
 
 import dask.array as da
 import mne
@@ -99,6 +100,40 @@ class KaraOneDataLoader:
             """Invalid value for 'subjects'.
             Should be 'all', a list of subject indices, or a list of subject names."""
         )
+
+    def download(self, base_url=None, verbose=None):
+        """Download database from website"""
+
+        def download_subject(subject):
+            file_url = f"{base_url}{subject}.tar.bz2"
+            filename = os.path.join(self.raw_data_dir, f"{subject}.tar.bz2")
+            response = requests.get(file_url, stream=True)
+            total_size_in_bytes = int(response.headers.get("content-length", 0))
+            block_size = 1024  # 1 KB
+
+            with open(filename, "wb") as file_handle:
+                for data in self.progress.track(
+                    response.iter_content(block_size),
+                    total=total_size_in_bytes // block_size,
+                    description=f"Downloading ...",
+                ):
+                    file_handle.write(data)
+
+        verbose = verbose if verbose is not None else self.verbose
+        base_url = base_url or "http://www.cs.toronto.edu/~complingweb/data/karaOne/"
+        os.makedirs(self.raw_data_dir, exist_ok=True)
+
+        with self.create_progress_bar() as self.progress:
+            task_subjects = self.progress.add_task(
+                "Subjects ...", total=len(self.subjects), completed=1
+            )
+            for subject in self.subjects:
+                try:
+                    download_subject(subject)
+                except Exception as e:
+                    print(f"Error downloading {subject}: {e}")
+                finally:
+                    self.progress.update(task_subjects, advance=1)
 
     def load_raw_data(self, subject, verbose=None):
         """Load data from KaraOne folder"""
