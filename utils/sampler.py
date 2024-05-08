@@ -29,42 +29,34 @@ def fetch_sampler(sampler_name):
     samplers = {
         "RandomOverSampler": RandomOverSampler(
             sampling_strategy="auto",
-            random_state=42,
             shrinkage=None,
         ),
         "SMOTE": SMOTE(
-            random_state=42,
             k_neighbors=5,
         ),
         "ADASYN": ADASYN(
             sampling_strategy="auto",
-            random_state=42,
             n_neighbors=5,
         ),
         "KMeansSMOTE": KMeansSMOTE(
-            random_state=42,
             k_neighbors=5,
         ),
         "BorderlineSMOTE": BorderlineSMOTE(
-            random_state=42,
             k_neighbors=5,
             m_neighbors=10,
             kind="borderline-1",
         ),
         "SVMSMOTE": SVMSMOTE(
-            random_state=42,
             k_neighbors=5,
             m_neighbors=10,
         ),
         "SMOTENC": SMOTENC(
             categorical_features="auto",
             sampling_strategy="auto",
-            random_state=42,
             k_neighbors=5,
         ),
         "SMOTEN": SMOTEN(
             sampling_strategy="auto",
-            random_state=42,
             k_neighbors=5,
         ),
     }
