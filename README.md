@@ -47,7 +47,6 @@ _select:
   classifier: (str) Select one from { RegularClassifier, ClassifierGridSearch, EvaluateClassifier }
   dataset: (str) Select one from { KaraOne, FEIS }
 classifier:
-  evaluate_only: (bool) true / false
   features_select_k_best:
     k: (int | list[int])
     score_func: (str) Name of the score function to be used for ranking the features before selection. One from { pearsonr, f_classif }

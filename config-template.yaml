@@ -5,7 +5,6 @@ _select:
   # dataset: [KaraOne, FEIS]
   dataset: null
 classifier:
-  evaluate_only: null
   features_select_k_best:
     k: null
     score_func: null
