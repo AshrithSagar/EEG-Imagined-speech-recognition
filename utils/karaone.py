@@ -466,7 +466,6 @@ class KaraOneDataLoader:
     ):
         epoch_type = epoch_type or self.epoch_type
         self.features_dir = save_dir
-        self.get_features_functions()
 
         with self.create_progress_bar() as self.progress:
             task_subjects = self.progress.add_task(
@@ -492,24 +491,40 @@ class KaraOneDataLoader:
                         np.asarray(epoch).reshape(1, -1)
                         for epoch in self.audio_data[index]
                     ]
+                    self.get_features_functions()
+                    compute_features = self.compute_features
+                elif epoch_type == "facial":
+                    subject_epochs = [
+                        np.asarray(epoch).reshape(1, -1)
+                        for epoch in self.facial_data[index]
+                    ]
+                    select_facial = [0, 2, 4, 14, 15]
+                    self.get_features_functions(subset=select_facial)
                     compute_features = self.compute_features
                 elif epoch_type in ["clearing", "thinking", "stimuli", "speaking"]:
                     subject_epochs = self.all_epochs[index].get_data(copy=True)
+                    self.get_features_functions()
                     compute_features = self.compute_features_dask
                 else:
                     raise ValueError(
-                        "Invalid epoch type. Choose from 'acoustic', 'clearing', 'thinking', 'stimuli', 'speaking'."
+                        "Invalid epoch type. Choose from 'acoustic', 'facial', 'clearing', 'thinking', 'stimuli', 'speaking'."
                     )
 
                 self.progress.update(task_features, total=len(subject_epochs))
                 features = compute_features(
-                    subject_epochs, length_factor, overlap, task=task_features
+                    subject_epochs,
+                    epoch_type,
+                    length_factor,
+                    overlap,
+                    task=task_features,
                 )
                 self.progress.reset(task_features)
                 self.save_features(subject, features, epoch_type=epoch_type)
                 self.progress.update(task_subjects, advance=1)
 
-    def compute_features_dask(self, epochs, length_factor=0.1, overlap=0.5, task=None):
+    def compute_features_dask(
+        self, epochs, epoch_type=None, length_factor=0.1, overlap=0.5, task=None
+    ):
         windowed_epochs = np.asarray(
             [self.window_data(epoch, length_factor, overlap) for epoch in epochs]
         )
@@ -542,7 +557,9 @@ class KaraOneDataLoader:
 
         return features
 
-    def compute_features(self, epochs, length_factor=0.1, overlap=0.5, task=None):
+    def compute_features(
+        self, epochs, epoch_type=None, length_factor=0.1, overlap=0.5, task=None
+    ):
         features = []
         for epoch in epochs:
             windowed_epoch = self.window_data(epoch, length_factor, overlap)
@@ -551,6 +568,11 @@ class KaraOneDataLoader:
             features.append(all_feats)
             if task:
                 self.progress.update(task, advance=1)
+
+        if epoch_type == "facial":
+            # Adjust num_windows in facial features
+            num_windows = min(epoch.shape[0] for epoch in features)
+            features = [epoch[:num_windows, :, :] for epoch in features]
 
         return np.asarray(features, dtype=np.float32)
 
@@ -635,9 +657,12 @@ class KaraOneDataLoader:
             with open(filename, "w") as file:
                 file.write("\n".join(self.channels))
 
-    def get_features_functions(self):
+    def get_features_functions(self, subset=None):
         ff = FeatureFunctions(self.sampling_freq)
         self.feature_functions, features_names = ff.get()
+        if subset:
+            self.feature_functions = [self.feature_functions[index] for index in subset]
+            features_names = [features_names[index] for index in subset]
         self.features_names = [
             f"{prefix}{feat_name}"
             for prefix in ["", "d_", "dd_"]
@@ -647,7 +672,7 @@ class KaraOneDataLoader:
     def load_features(self, features_dir=None, epoch_type: str = None, verbose=None):
         """Parameters:
         - features_dir (str): Path to the features directory.
-        - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking"; "acoustic").
+        - epoch_type (str): Type of epoch (e.g., "stimuli", "thinking", "speaking"; "acoustic"; "facial").
 
         Returns:
         - features (np.ndarray): Features of shape (n.subjects, n.epochs, n.windows, n.features_per_window).
@@ -842,3 +867,17 @@ class KaraOneDataLoader:
                 audio_data.append(data)
 
             self.audio_data.append(audio_data)
+
+    def load_facial_data(self):
+        # Check wav files, since they are complete. But for some folders, there are missing 'face' files.
+        self.facial_data = []
+        for subject in self.subjects:
+            kinect_dir = os.path.join(self.raw_data_dir, subject, "kinect_data")
+            wav_files = glob.glob(os.path.join(kinect_dir, "*.wav"))
+
+            facial_data = [None] * len(wav_files)
+            for index in range(len(wav_files)):
+                face_fn = os.path.join(kinect_dir, f"{index}.AnimU")
+                if os.path.exists(face_fn):
+                    facial_data[index] = np.loadtxt(face_fn)
+            self.facial_data.append(facial_data)
