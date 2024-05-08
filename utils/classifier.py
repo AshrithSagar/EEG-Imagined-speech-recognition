@@ -39,6 +39,7 @@ class ClassifierMixin:
         y,
         save_dir,
         test_size=0.2,
+        n_splits=5,
         random_state=42,
         trial_size=None,
         features_names=None,
@@ -53,6 +54,7 @@ class ClassifierMixin:
         self.X_raw, self.y_raw = X, y
         self.save_dir = save_dir
         self.test_size = test_size
+        self.n_splits = n_splits
         self.random_state = random_state
         self.trial_size = trial_size
         self.features_names = np.array(
@@ -481,6 +483,8 @@ class RegularClassifier(ClassifierMixin):
         self.cv = cv if cv else self.model_config.cross_validation()
         self.model.random_state = self.random_state
         self.cv.random_state = self.random_state
+        self.cv.test_size = self.test_size
+        self.cv.n_splits = self.n_splits
 
         if verbose:
             self.params_info()
@@ -629,6 +633,8 @@ class ClassifierGridSearch(ClassifierMixin):
         self.cv = cv if cv else self.model_config.cross_validation()
         self.model.random_state = self.random_state
         self.cv.random_state = self.random_state
+        self.cv.test_size = self.test_size
+        self.cv.n_splits = self.n_splits
 
         if verbose:
             self.params_info()
@@ -792,6 +798,8 @@ class EvaluateClassifier(ClassifierMixin):
         self.cv = cv if cv else self.model_config.cross_validation()
         self.model.random_state = self.random_state
         self.cv.random_state = self.random_state
+        self.cv.test_size = self.test_size
+        self.cv.n_splits = self.n_splits
 
         if verbose:
             self.params_info()

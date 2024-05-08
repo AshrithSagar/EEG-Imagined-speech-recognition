@@ -10,6 +10,7 @@ classifier:
     score_func: null
   model_base_dir: null
   models: null
+  n_splits: null
   random_state: null
   test_size: null
   trial_size: null

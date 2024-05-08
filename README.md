@@ -52,8 +52,9 @@ classifier:
     score_func: (str) Name of the score function to be used for ranking the features before selection. One from { pearsonr, f_classif }
   model_base_dir: (path) Preferably use files/Models/
   models: (list[str]) list of directory names containing the model.py within them. Eg:- [ model-1, model-2, ... ]
-  random_state: (int) seed value
-  test_size: (float) 0.2
+  n_splits: (int) Number of splits in cross-validation.
+  random_state: (int) Seed value.
+  test_size: (float) Size of test split.
   trial_size: (float / null) For testing purposes. Use null to use the entire dataset, else this is the fraction of the dataset that will be used.
 feis:
   epoch_type: (str) One from { thinking, speaking, stimuli }
