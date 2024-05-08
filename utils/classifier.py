@@ -100,6 +100,7 @@ class ClassifierMixin:
             if not hasattr(self.model_config, "resample"):
                 return X, y
             sampler = self.model_config.resample()
+            sampler.random_state = self.random_state
 
         self.sampler = sampler
         X, y = self.sampler.fit_resample(X, y)
@@ -478,6 +479,8 @@ class RegularClassifier(ClassifierMixin):
         self.get_model_config()
         self.model = model if model else self.model_config.model()
         self.cv = cv if cv else self.model_config.cross_validation()
+        self.model.random_state = self.random_state
+        self.cv.random_state = self.random_state
 
         if verbose:
             self.params_info()
@@ -624,6 +627,8 @@ class ClassifierGridSearch(ClassifierMixin):
         self.model = model if model else self.model_config.model()
         self.param_grid = param_grid if param_grid else self.model_config.param_grid()
         self.cv = cv if cv else self.model_config.cross_validation()
+        self.model.random_state = self.random_state
+        self.cv.random_state = self.random_state
 
         if verbose:
             self.params_info()
@@ -785,6 +790,8 @@ class EvaluateClassifier(ClassifierMixin):
         self.get_model_config()
         self.model = model if model else self.model_config.model()
         self.cv = cv if cv else self.model_config.cross_validation()
+        self.model.random_state = self.random_state
+        self.cv.random_state = self.random_state
 
         if verbose:
             self.params_info()
