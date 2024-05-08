@@ -6,12 +6,11 @@ KaraOne Utility scripts
 import glob
 import math
 import os
-import requests
 
 import dask.array as da
 import mne
 import numpy as np
-import scipy.io
+import requests
 from dask.distributed import Client, LocalCluster
 from rich.console import Console
 from rich.progress import (
@@ -22,7 +21,7 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 from rich.table import Table
-from scipy.io import wavfile
+from scipy.io import loadmat, wavfile
 from scipy.spatial.distance import cdist
 
 from utils.config import line_separator
@@ -916,3 +915,20 @@ class KaraOneDataLoader:
                 if os.path.exists(face_fn):
                     facial_data[index] = np.loadtxt(face_fn)
             self.facial_data.append(facial_data)
+
+    def load_mat_features(self, filename=None, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+        keys = ["all_features", "regression_features"]
+
+        all_mats = []
+        for subject in self.subjects:
+            file = os.path.join(self.raw_data_dir, subject, filename)
+            mat = loadmat(file)
+            key = [key for key in keys if key in mat][0]
+            features = mat[key]
+            features = features[0][0][0][0]  # Atleast
+            if key == keys[0]:
+                features = features[0][0][0]  # Additional
+            features = np.stack(features)
+            all_mats.append(features)
+        return all_mats
