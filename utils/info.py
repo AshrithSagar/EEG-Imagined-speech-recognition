@@ -85,6 +85,55 @@ class ModelSummary:
         plt.show()
 
 
+class EvaluateClassifierSummary(ModelSummary):
+    def __init__(self, model_base_dir, models, dataset, console=None, verbose=False):
+        super(EvaluateClassifierSummary, self).__init__(
+            model_base_dir=model_base_dir,
+            models=models,
+            console=console,
+            verbose=verbose,
+        )
+        self.dataset_name = dataset
+        self.classifier_name = "EvaluateClassifier"
+
+    def metrics_info(self, verbose=None):
+        verbose = verbose if verbose is not None else self.verbose
+
+        metrics = {}
+        for task in self.tasks:
+            task_dir = os.path.join(
+                self.model_dir, self.dataset_name, self.classifier_name, task
+            )
+            filename = os.path.join(task_dir, "cv_metrics.csv")
+            metrics_df = pd.read_csv(filename)
+            metrics_df.set_index("Metric", inplace=True)
+            metrics_df.drop(columns=["Std"], inplace=True)
+            metrics[task] = metrics_df
+
+        self.metrics_df = pd.concat(metrics, axis="columns")
+
+        filename = os.path.join(task_dir, "params.yaml")
+        with open(filename, "r") as file:
+            self.params = yaml.safe_load(file)
+
+        if verbose:
+            self.console.rule(title="[bold blue3][Model Summary][/]", style="blue3")
+            self.console.print(
+                f"model_dir: [bold black]{os.path.basename(self.model_dir)}/{self.dataset_name}/{self.classifier_name}[/]"
+            )
+            self.console.print(f"model: [yellow]{self.params['model']}[/]")
+
+            table = Table(title="[bold underline]Evaluation Metrics:[/]")
+            table.add_column("Metric", justify="right", style="magenta", no_wrap=True)
+            for task in self.tasks:
+                table.add_column(task, justify="left", style="cyan", no_wrap=True)
+            for metric, row_data in self.metrics_df.iterrows():
+                row = [metric] + [f"{val:g}" for val in row_data]
+                table.add_row(*row)
+
+            self.console.print(table)
+
+
 class KBestSummary:
     def __init__(self, task_dir, save_ext="png"):
         self.task_dir = task_dir
