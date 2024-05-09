@@ -99,33 +99,38 @@ class EvaluateClassifierSummary(ModelSummary):
     def metrics_info(self, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
 
-        metrics = {}
+        metrics, tasks = {}, []
         for task in self.tasks:
             task_dir = os.path.join(
                 self.model_dir, self.dataset_name, self.classifier_name, task
             )
             filename = os.path.join(task_dir, "cv_metrics.csv")
+            if not os.path.exists(filename):
+                continue
+            tasks.append(task)
             metrics_df = pd.read_csv(filename)
             metrics_df.set_index("Metric", inplace=True)
             metrics_df.drop(columns=["Std"], inplace=True)
             metrics[task] = metrics_df
 
-        self.metrics_df = pd.concat(metrics, axis="columns")
+            filename = os.path.join(task_dir, "params.yaml")
+            with open(filename, "r") as file:
+                self.params = yaml.safe_load(file)
 
-        filename = os.path.join(task_dir, "params.yaml")
-        with open(filename, "r") as file:
-            self.params = yaml.safe_load(file)
+        self.metrics_df = pd.concat(metrics, axis="columns")
 
         if verbose:
             self.console.rule(title="[bold blue3][Model Summary][/]", style="blue3")
             self.console.print(
-                f"model_dir: [bold black]{os.path.basename(self.model_dir)}/{self.dataset_name}/{self.classifier_name}[/]"
+                f"model_dir: [bold black]{os.path.basename(self.model_dir)}"
+                + f"/{self.dataset_name}"
+                + f"/{self.classifier_name}[/]"
             )
             self.console.print(f"model: [yellow]{self.params['model']}[/]")
 
             table = Table(title="[bold underline]Evaluation Metrics:[/]")
             table.add_column("Metric", justify="right", style="magenta", no_wrap=True)
-            for task in self.tasks:
+            for task in tasks:
                 table.add_column(task, justify="left", style="cyan", no_wrap=True)
             for metric, row_data in self.metrics_df.iterrows():
                 row = [metric] + [f"{val:g}" for val in row_data]
