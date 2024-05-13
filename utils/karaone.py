@@ -23,7 +23,7 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 from rich.table import Table
-from scipy.io import loadmat, wavfile
+import scipy.io
 from scipy.spatial.distance import cdist
 
 from utils.config import line_separator
@@ -944,7 +944,7 @@ class KaraOneDataLoader:
 
             audio_data = []
             for wav_file in wav_files:
-                fs, data = wavfile.read(os.path.join(kinect_dir, wav_file))
+                fs, data = scipy.io.wavfile.read(os.path.join(kinect_dir, wav_file))
                 audio_data.append(data)
 
             self.audio_data.append(audio_data)
