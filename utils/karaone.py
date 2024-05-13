@@ -106,6 +106,16 @@ class KaraOneDataLoader:
         def download_subject(subject):
             file_url = f"{base_url}{subject}.tar.bz2"
             filename = os.path.join(self.raw_data_dir, f"{subject}.tar.bz2")
+
+            if os.path.exists(filename):
+                file_size = os.path.getsize(filename)
+                response = requests.head(file_url)
+                remote_file_size = int(response.headers.get("content-length", 0))
+                if file_size >= remote_file_size:
+                    if verbose:
+                        print(f"Skipping download for {subject}")
+                    return
+
             response = requests.get(file_url, stream=True)
             total_size_in_bytes = int(response.headers.get("content-length", 0))
             block_size = 1024  # 1 KB
