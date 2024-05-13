@@ -35,7 +35,7 @@ For Windows: Download and install Graphviz from the [Graphviz website](https://g
 
 ## Usage
 
-### Configuration file
+### Configuration file `config.yaml`
 
 The configuration file `config.yaml` contains the paths to the data files and the parameters for the different workflows.
 Create and populate it with the appropriate values.
@@ -74,6 +74,31 @@ karaone:
   tfr_dataset_dir: (path) Preferably use files/TFR/KaraOne/tfr_ds-1/
 utils:
   path: (path) Absolute path to the project directory utils folder
+```
+
+### Classifier `model.py`
+
+In {classifier.model_base_dir}, create the `model.py` with the following template.
+
+```python
+def model():
+  # Model definition here
+  # Takes certain parameters like random_state from config.yaml
+  return ...
+
+def param_grid():
+  # Optional. Only useful in ClassifierGridSearch, ignored otherwise.
+  return ...
+
+def resample():
+  # Optional. Remove/Comment this entire function to disable sampler.
+  # Takes certain parameters like random_state from config.yaml
+  return ...
+
+def cross_validation():
+  # Optional. Remove/Comment this entire function to use default CV of 5 splits from StratifiedKFold.
+  # Takes certain parameters like random_state, n_splits from config.yaml
+  return ...
 ```
 
 ### Workflows
