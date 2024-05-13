@@ -6,6 +6,8 @@ KaraOne Utility scripts
 import glob
 import math
 import os
+import shutil
+import tarfile
 
 import dask.array as da
 import mne
@@ -143,6 +145,41 @@ class KaraOneDataLoader:
                     print(f"Error downloading {subject}: {e}")
                 finally:
                     self.progress.update(task_subjects, advance=1)
+
+    def unzip(self, delete_zip=False, verbose=None):
+        """
+        Unzip the downloaded data tar.bz2 files, and move them to the raw data directory.
+        Caution:
+        - This will delete the original tar.bz2 files if 'delete_zip' is set to True.
+        - The extracted data will be moved to the raw data directory by default.
+            Any manual changes in the {base_path} folders will be removed.
+        """
+        verbose = verbose if verbose is not None else self.verbose
+        base_path = "p/spoclab/users/szhao/EEG/data/"
+
+        with self.create_progress_bar() as self.progress:
+            task_subjects = self.progress.add_task(
+                "Subjects ...", total=len(self.subjects), completed=1
+            )
+            for subject in self.subjects:
+                task_extract = self.progress.add_task(f"Extracting ...", start=False)
+                zip_file = os.path.join(self.raw_data_dir, f"{subject}.tar.bz2")
+                with tarfile.open(zip_file, "r:bz2") as tar:
+                    for member in tar:
+                        tar.extract(member, self.raw_data_dir)
+                        self.progress.update(task_extract, advance=1)
+
+                if delete_zip:
+                    os.remove(zip_file)
+
+                source_folder = os.path.join(self.raw_data_dir, base_path, subject)
+                shutil.move(source_folder, self.raw_data_dir)
+
+                self.progress.remove_task(task_extract)
+                self.progress.update(task_subjects, advance=1)
+
+        del_dir = os.path.join(self.raw_data_dir, base_path.split("/")[0])
+        shutil.rmtree(del_dir)
 
     def load_raw_data(self, subject, verbose=None):
         """Load data from KaraOne folder"""

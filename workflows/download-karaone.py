@@ -22,3 +22,4 @@ if __name__ == "__main__":
 
     base_url = "http://www.cs.toronto.edu/~complingweb/data/karaOne/"
     karaone.download(base_url=base_url)
+    karaone.unzip(delete_zip=False)
