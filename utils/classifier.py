@@ -82,6 +82,8 @@ class ClassifierMixin:
         if reload or not self.model_config:
             if not model_file:
                 model_file = os.path.join(self.save_dir, "model.py")
+            if not os.path.exists(model_file):
+                raise FileNotFoundError(f"Model file '{model_file}' not found.")
             spec = importlib.util.spec_from_file_location("model", model_file)
             model_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(model_module)

@@ -5,6 +5,9 @@ Configuration utils
 
 import yaml
 from rich.console import Console
+from rich.traceback import install
+
+install()
 
 
 def line_separator(line="normal", color="", width="full", console=None):
