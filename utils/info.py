@@ -138,6 +138,47 @@ class EvaluateClassifierSummary(ModelSummary):
 
             self.console.print(table)
 
+    def export_metrics_to_latex(self, select_metrics=None, verbose=None):
+        """
+        Export the metrics to a LaTeX table.
+        May require further edits, if necessary.
+        """
+        verbose = verbose if verbose is not None else self.verbose
+        if not select_metrics:
+            select_metrics = ["accuracy", "f1", "precision", "recall", "roc_auc"]
+
+        metrics = {}
+        for model in self.models:
+            model_metrics = {}
+            model_dir = os.path.join(
+                self.model_base_dir, model, self.dataset_name, self.classifier_name
+            )
+            for task in self.tasks:
+                task_dir = os.path.join(model_dir, task)
+                filename = os.path.join(task_dir, "cv_metrics.csv")
+                task_metrics = pd.read_csv(filename)
+                task_metrics.set_index("Metric", inplace=True)
+                model_metrics.update({task: task_metrics})
+            metrics.update({model: model_metrics})
+
+        table_metrics = {}
+        for task in self.tasks:
+            task_metrics = {}
+            for model in self.models:
+                formatted_metrics = metrics[model][task].apply(
+                    lambda x: f"${x['Mean']*100:.2f} \pm {x['Std']*100:.2f}$", axis=1
+                )
+                task_metrics.update({model: formatted_metrics})
+            task_df = pd.concat(task_metrics, axis=1)
+            task_df = task_df.loc[select_metrics]
+            table_metrics.update({task: task_df})
+        table_df = pd.concat(table_metrics)
+
+        latex_table = table_df.style.to_latex()
+        filename = os.path.join(self.model_base_dir, "data.tex")
+        with open(filename, "w") as file_handle:
+            file_handle.write(latex_table)
+
 
 class KBestSummary:
     def __init__(self, task_dir, save_ext="png"):
