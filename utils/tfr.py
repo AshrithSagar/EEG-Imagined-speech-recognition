@@ -1,5 +1,6 @@
 """
 tfr.py
+Time Frequency Representation utility class
 """
 
 import os

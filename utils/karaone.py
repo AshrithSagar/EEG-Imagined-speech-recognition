@@ -1,5 +1,5 @@
 """
-karaone_utils.py
+karaone.py
 KaraOne Utility scripts
 """
 
@@ -182,7 +182,7 @@ class KaraOneDataLoader:
         shutil.rmtree(del_dir)
 
     def load_raw_data(self, subject, verbose=None):
-        """Load data from KaraOne folder"""
+        """Load the raw EEG data from the KaraOne folder"""
         self.subject = subject
         verbose = verbose if verbose is not None else self.verbose
         if verbose:
@@ -199,7 +199,7 @@ class KaraOneDataLoader:
         return self.raw
 
     def load_data(self, data_dir, subject, verbose=None):
-        """Load data from a .fif file"""
+        """Load EEG data from a .fif file"""
         self.subject = subject
         verbose = verbose if verbose is not None else self.verbose
         if verbose:
@@ -293,6 +293,7 @@ class KaraOneDataLoader:
         return speaking_mats
 
     def get_epoch_labels(self, subject=None):
+        """Get the labels for each epoch used in the trials."""
         subject = subject or self.subject
 
         labels_file = os.path.join(
@@ -342,6 +343,7 @@ class KaraOneDataLoader:
         return events, event_id
 
     def apply_bandpass_filter(self, l_freq=0.5, h_freq=50.0, verbose=None):
+        """Filter the EEG data with a bandpass filter."""
         verbose = verbose if verbose is not None else self.verbose
         raw_data = mne.filter.filter_data(
             self.raw.get_data(),
@@ -964,13 +966,14 @@ class KaraOneDataLoader:
             self.facial_data.append(facial_data)
 
     def load_mat_features(self, filename=None, verbose=None):
+        """Use the features from the .mat files available in the KaraOne folder."""
         verbose = verbose if verbose is not None else self.verbose
         keys = ["all_features", "regression_features"]
 
         all_mats = []
         for subject in self.subjects:
             file = os.path.join(self.raw_data_dir, subject, filename)
-            mat = loadmat(file)
+            mat = scipy.io.loadmat(file)
             key = [key for key in keys if key in mat][0]
             features = mat[key]
             features = features[0][0][0][0]  # Atleast
