@@ -10,7 +10,6 @@ sys.path.append(os.getcwd())
 from utils.config import load_config
 from utils.karaone import KaraOneDataLoader
 
-
 if __name__ == "__main__":
     d_args = load_config(config_file="config.yaml", key="karaone")
 

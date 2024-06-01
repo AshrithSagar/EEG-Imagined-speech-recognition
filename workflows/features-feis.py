@@ -10,7 +10,6 @@ sys.path.append(os.getcwd())
 from utils.config import load_config
 from utils.feis import FEISDataLoader
 
-
 if __name__ == "__main__":
     d_args = load_config(config_file="config.yaml", key="feis")
 

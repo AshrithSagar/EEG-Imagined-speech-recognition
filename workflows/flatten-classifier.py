@@ -11,7 +11,6 @@ from rich.console import Console
 sys.path.append(os.getcwd())
 from utils.config import fetch_select, load_config, save_console
 
-
 if __name__ == "__main__":
     args = load_config(config_file="config.yaml")
     c_args = load_config(config_file="config.yaml", key="classifier")

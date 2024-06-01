@@ -3,9 +3,9 @@ features.py
 Feature Utility scripts
 """
 
+import antropy as ant
 import numpy as np
 from scipy import integrate, stats
-import antropy as ant
 
 
 class FeatureFunctions:

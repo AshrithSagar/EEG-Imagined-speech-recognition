@@ -4,8 +4,8 @@ Time Frequency Representation utility class
 """
 
 import os
+
 import numpy as np
-from tftb.processing import smoothed_pseudo_wigner_ville
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -14,6 +14,7 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
 )
+from tftb.processing import smoothed_pseudo_wigner_ville
 
 from utils.config import line_separator
 

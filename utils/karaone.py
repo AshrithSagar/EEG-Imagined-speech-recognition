@@ -13,6 +13,7 @@ import dask.array as da
 import mne
 import numpy as np
 import requests
+import scipy.io
 from dask.distributed import Client, LocalCluster
 from rich.console import Console
 from rich.progress import (
@@ -23,12 +24,10 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 from rich.table import Table
-import scipy.io
 from scipy.spatial.distance import cdist
 
 from utils.config import line_separator
 from utils.features import FeatureFunctions
-
 
 all_subjects = [
     "MM05",

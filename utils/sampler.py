@@ -5,13 +5,13 @@ Collection of sampler instances.
 
 from imblearn.over_sampling import (
     ADASYN,
-    RandomOverSampler,
-    KMeansSMOTE,
     SMOTE,
-    BorderlineSMOTE,
-    SVMSMOTE,
-    SMOTENC,
     SMOTEN,
+    SMOTENC,
+    SVMSMOTE,
+    BorderlineSMOTE,
+    KMeansSMOTE,
+    RandomOverSampler,
 )
 
 

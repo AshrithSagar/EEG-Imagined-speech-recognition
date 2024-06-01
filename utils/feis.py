@@ -20,7 +20,6 @@ from rich.table import Table
 
 from utils.features import FeatureFunctions
 
-
 # Subjects: 01-21 and "chinese-1", "chinese-2"
 all_subjects = [str(i).zfill(2) if i <= 21 else f"chinese-{i-21}" for i in range(1, 24)]
 

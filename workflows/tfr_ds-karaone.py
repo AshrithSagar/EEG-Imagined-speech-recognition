@@ -14,7 +14,6 @@ from utils.config import line_separator, load_config
 from utils.karaone import KaraOneDataLoader
 from utils.tfr import TFRDataset
 
-
 if __name__ == "__main__":
     console = Console()
     d_args = load_config(config_file="config.yaml", key="karaone")
