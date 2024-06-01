@@ -14,7 +14,7 @@ import yaml
 from rich.console import Console
 from rich.table import Table
 from scipy.stats import pearsonr
-from sklearn.feature_selection import f_classif, SelectKBest
+from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     accuracy_score,
