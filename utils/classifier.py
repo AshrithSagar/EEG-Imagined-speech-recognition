@@ -953,14 +953,6 @@ class EvaluateClassifier(ClassifierMixin):
         filename = os.path.join(self.save_dir, "scores.joblib")
         joblib.dump(self.scores, filename)
 
-        if hasattr(self, "train_scores"):
-            filename = os.path.join(self.save_dir, "train_scores.joblib")
-            joblib.dump(self.train_scores, filename)
-
-        if hasattr(self, "estimators"):
-            filename = os.path.join(self.save_dir, "estimators.joblib")
-            joblib.dump(self.estimators, filename)
-
         filename = os.path.join(self.save_dir, "cv_metrics.csv")
         self.cv_metrics_df.to_csv(filename, index=False)
 
