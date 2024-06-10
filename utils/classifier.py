@@ -5,6 +5,7 @@ Classifier Utility scripts
 
 import importlib.util
 import os
+import time
 
 import joblib
 import matplotlib.pyplot as plt
@@ -819,44 +820,60 @@ class EvaluateClassifier(ClassifierMixin):
     ):
         X = X if X is not None else self.X
         y = y if y is not None else self.y
-        self.scores = {f"test_{metric}": [] for metric in self.scoring}
 
-        if return_train_score:
-            self.train_scores = {f"train_{metric}": [] for metric in self.scoring}
+        self.scores = {}
+        for metric in self.scoring:
+            self.scores[f"test_{metric}"] = []
+            if return_train_score:
+                self.scores[f"train_{metric}"] = []
+
         if return_estimator:
-            self.estimators = []
+            self.scores["estimator"] = []
 
+        fit_times, score_times = [], []
         for train_index, test_index in self.cv.split(X, y):
-            X_train, y_train = self.X[train_index], self.y[train_index]
-            X_val, y_val = self.X[test_index], self.y[test_index]
-
-            self.X_train, self.y_train = self.resample(X_train, y_train, self.sampler)
+            X_train, y_train = X[train_index], y[train_index]
+            X_test, y_test = X[test_index], y[test_index]
 
             model = self.model
+            self.X_train, self.y_train = self.resample(X_train, y_train, self.sampler)
+
+            start_fit = time.time()
             model.fit(self.X_train, self.y_train)
+            fit_times.append(time.time() - start_fit)
 
             if return_estimator:
-                self.estimators.append(model)
+                self.scores["estimator"].append(model)
 
             for metric, scorer in self.scoring.items():
-                score = scorer(model, X_val, y_val)
+                start_score = time.time()
+                score = scorer(model, X_test, y_test)
+                score_times.append(time.time() - start_score)
                 self.scores[f"test_{metric}"].append(score)
 
                 if return_train_score:
                     train_score = scorer(model, self.X_train, self.y_train)
-                    self.train_scores[f"train_{metric}"].append(train_score)
+                    self.scores[f"train_{metric}"].append(train_score)
+
+        self.scores["fit_time"] = fit_times
+        self.scores["score_time"] = score_times
 
         verbose = self.set_verbose(verbose)
         self.evaluation_metrics_info(
-            scores=self.scores, prefix="test", show_plots=show_plots, verbose=verbose
+            scores={k: v for k, v in self.scores.items() if k.startswith("test_")},
+            prefix="test",
+            show_plots=show_plots,
+            verbose=verbose,
         )
         if return_train_score:
             self.evaluation_metrics_info(
-                scores=self.train_scores,
+                scores={k: v for k, v in self.scores.items() if k.startswith("train_")},
                 prefix="train",
                 show_plots=show_plots,
                 verbose=verbose,
             )
+
+        return self.scores
 
     def evaluation_metrics_info(
         self, scores=None, prefix=None, show_plots=False, verbose=None
@@ -903,18 +920,13 @@ class EvaluateClassifier(ClassifierMixin):
 
     def plot_scores_boxplot(self, scores=None, save_path=None):
         scores = scores if scores is not None else self.scores
-
-        test_scores = {
-            key: value for key, value in scores.items() if key.startswith("test_")
-        }
+        test_scores = {k: v for k, v in scores.items() if k.startswith("test_")}
 
         plt.clf()
         plt.figure(figsize=(15, 8))
         plt.boxplot(
             test_scores.values(),
-            labels=[
-                key.lstrip("test_").replace("_", "\n") for key in test_scores.keys()
-            ],
+            labels=[k.lstrip("test_").replace("_", "\n") for k in test_scores.keys()],
         )
         plt.title("Cross-Validation Scores")
         plt.xlabel("Metrics")
