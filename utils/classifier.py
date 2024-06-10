@@ -94,22 +94,29 @@ class ClassifierMixin:
 
         return self.model_config
 
-    def resample(self, X, y, sampler=None, verbose=None):
-        verbose = self.set_verbose(verbose)
-        self.sampler = None
-
+    def get_sampler(self, sampler=None):
         if sampler is False:
-            return X, y
+            return None
 
         if sampler is None:
             self.get_model_config()
             if not hasattr(self.model_config, "resample"):
-                return X, y
+                return None
             sampler = self.model_config.resample()
             sampler.random_state = self.random_state
 
         self.sampler = sampler
-        X, y = self.sampler.fit_resample(X, y)
+        return self.sampler
+
+    def resample(self, X, y, sampler=None, verbose=None):
+        verbose = self.set_verbose(verbose)
+
+        if not hasattr(self, "sampler"):
+            self.sampler = self.get_sampler(sampler)
+
+        if self.sampler:
+            X, y = self.sampler.fit_resample(X, y)
+
         return X, y
 
     def get_anova_f(self, X=None, y=None, verbose=None):
@@ -475,7 +482,8 @@ class RegularClassifier(ClassifierMixin):
             stratify=self.y,
         )
 
-        self.X_train, self.y_train = self.resample(X_train, y_train, sampler)
+        self.sampler = self.get_sampler(sampler)
+        self.X_train, self.y_train = self.resample(X_train, y_train)
 
         self.X = self.select_features(k_best=self.features_select_k_best)
         self.get_anova_f()
@@ -624,7 +632,8 @@ class ClassifierGridSearch(ClassifierMixin):
             stratify=self.y,
         )
 
-        self.X_train, self.y_train = self.resample(X_train, y_train, sampler)
+        self.sampler = self.get_sampler(sampler)
+        self.X_train, self.y_train = self.resample(X_train, y_train)
 
         self.X = self.select_features(k_best=self.features_select_k_best)
         self.get_anova_f()
@@ -802,7 +811,7 @@ class EvaluateClassifier(ClassifierMixin):
         self.cv.random_state = self.random_state
         self.cv.test_size = self.test_size
         self.cv.n_splits = self.n_splits
-        self.sampler = sampler
+        self.sampler = self.get_sampler(sampler)
 
         if verbose:
             self.params_info()
@@ -831,12 +840,12 @@ class EvaluateClassifier(ClassifierMixin):
             self.scores["estimator"] = []
 
         fit_times, score_times = [], []
-        for train_index, test_index in self.cv.split(X, y):
+        for train_index, val_index in self.cv.split(X, y):
             X_train, y_train = X[train_index], y[train_index]
-            X_test, y_test = X[test_index], y[test_index]
+            X_val, y_val = X[val_index], y[val_index]
 
             model = self.model
-            self.X_train, self.y_train = self.resample(X_train, y_train, self.sampler)
+            self.X_train, self.y_train = self.resample(X_train, y_train)
 
             start_fit = time.time()
             model.fit(self.X_train, self.y_train)
@@ -847,7 +856,7 @@ class EvaluateClassifier(ClassifierMixin):
 
             for metric, scorer in self.scoring.items():
                 start_score = time.time()
-                score = scorer(model, X_test, y_test)
+                score = scorer(model, X_val, y_val)
                 score_times.append(time.time() - start_score)
                 self.scores[f"test_{metric}"].append(score)
 
