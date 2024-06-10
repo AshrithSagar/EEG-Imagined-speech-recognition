@@ -450,21 +450,21 @@ class RegularClassifier(ClassifierMixin):
         verbose = self.set_verbose(verbose)
 
         if self.trial_size is None:
-            self.trial_size = len(self.X_raw)
+            self.X, self.y = self.X_raw, self.y_raw
         elif isinstance(self.trial_size, float) and self.trial_size <= 1.0:
             self.trial_size = int(self.trial_size * len(self.X_raw))
 
-        # Stratified sampling
-        X_train, X_test, y_train, y_test = train_test_split(
-            self.X_raw,
-            self.y_raw,
-            train_size=int(self.trial_size * (1 - self.test_size)),
-            test_size=int(self.trial_size * self.test_size),
-            random_state=self.random_state,
-            stratify=self.y_raw,
-        )
-        self.X = np.concatenate((X_train, X_test))
-        self.y = np.concatenate((y_train, y_test))
+            # Stratified sampling
+            X_train, X_test, y_train, y_test = train_test_split(
+                self.X_raw,
+                self.y_raw,
+                train_size=int(self.trial_size * (1 - self.test_size)),
+                test_size=int(self.trial_size * self.test_size),
+                random_state=self.random_state,
+                stratify=self.y_raw,
+            )
+            self.X = np.concatenate((X_train, X_test))
+            self.y = np.concatenate((y_train, y_test))
 
         X_train, self.X_test, y_train, self.y_test = train_test_split(
             self.X,
@@ -599,21 +599,21 @@ class ClassifierGridSearch(ClassifierMixin):
         verbose = self.set_verbose(verbose)
 
         if self.trial_size is None:
-            self.trial_size = len(self.X_raw)
+            self.X, self.y = self.X_raw, self.y_raw
         elif isinstance(self.trial_size, float) and self.trial_size <= 1.0:
             self.trial_size = int(self.trial_size * len(self.X_raw))
 
-        # Stratified sampling
-        X_train, X_test, y_train, y_test = train_test_split(
-            self.X_raw,
-            self.y_raw,
-            train_size=int(self.trial_size * (1 - self.test_size)),
-            test_size=int(self.trial_size * self.test_size),
-            random_state=self.random_state,
-            stratify=self.y_raw,
-        )
-        self.X = np.concatenate((X_train, X_test))
-        self.y = np.concatenate((y_train, y_test))
+            # Stratified sampling
+            X_train, X_test, y_train, y_test = train_test_split(
+                self.X_raw,
+                self.y_raw,
+                train_size=int(self.trial_size * (1 - self.test_size)),
+                test_size=int(self.trial_size * self.test_size),
+                random_state=self.random_state,
+                stratify=self.y_raw,
+            )
+            self.X = np.concatenate((X_train, X_test))
+            self.y = np.concatenate((y_train, y_test))
 
         X_train, self.X_test, y_train, self.y_test = train_test_split(
             self.X,
@@ -773,21 +773,21 @@ class EvaluateClassifier(ClassifierMixin):
         verbose = self.set_verbose(verbose)
 
         if self.trial_size is None:
-            self.trial_size = len(self.X_raw)
+            self.X, self.y = self.X_raw, self.y_raw
         elif isinstance(self.trial_size, float) and self.trial_size <= 1.0:
             self.trial_size = int(self.trial_size * len(self.X_raw))
 
-        # Stratified sampling
-        X_train, X_test, y_train, y_test = train_test_split(
-            self.X_raw,
-            self.y_raw,
-            train_size=int(self.trial_size * (1 - self.test_size)),
-            test_size=int(self.trial_size * self.test_size),
-            random_state=self.random_state,
-            stratify=self.y_raw,
-        )
-        self.X = np.concatenate((X_train, X_test))
-        self.y = np.concatenate((y_train, y_test))
+            # Stratified sampling
+            X_train, X_test, y_train, y_test = train_test_split(
+                self.X_raw,
+                self.y_raw,
+                train_size=int(self.trial_size * (1 - self.test_size)),
+                test_size=int(self.trial_size * self.test_size),
+                random_state=self.random_state,
+                stratify=self.y_raw,
+            )
+            self.X = np.concatenate((X_train, X_test))
+            self.y = np.concatenate((y_train, y_test))
 
         self.X = self.select_features(k_best=self.features_select_k_best)
         self.get_anova_f()
