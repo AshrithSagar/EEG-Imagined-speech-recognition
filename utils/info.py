@@ -11,6 +11,7 @@ import pandas as pd
 import yaml
 from rich.console import Console
 from rich.table import Table
+from sklearn.metrics import RocCurveDisplay
 from sklearn.model_selection import LearningCurveDisplay, ValidationCurveDisplay
 
 
@@ -273,4 +274,15 @@ class CurvePlotter:
         }
         ValidationCurveDisplay.from_estimator(**params)
         plt.title(f"Validation Curve for {self.estimator.__class__.__name__}")
+        plt.show()
+
+    def plot_roc_curve(self, **kwargs):
+        params = {
+            "estimator": self.estimator,
+            "X": self.X,
+            "y": self.y,
+            **kwargs,
+        }
+        RocCurveDisplay.from_estimator(**params)
+        plt.title(f"ROC Curve for {self.estimator.__class__.__name__}")
         plt.show()
