@@ -69,6 +69,7 @@ class ClassifierMixin:
         self.model_config = None
         self.score_func = None
         self.selected_features_indices = None
+        self.X, self.y = None, None
 
     def get_value(self, value, default):
         """Handle None values"""
@@ -788,8 +789,6 @@ class EvaluateClassifier(ClassifierMixin):
         self.X = np.concatenate((X_train, X_test))
         self.y = np.concatenate((y_train, y_test))
 
-        self.X, self.y = self.resample(self.X, self.y, sampler)
-
         self.X = self.select_features(k_best=self.features_select_k_best)
         self.get_anova_f()
         self.get_pearsonr()
@@ -802,6 +801,7 @@ class EvaluateClassifier(ClassifierMixin):
         self.cv.random_state = self.random_state
         self.cv.test_size = self.test_size
         self.cv.n_splits = self.n_splits
+        self.sampler = sampler
 
         if verbose:
             self.params_info()
@@ -819,18 +819,21 @@ class EvaluateClassifier(ClassifierMixin):
     ):
         X = X if X is not None else self.X
         y = y if y is not None else self.y
+        self.scores = {f"test_{metric}": [] for metric in self.scoring}
 
-        self.scores = cross_validate(
-            estimator=self.model,
-            X=X,
-            y=y,
-            scoring=self.scoring,
-            cv=self.cv,
-            return_train_score=return_train_score,
-            return_estimator=return_estimator,
-            n_jobs=n_jobs,
-            verbose=verbose if verbose is not None else False,
-        )
+        for train_index, test_index in self.cv.split(X, y):
+            X_train, y_train = self.X[train_index], self.y[train_index]
+            X_val, y_val = self.X[test_index], self.y[test_index]
+
+            self.X_train, self.y_train = self.resample(X_train, y_train, self.sampler)
+
+            model = self.model
+            model.fit(self.X_train, self.y_train)
+
+            for metric, scorer in self.scoring.items():
+                score = scorer(model, X_val, y_val)
+                self.scores[f"test_{metric}"].append(score)
+
         verbose = self.set_verbose(verbose)
         self.evaluation_metrics_info(show_plots=show_plots, verbose=verbose)
 
