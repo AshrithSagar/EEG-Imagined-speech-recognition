@@ -821,6 +821,11 @@ class EvaluateClassifier(ClassifierMixin):
         y = y if y is not None else self.y
         self.scores = {f"test_{metric}": [] for metric in self.scoring}
 
+        if return_train_score:
+            self.train_scores = {f"train_{metric}": [] for metric in self.scoring}
+        if return_estimator:
+            self.estimators = []
+
         for train_index, test_index in self.cv.split(X, y):
             X_train, y_train = self.X[train_index], self.y[train_index]
             X_val, y_val = self.X[test_index], self.y[test_index]
@@ -830,21 +835,41 @@ class EvaluateClassifier(ClassifierMixin):
             model = self.model
             model.fit(self.X_train, self.y_train)
 
+            if return_estimator:
+                self.estimators.append(model)
+
             for metric, scorer in self.scoring.items():
                 score = scorer(model, X_val, y_val)
                 self.scores[f"test_{metric}"].append(score)
 
-        verbose = self.set_verbose(verbose)
-        self.evaluation_metrics_info(show_plots=show_plots, verbose=verbose)
+                if return_train_score:
+                    train_score = scorer(model, self.X_train, self.y_train)
+                    self.train_scores[f"train_{metric}"].append(train_score)
 
-    def evaluation_metrics_info(self, show_plots=False, verbose=None):
         verbose = self.set_verbose(verbose)
+        self.evaluation_metrics_info(
+            scores=self.scores, prefix="test", show_plots=show_plots, verbose=verbose
+        )
+        if return_train_score:
+            self.evaluation_metrics_info(
+                scores=self.train_scores,
+                prefix="train",
+                show_plots=show_plots,
+                verbose=verbose,
+            )
+
+    def evaluation_metrics_info(
+        self, scores=None, prefix=None, show_plots=False, verbose=None
+    ):
+        verbose = self.set_verbose(verbose)
+        scores = scores if scores is not None else self.scores
+        prefix = prefix if prefix is not None else "test"
 
         metrics_mean = {
-            metric: np.mean(self.scores[f"test_{metric}"]) for metric in self.scoring
+            metric: np.mean(scores[f"{prefix}_{metric}"]) for metric in self.scoring
         }
         metrics_std = {
-            metric: np.std(self.scores[f"test_{metric}"]) for metric in self.scoring
+            metric: np.std(scores[f"{prefix}_{metric}"]) for metric in self.scoring
         }
 
         self.cv_metrics_df = pd.DataFrame(
@@ -857,7 +882,12 @@ class EvaluateClassifier(ClassifierMixin):
 
         if verbose:
             table = Table(title="[bold underline]Evaluation Metrics:[/]")
-            table.add_column("Metric", justify="right", style="magenta", no_wrap=True)
+            table.add_column(
+                f"{prefix.capitalize()} Metric",
+                justify="right",
+                style="magenta",
+                no_wrap=True,
+            )
             table.add_column("Mean ± Std", justify="center", style="cyan", no_wrap=True)
             for metric, mean, std in zip(
                 self.scoring.keys(),
@@ -902,6 +932,14 @@ class EvaluateClassifier(ClassifierMixin):
         filename = os.path.join(self.save_dir, "scores.joblib")
         joblib.dump(self.scores, filename)
 
+        if hasattr(self, "train_scores"):
+            filename = os.path.join(self.save_dir, "train_scores.joblib")
+            joblib.dump(self.train_scores, filename)
+
+        if hasattr(self, "estimators"):
+            filename = os.path.join(self.save_dir, "estimators.joblib")
+            joblib.dump(self.estimators, filename)
+
         filename = os.path.join(self.save_dir, "cv_metrics.csv")
         self.cv_metrics_df.to_csv(filename, index=False)
 
@@ -910,5 +948,11 @@ class EvaluateClassifier(ClassifierMixin):
 
     def run(self):
         self.compile()
-        self.evaluate(n_jobs=-1, show_plots=False, verbose=True)
+        self.evaluate(
+            return_train_score=True,
+            return_estimator=True,
+            show_plots=False,
+            n_jobs=-1,
+            verbose=True,
+        )
         self.save()
