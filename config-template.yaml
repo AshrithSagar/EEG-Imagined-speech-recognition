@@ -32,6 +32,9 @@ karaone:
   subjects: null
   tasks: null
   tfr_dataset_dir: null
+sacred:
+  base_dir: null
+  name: null
 tfr:
   batch_size: null
   max_epochs: null
