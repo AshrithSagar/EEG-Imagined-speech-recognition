@@ -963,7 +963,7 @@ class EvaluateClassifier(ClassifierMixin):
         self.compile()
         self.evaluate(
             return_train_score=True,
-            return_estimator=True,
+            return_estimator=False,
             show_plots=False,
             n_jobs=-1,
             verbose=True,
