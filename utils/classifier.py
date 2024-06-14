@@ -868,12 +868,6 @@ class EvaluateClassifier(ClassifierMixin):
         self.scores["score_time"] = score_times
 
         verbose = self.set_verbose(verbose)
-        self.evaluation_metrics_info(
-            scores={k: v for k, v in self.scores.items() if k.startswith("test_")},
-            prefix="test",
-            show_plots=show_plots,
-            verbose=verbose,
-        )
         if return_train_score:
             self.evaluation_metrics_info(
                 scores={k: v for k, v in self.scores.items() if k.startswith("train_")},
@@ -881,6 +875,12 @@ class EvaluateClassifier(ClassifierMixin):
                 show_plots=show_plots,
                 verbose=verbose,
             )
+        self.evaluation_metrics_info(
+            scores={k: v for k, v in self.scores.items() if k.startswith("test_")},
+            prefix="test",
+            show_plots=show_plots,
+            verbose=verbose,
+        )
 
         return self.scores
 
