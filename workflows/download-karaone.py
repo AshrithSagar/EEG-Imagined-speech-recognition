@@ -10,7 +10,8 @@ sys.path.append(os.getcwd())
 from utils.config import load_config
 from utils.karaone import KaraOneDataLoader
 
-if __name__ == "__main__":
+
+def main():
     d_args = load_config(config_file="config.yaml", key="karaone")
 
     karaone = KaraOneDataLoader(
@@ -22,3 +23,7 @@ if __name__ == "__main__":
     base_url = "http://www.cs.toronto.edu/~complingweb/data/karaOne/"
     karaone.download(base_url=base_url)
     karaone.unzip(delete_zip=False)
+
+
+if __name__ == "__main__":
+    main()

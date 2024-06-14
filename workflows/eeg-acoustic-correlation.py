@@ -16,7 +16,8 @@ from scipy.stats import pearsonr
 sys.path.append(os.getcwd())
 from utils.config import fetch_select, load_config, save_console
 
-if __name__ == "__main__":
+
+def main():
     args = load_config(config_file="config.yaml")
 
     dataset_name = args.get("_select").get("dataset")
@@ -76,3 +77,7 @@ if __name__ == "__main__":
 
     file = os.path.join(d_args["features_dir"], "eeg-acoustic-correlation.txt")
     save_console(console, file)
+
+
+if __name__ == "__main__":
+    main()

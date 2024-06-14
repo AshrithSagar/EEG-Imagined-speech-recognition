@@ -20,7 +20,7 @@ tf.config.experimental.set_memory_growth(
 )
 
 
-if __name__ == "__main__":
+def main():
     args = load_config(config_file="config.yaml")
     t_args = load_config(config_file="config.yaml", key="tfr")
 
@@ -108,3 +108,7 @@ if __name__ == "__main__":
 
     model_save_path = os.path.join(model_dir, "model.h5")
     model.save(model_save_path)
+
+
+if __name__ == "__main__":
+    main()

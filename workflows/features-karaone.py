@@ -10,7 +10,8 @@ sys.path.append(os.getcwd())
 from utils.config import load_config
 from utils.karaone import KaraOneDataLoader
 
-if __name__ == "__main__":
+
+def main():
     d_args = load_config(config_file="config.yaml", key="karaone")
 
     karaone = KaraOneDataLoader(
@@ -55,3 +56,7 @@ if __name__ == "__main__":
     flattened_features, flattened_labels = karaone.flatten(
         features, labels, verbose=True
     )
+
+
+if __name__ == "__main__":
+    main()

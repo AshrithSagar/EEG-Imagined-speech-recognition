@@ -11,7 +11,8 @@ from rich.console import Console
 sys.path.append(os.getcwd())
 from utils.config import fetch_select, load_config, save_console
 
-if __name__ == "__main__":
+
+def main():
     args = load_config(config_file="config.yaml")
     c_args = load_config(config_file="config.yaml", key="classifier")
 
@@ -65,3 +66,7 @@ if __name__ == "__main__":
 
         file = os.path.join(model_dir, classifier_name, "output.txt")
         save_console(console, file)
+
+
+if __name__ == "__main__":
+    main()

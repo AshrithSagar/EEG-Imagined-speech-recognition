@@ -10,7 +10,8 @@ sys.path.append(os.getcwd())
 from utils.config import load_config
 from utils.feis import FEISDataLoader
 
-if __name__ == "__main__":
+
+def main():
     d_args = load_config(config_file="config.yaml", key="feis")
 
     feis = FEISDataLoader(
@@ -32,3 +33,7 @@ if __name__ == "__main__":
     labels = feis.load_labels()
 
     flattened_features, flattened_labels = feis.flatten(features, labels, verbose=True)
+
+
+if __name__ == "__main__":
+    main()

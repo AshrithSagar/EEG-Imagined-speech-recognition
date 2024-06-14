@@ -39,10 +39,14 @@ class SacredRunner:
         module = self.load(self.file)
         module.experiment = self.experiment
 
-        if hasattr(module, "main") and callable(getattr(module, "main")):
-            module.main()
-        else:
-            raise AttributeError("No 'main' function found in the specified file.")
+        @self.experiment.main
+        def main(_run, _config):
+            if hasattr(module, "main") and callable(getattr(module, "main")):
+                module.main()
+            else:
+                raise AttributeError("No 'main' function found in the specified file.")
+
+        self.experiment.run()
 
 
 if __name__ == "__main__":
