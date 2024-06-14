@@ -7,12 +7,12 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from utils.config import load_config
+from utils.config import load_config, setup_parser
 from utils.karaone import KaraOneDataLoader
 
 
-def main():
-    d_args = load_config(config_file="config.yaml", key="karaone")
+def main(config_file="config.yaml"):
+    d_args = load_config(config_file, key="karaone")
 
     karaone = KaraOneDataLoader(
         raw_data_dir=d_args["raw_data_dir"],
@@ -26,4 +26,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = setup_parser("Download KaraOne database from source")
+    main(args.config)

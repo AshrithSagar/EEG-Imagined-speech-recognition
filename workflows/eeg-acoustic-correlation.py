@@ -14,11 +14,11 @@ from rich.table import Table
 from scipy.stats import pearsonr
 
 sys.path.append(os.getcwd())
-from utils.config import fetch_select, load_config, save_console
+from utils.config import fetch_select, load_config, save_console, setup_parser
 
 
-def main():
-    args = load_config(config_file="config.yaml")
+def main(config_file="config.yaml"):
+    args = load_config(config_file)
 
     dataset_name = args.get("_select").get("dataset")
     dataset = fetch_select("dataset", dataset_name)
@@ -80,4 +80,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = setup_parser(
+        "Compute the mean pearson correlations between Acoustic and EEG features for each channel."
+    )
+    main(args.config)

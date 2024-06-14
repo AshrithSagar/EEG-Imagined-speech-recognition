@@ -10,13 +10,13 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import fetch_select, load_config, save_console
+from utils.config import fetch_select, load_config, save_console, setup_parser
 from utils.info import KBestSummary
 
 
-def main():
-    args = load_config(config_file="config.yaml")
-    c_args = load_config(config_file="config.yaml", key="classifier")
+def main(config_file="config.yaml"):
+    args = load_config(config_file)
+    c_args = load_config(config_file, key="classifier")
 
     dataset_name = args.get("_select").get("dataset")
     dataset = fetch_select("dataset", dataset_name)
@@ -80,4 +80,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = setup_parser(
+        "Run the classifier on flattened features with different k_best's."
+    )
+    main(args.config)

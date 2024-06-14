@@ -3,6 +3,9 @@ config.py
 Configuration utils
 """
 
+import argparse
+import os
+
 import yaml
 from rich.console import Console
 from rich.traceback import install
@@ -81,3 +84,22 @@ def save_console(console, file, mode="w"):
     """
     with open(file, mode) as file_handle:
         file_handle.write(console.export_text())
+
+
+def setup_parser(description=None):
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        "--config",
+        metavar="config_file",
+        type=str,
+        nargs="?",
+        default="config.yaml",
+        help="Path to the configuration file (default: config.yaml)",
+    )
+
+    args = parser.parse_args()
+
+    if not os.path.exists(args.config):
+        raise FileNotFoundError(f"Configuration file not found: {args.config}")
+
+    return args

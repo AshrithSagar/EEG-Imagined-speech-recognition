@@ -1,5 +1,6 @@
 """
 tfr-classifier.py
+Run classifier on the TFR dataset
 """
 
 import os
@@ -10,7 +11,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-from utils.config import fetch_select, load_config
+from utils.config import fetch_select, load_config, setup_parser
 from utils.tfr import TFRDataset
 
 tf.keras.backend.clear_session()
@@ -20,9 +21,9 @@ tf.config.experimental.set_memory_growth(
 )
 
 
-def main():
-    args = load_config(config_file="config.yaml")
-    t_args = load_config(config_file="config.yaml", key="tfr")
+def main(config_file="config.yaml"):
+    args = load_config(config_file)
+    t_args = load_config(config_file, key="tfr")
 
     dataset_name = args.get("_select").get("dataset")
     dataset = fetch_select("dataset", dataset_name)
@@ -111,4 +112,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = setup_parser("Run classifier on the TFR dataset")
+    main(args.config)

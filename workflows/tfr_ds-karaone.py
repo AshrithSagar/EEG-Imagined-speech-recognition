@@ -10,14 +10,14 @@ import numpy as np
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import line_separator, load_config
+from utils.config import line_separator, load_config, setup_parser
 from utils.karaone import KaraOneDataLoader
 from utils.tfr import TFRDataset
 
 
-def main():
+def main(config_file="config.yaml"):
     console = Console()
-    d_args = load_config(config_file="config.yaml", key="karaone")
+    d_args = load_config(config_file, key="karaone")
 
     karaone = KaraOneDataLoader(
         raw_data_dir=d_args["raw_data_dir"],
@@ -61,4 +61,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = setup_parser(
+        "Create a Time-Frequency Representation (TFR) dataset from KaraOne database"
+    )
+    main(args.config)

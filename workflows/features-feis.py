@@ -7,12 +7,12 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from utils.config import load_config
+from utils.config import load_config, setup_parser
 from utils.feis import FEISDataLoader
 
 
-def main():
-    d_args = load_config(config_file="config.yaml", key="feis")
+def main(config_file="config.yaml"):
+    d_args = load_config(config_file, key="feis")
 
     feis = FEISDataLoader(
         raw_data_dir=d_args["raw_data_dir"],
@@ -36,4 +36,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = setup_parser("Extract features from FEIS dataset")
+    main(args.config)

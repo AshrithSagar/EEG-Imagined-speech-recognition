@@ -12,7 +12,7 @@ sys.path.append(os.getcwd())
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
-from utils.config import load_config
+from utils.config import load_config, setup_parser
 
 
 class SacredRunner:
@@ -42,7 +42,7 @@ class SacredRunner:
         @self.experiment.main
         def main(_run, _config):
             if hasattr(module, "main") and callable(getattr(module, "main")):
-                module.main()
+                module.main(config_file=self.config)
             else:
                 raise AttributeError("No 'main' function found in the specified file.")
 
