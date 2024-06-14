@@ -44,7 +44,7 @@ class SacredRunner:
             if hasattr(module, "main") and callable(getattr(module, "main")):
                 module.main(config_file=self.config)
             else:
-                raise AttributeError("No 'main' function found in the specified file.")
+                raise AttributeError("No 'main' function found")
 
         self.experiment.run()
 
