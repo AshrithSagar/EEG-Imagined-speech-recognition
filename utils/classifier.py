@@ -325,7 +325,7 @@ class ClassifierMixin:
         plt.title("Confusion Matrix")
 
         if save_path:
-            plt.savefig(save_path)
+            plt.savefig(save_path, bbox_inches="tight")
             plt.close()
         else:
             plt.show()
@@ -948,14 +948,12 @@ class EvaluateClassifier(ClassifierMixin):
         plt.ylabel("Score")
         plt.tight_layout()
         if save_path:
-            plt.savefig(save_path)
+            plt.savefig(save_path, bbox_inches="tight")
             plt.close()
         else:
             plt.show()
 
-    def plot_confusion_matrix_cv(
-        self, confusion_matrices=None, save_path=None, verbose=None
-    ):
+    def get_confusion_matrix_cv(self, confusion_matrices=None, verbose=None):
         verbose = self.set_verbose(verbose)
         confusion_matrices = self.get_value(confusion_matrices, self.confusion_matrices)
 
@@ -967,12 +965,21 @@ class EvaluateClassifier(ClassifierMixin):
                 cm_cv[i, j] = f"{cm_mean[i, j]:.2f} ± {cm_std[i, j]:.2f}"
         self.confusion_matrix_cv = cm_cv
 
+    def plot_confusion_matrix_cv(
+        self, confusion_matrices=None, minimal=False, save_path=None, verbose=None
+    ):
+        verbose = self.set_verbose(verbose)
+        confusion_matrices = self.get_value(confusion_matrices, self.confusion_matrices)
+
+        cm_mean = np.mean(confusion_matrices, axis=0)
+        cm_std = np.std(confusion_matrices, axis=0)
+
         plt.figure(figsize=(8, 6))
         fig, ax = plt.subplots()
         disp = ConfusionMatrixDisplay(
             confusion_matrix=cm_mean, display_labels=self.classes
         )
-        disp.plot(include_values=False, cmap=plt.cm.Blues, ax=ax)
+        disp.plot(include_values=False, cmap=plt.cm.Blues, ax=ax, colorbar=not minimal)
 
         for i in range(cm_mean.shape[0]):
             for j in range(cm_mean.shape[1]):
@@ -986,10 +993,19 @@ class EvaluateClassifier(ClassifierMixin):
                     color=text_color,
                 )
 
-        plt.title("Confusion Matrix CV")
-        plt.tight_layout()
+        if minimal:
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_xlabel("")
+            ax.set_ylabel("")
+            fig.tight_layout(pad=0)
+            ax.axis("off")
+        else:
+            plt.title("Confusion Matrix CV")
+            plt.tight_layout()
+
         if save_path:
-            plt.savefig(save_path)
+            plt.savefig(save_path, bbox_inches="tight")
             plt.close()
         else:
             plt.show()
@@ -1014,8 +1030,11 @@ class EvaluateClassifier(ClassifierMixin):
                 save_path=f"{filename}-fold_{fold}.png",
             )
 
-        filename = os.path.join(self.save_dir, "confusion_matrix_cv.png")
+        filename = os.path.join(self.save_dir, "confusion_matrix-cv.png")
         self.plot_confusion_matrix_cv(save_path=filename)
+
+        filename = os.path.join(self.save_dir, "confusion_matrix-cv-minimal.png")
+        self.plot_confusion_matrix_cv(minimal=True, save_path=filename)
 
     def run(self):
         self.compile()
