@@ -829,6 +829,7 @@ class EvaluateClassifier(ClassifierMixin):
     ):
         X = X if X is not None else self.X
         y = y if y is not None else self.y
+        self.confusion_matrices = []
 
         self.scores = {}
         for metric in self.scoring:
@@ -863,6 +864,11 @@ class EvaluateClassifier(ClassifierMixin):
                 if return_train_score:
                     train_score = scorer(model, self.X_train, self.y_train)
                     self.scores[f"train_{metric}"].append(train_score)
+
+            self.classes = model.classes_
+            y_pred = model.predict(X_val)
+            cm = confusion_matrix(y_val, y_pred)
+            self.confusion_matrices.append(cm)
 
         self.scores["fit_time"] = fit_times
         self.scores["score_time"] = score_times
@@ -958,6 +964,14 @@ class EvaluateClassifier(ClassifierMixin):
 
         filename = os.path.join(self.save_dir, "cv_scores_boxplot.png")
         self.plot_scores_boxplot(save_path=filename)
+
+        filename = os.path.join(self.save_dir, "confusion_matrix")
+        for fold, cm in enumerate(self.confusion_matrices):
+            self.plot_confusion_matrix(
+                cm,
+                self.classes,
+                save_path=f"{filename}-{fold}.png",
+            )
 
     def run(self):
         self.compile()
