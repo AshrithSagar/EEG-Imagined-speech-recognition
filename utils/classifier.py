@@ -953,6 +953,47 @@ class EvaluateClassifier(ClassifierMixin):
         else:
             plt.show()
 
+    def plot_confusion_matrix_cv(
+        self, confusion_matrices=None, save_path=None, verbose=None
+    ):
+        verbose = self.set_verbose(verbose)
+        confusion_matrices = self.get_value(confusion_matrices, self.confusion_matrices)
+
+        cm_mean = np.mean(confusion_matrices, axis=0)
+        cm_std = np.std(confusion_matrices, axis=0)
+        cm_cv = np.empty_like(cm_mean, dtype=object)
+        for i in range(cm_mean.shape[0]):
+            for j in range(cm_mean.shape[1]):
+                cm_cv[i, j] = f"{cm_mean[i, j]:.2f} ± {cm_std[i, j]:.2f}"
+        self.confusion_matrix_cv = cm_cv
+
+        plt.figure(figsize=(8, 6))
+        fig, ax = plt.subplots()
+        disp = ConfusionMatrixDisplay(
+            confusion_matrix=cm_mean, display_labels=self.classes
+        )
+        disp.plot(include_values=False, cmap=plt.cm.Blues, ax=ax)
+
+        for i in range(cm_mean.shape[0]):
+            for j in range(cm_mean.shape[1]):
+                text_color = "white" if cm_mean[i, j] > np.max(cm_mean) / 2 else "black"
+                ax.text(
+                    j,
+                    i,
+                    f"{cm_mean[i, j]:.2f}\n±{cm_std[i, j]:.2f}",
+                    ha="center",
+                    va="center",
+                    color=text_color,
+                )
+
+        plt.title("Confusion Matrix CV")
+        plt.tight_layout()
+        if save_path:
+            plt.savefig(save_path)
+            plt.close()
+        else:
+            plt.show()
+
     def save(self, verbose=False):
         super().save(verbose)
 
@@ -970,8 +1011,11 @@ class EvaluateClassifier(ClassifierMixin):
             self.plot_confusion_matrix(
                 cm,
                 self.classes,
-                save_path=f"{filename}-{fold}.png",
+                save_path=f"{filename}-fold_{fold}.png",
             )
+
+        filename = os.path.join(self.save_dir, "confusion_matrix_cv.png")
+        self.plot_confusion_matrix_cv(save_path=filename)
 
     def run(self):
         self.compile()
