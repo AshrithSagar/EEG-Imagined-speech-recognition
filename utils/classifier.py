@@ -974,6 +974,7 @@ class EvaluateClassifier(ClassifierMixin):
         cm_mean = np.mean(confusion_matrices, axis=0)
         cm_std = np.std(confusion_matrices, axis=0)
 
+        fontsize = 25 if minimal else None
         plt.figure(figsize=(8, 6))
         fig, ax = plt.subplots()
         disp = ConfusionMatrixDisplay(
@@ -991,6 +992,7 @@ class EvaluateClassifier(ClassifierMixin):
                     ha="center",
                     va="center",
                     color=text_color,
+                    fontsize=fontsize,
                 )
 
         if minimal:
@@ -1005,7 +1007,8 @@ class EvaluateClassifier(ClassifierMixin):
             plt.tight_layout()
 
         if save_path:
-            plt.savefig(save_path, bbox_inches="tight")
+            pad_inches = 0 if minimal else None
+            plt.savefig(save_path, bbox_inches="tight", pad_inches=pad_inches)
             plt.close()
         else:
             plt.show()
@@ -1033,7 +1036,7 @@ class EvaluateClassifier(ClassifierMixin):
         filename = os.path.join(self.save_dir, "confusion_matrix-cv.png")
         self.plot_confusion_matrix_cv(save_path=filename)
 
-        filename = os.path.join(self.save_dir, "confusion_matrix-cv-minimal.png")
+        filename = os.path.join(self.save_dir, "confusion_matrix-cv.minimal.png")
         self.plot_confusion_matrix_cv(minimal=True, save_path=filename)
 
     def run(self):
