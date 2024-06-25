@@ -126,7 +126,9 @@ Run over multiple k's from features_select_k_best[k] (list[int]).
 
 ## References
 
-- <https://www.cs.toronto.edu/~complingweb/data/karaOne/karaOne.html>
+- The KARA ONE Database: Phonological Categories in imagined and articulated speech
+<https://www.cs.toronto.edu/~complingweb/data/karaOne/karaOne.html>
+
 - <https://github.com/scottwellington/FEIS>
 
 ## License
