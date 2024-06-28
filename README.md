@@ -99,6 +99,9 @@ def cross_validation():
   # Optional. Remove/Comment this entire function to use default CV of 5 splits from StratifiedKFold.
   # Takes certain parameters like random_state, n_splits from config.yaml
   return ...
+
+def pipeline():
+  # Optional. Remove/Comment this entire function to disable any pipeline functions to be run.
 ```
 
 ### Workflows
