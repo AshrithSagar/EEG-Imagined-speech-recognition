@@ -119,6 +119,30 @@ class ClassifierMixin:
 
         return X, y
 
+    def get_pipeline(self, pipeline=None):
+        if pipeline is False:
+            return None
+
+        if pipeline is None:
+            self.get_model_config()
+            if not hasattr(self.model_config, "pipeline"):
+                return None
+            pipeline = self.model_config.pipeline()
+
+        self.pipeline = pipeline
+        return self.pipeline
+
+    def apply_pipeline(self, X, pipeline=None, verbose=None):
+        verbose = self.set_verbose(verbose)
+
+        if not hasattr(self, "pipeline"):
+            self.pipeline = self.get_pipeline(pipeline)
+
+        if self.pipeline:
+            for transform in self.pipeline:
+                X = transform.fit_transform(X)
+        return X
+
     def get_anova_f(self, X=None, y=None, verbose=None):
         """ANOVA F-Test"""
         verbose = self.set_verbose(verbose)
@@ -485,6 +509,8 @@ class RegularClassifier(ClassifierMixin):
         self.sampler = self.get_sampler(sampler)
         self.X_train, self.y_train = self.resample(X_train, y_train)
 
+        self.X_train = self.apply_pipeline(X=self.X_train)
+        self.X_test = self.apply_pipeline(X=self.X_test)
         self.X = self.select_features(k_best=self.features_select_k_best)
         self.get_anova_f()
         self.get_pearsonr()
@@ -635,6 +661,8 @@ class ClassifierGridSearch(ClassifierMixin):
         self.sampler = self.get_sampler(sampler)
         self.X_train, self.y_train = self.resample(X_train, y_train)
 
+        self.X_train = self.apply_pipeline(X=self.X_train)
+        self.X_test = self.apply_pipeline(X=self.X_test)
         self.X = self.select_features(k_best=self.features_select_k_best)
         self.get_anova_f()
         self.get_pearsonr()
@@ -799,6 +827,7 @@ class EvaluateClassifier(ClassifierMixin):
             self.X = np.concatenate((X_train, X_test))
             self.y = np.concatenate((y_train, y_test))
 
+        self.X = self.apply_pipeline(X=self.X)
         self.X = self.select_features(k_best=self.features_select_k_best)
         self.get_anova_f()
         self.get_pearsonr()
