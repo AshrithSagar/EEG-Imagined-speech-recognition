@@ -9,7 +9,10 @@ authors:
   - given-names: Ashrith Sagar Yedlapalli
     name-particle: Ashrith
     family-names: Yedlapalli
-    email: ashrith9sagar@gmail.com
+    email:
+      - ashrith9sagar@gmail.com
+      - ashrith.yedlapalli@gmail.com
+      - ashrith.yedlapalli@learner.manipal.edu
     affiliation: 'Manipal Institute of Technology, Manipal'
 identifiers:
   - type: url
@@ -22,9 +25,14 @@ url: >-
   https://github.com/AshrithSagar/EEG-Imagined-speech-recognition
 abstract: Imagined speech recognition through EEG signals
 keywords:
+  - Electroencephalography
   - EEG
   - Imagined speech
+  - Covert speech
+  - Silent speech
   - Classification
   - Machine learning
+  - Information set theory
+  - Hanman classifier
   - KaraOne
 license: MIT
