@@ -9,12 +9,11 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import Config, fetch_select, save_console, setup_parser
+from utils.config import Config, fetch_select, save_console
 from utils.ifs import InformationSet
 
 
-def main(config_file="config.yaml"):
-    args = Config(config_file)
+def main(args):
     c_args = args["classifier"]
 
     dataset_name = args.get("_select").get("dataset")
@@ -73,5 +72,5 @@ def main(config_file="config.yaml"):
 
 
 if __name__ == "__main__":
-    args = setup_parser("Run the classifier on the effective features")
-    main(args.config)
+    args = Config.from_args("Run the classifier on the effective features")
+    main(args)

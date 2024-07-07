@@ -11,7 +11,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-from utils.config import Config, fetch_select, setup_parser
+from utils.config import Config, fetch_select
 from utils.tfr import TFRDataset
 
 tf.keras.backend.clear_session()
@@ -21,8 +21,7 @@ tf.config.experimental.set_memory_growth(
 )
 
 
-def main(config_file="config.yaml"):
-    args = Config(config_file)
+def main(args):
     t_args = args["tfr"]
 
     dataset_name = args.get("_select").get("dataset")
@@ -112,5 +111,5 @@ def main(config_file="config.yaml"):
 
 
 if __name__ == "__main__":
-    args = setup_parser("Run classifier on the TFR dataset")
-    main(args.config)
+    args = Config.from_args("Run classifier on the TFR dataset")
+    main(args)

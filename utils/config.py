@@ -38,9 +38,14 @@ def line_separator(line="normal", color="", width="full", console=None):
 class Config:
     """Class to manage configuration settings"""
 
-    def __init__(self, file: str = "config.yaml"):
+    def __init__(self, file: str = "config.yaml", verbose: bool = True):
         self.file: str = file
-        self.config: dict = self.load(file)
+        if not os.path.exists(self.file):
+            raise FileNotFoundError(f"Configuration file not found: {self.file}")
+        self.config: dict = self.load()
+        if verbose:
+            console = Console()
+            console.print(f"Configuration loaded from [bold]{self.file}[/]")
 
     def __getitem__(self, key: str) -> ConfigValue:
         return self.config[key]
@@ -63,17 +68,33 @@ class Config:
     def get(self, key: str, default: ConfigValue = None) -> ConfigValue:
         return self.config.get(key, default)
 
-    def load(self, file: Optional[str] = None) -> dict:
+    def load(self) -> ConfigValue:
         """Load configuration settings from a YAML or TOML file"""
-        config_file: str = file if file else self.file
-        with open(config_file, "r") as file:
-            if config_file.endswith(".toml"):
-                config = toml.load(file)
-            elif config_file.endswith(".yaml") or config_file.endswith(".yml"):
-                config = yaml.safe_load(file)
+        with open(self.file, "r") as f:
+            if self.file.endswith(".toml"):
+                config = toml.load(f)
+            elif self.file.endswith(".yaml") or self.file.endswith(".yml"):
+                config = yaml.safe_load(f)
             else:
                 raise ValueError("Invalid configuration file format")
+
         return config
+
+    @classmethod
+    def from_args(cls, description: Optional[str] = None):
+        """Create a Config instance from command-line arguments"""
+        parser = argparse.ArgumentParser(description=description)
+        parser.add_argument(
+            "--config",
+            metavar="config_file",
+            type=str,
+            nargs="?",
+            default="config.yaml",
+            help="Path to the configuration file [.toml or .yaml/.yml] (default: config.yaml)",
+        )
+
+        args = parser.parse_args()
+        return cls(args.config)
 
 
 def fetch_select(key, choice):
@@ -115,22 +136,3 @@ def save_console(console, file, mode="w"):
     """
     with open(file, mode) as file_handle:
         file_handle.write(console.export_text())
-
-
-def setup_parser(description=None):
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument(
-        "--config",
-        metavar="config_file",
-        type=str,
-        nargs="?",
-        default="config.yaml",
-        help="Path to the configuration file [.toml or .yaml/.yml] (default: config.yaml)",
-    )
-
-    args = parser.parse_args()
-
-    if not os.path.exists(args.config):
-        raise FileNotFoundError(f"Configuration file not found: {args.config}")
-
-    return args
