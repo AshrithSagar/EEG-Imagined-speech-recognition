@@ -5,6 +5,7 @@ Run a classifier on the effective features extracted from the dataset.
 
 import os
 import sys
+from typing import List
 
 from rich.console import Console
 
@@ -13,17 +14,18 @@ from utils.config import Config, fetch_select, save_console
 from utils.ifs import InformationSet
 
 
-def main(args):
-    c_args = args["classifier"]
+def main(args: Config):
+    c_args: dict = args["classifier"]
 
-    dataset_name = args.get("_select").get("dataset")
+    dataset_name: str = args.get("_select").get("dataset")
     dataset = fetch_select("dataset", dataset_name)
-    d_args = args[dataset_name.lower()]
+    d_args: dict = args[dataset_name.lower()]
 
-    classifier_name = args.get("_select").get("classifier")
+    classifier_name: str = args.get("_select").get("classifier")
     classifier = fetch_select("classifier", classifier_name)
 
-    for model in c_args["models"]:
+    models: List[str] = c_args["models"]
+    for model in models:
         console = Console(record=True)
         model_dir = os.path.join(c_args["model_base_dir"], model, dataset_name)
         model_file = os.path.join(c_args["model_base_dir"], model, "model.py")
@@ -45,7 +47,8 @@ def main(args):
         eff_features = features_ifs.extract_effective_information()
         dset.dataset_info(eff_features, labels)
 
-        for task in d_args["tasks"]:
+        tasks: List[int] = d_args["tasks"]
+        for task in tasks:
             console.rule(title=f"[bold blue3][Task-{task}][/]", style="blue3")
             task_labels = dset.get_task(labels, task=task)
             save_dir = os.path.join(model_dir, classifier_name, f"task-{task}")
@@ -72,5 +75,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    args = Config.from_args("Run the classifier on the effective features")
+    args = Config.from_args(
+        description="Run the classifier on the effective features",
+    )
     main(args)
