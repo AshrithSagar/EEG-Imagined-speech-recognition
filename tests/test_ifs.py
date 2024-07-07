@@ -14,7 +14,6 @@ from utils.ifs import InformationSet
 
 
 def test_extract_effective_information(verbose=True):
-
     np.random.seed(seed=42)
 
     # Mock dataset with n.epochs, n.windows, n.channels, n.features_per_window

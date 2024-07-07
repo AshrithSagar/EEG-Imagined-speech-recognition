@@ -7,12 +7,12 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from utils.config import load_config, setup_parser
+from utils.config import Config, setup_parser
 from utils.karaone import KaraOneDataLoader
 
 
 def main(config_file="config.yaml"):
-    d_args = load_config(config_file, key="karaone")
+    d_args = Config(config_file)["karaone"]
 
     karaone = KaraOneDataLoader(
         raw_data_dir=d_args["raw_data_dir"],

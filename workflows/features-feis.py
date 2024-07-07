@@ -7,12 +7,12 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from utils.config import load_config, setup_parser
+from utils.config import Config, setup_parser
 from utils.feis import FEISDataLoader
 
 
 def main(config_file="config.yaml"):
-    d_args = load_config(config_file, key="feis")
+    d_args = Config(config_file)["feis"]
 
     feis = FEISDataLoader(
         raw_data_dir=d_args["raw_data_dir"],

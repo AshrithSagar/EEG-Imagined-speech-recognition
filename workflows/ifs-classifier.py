@@ -9,13 +9,13 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import fetch_select, load_config, save_console, setup_parser
+from utils.config import Config, fetch_select, save_console, setup_parser
 from utils.ifs import InformationSet
 
 
 def main(config_file="config.yaml"):
-    args = load_config(config_file)
-    c_args = load_config(config_file, key="classifier")
+    args = Config(config_file)
+    c_args = args["classifier"]
 
     dataset_name = args.get("_select").get("dataset")
     dataset = fetch_select("dataset", dataset_name)

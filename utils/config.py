@@ -33,23 +33,47 @@ def line_separator(line="normal", color="", width="full", console=None):
     console.print(separator)
 
 
-def load_config(config_file="config.yaml", key=None):
-    """
-    Load configuration settings from a YAML or TOML file
-    """
-    with open(config_file, "r") as file:
-        if config_file.endswith(".toml"):
-            config = toml.load(file)
-        elif config_file.endswith(".yaml") or config_file.endswith(".yml"):
-            config = yaml.safe_load(file)
-        else:
-            raise ValueError(
-                "Unsupported file format. Only .toml and .yaml/.yml are supported."
-            )
+class Config:
+    """Class to manage configuration settings"""
 
-    if key:
-        return config.get(key, {})
-    else:
+    def __init__(self, file="config.yaml"):
+        self.file = file
+        self.config = self.load(file)
+
+    def __getitem__(self, key):
+        return self.config[key]
+
+    def __setitem__(self, key, value):
+        self.config[key] = value
+
+    def __delitem__(self, key):
+        del self.config[key]
+
+    def __contains__(self, key):
+        return key in self.config
+
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.file})"
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.file})"
+
+    def get(self, key, default=None):
+        return self.config.get(key, default)
+
+    def load(self, file=None):
+        """Load configuration settings from a YAML or TOML file"""
+
+        config_file = file if file else self.file
+        with open(config_file, "r") as file:
+            if config_file.endswith(".toml"):
+                config = toml.load(file)
+            elif config_file.endswith(".yaml") or config_file.endswith(".yml"):
+                config = yaml.safe_load(file)
+            else:
+                raise ValueError(
+                    "Unsupported file format. Only .toml and .yaml/.yml are supported."
+                )
         return config
 
 

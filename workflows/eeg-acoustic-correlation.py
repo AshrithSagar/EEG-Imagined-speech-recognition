@@ -14,11 +14,11 @@ from rich.table import Table
 from scipy.stats import pearsonr
 
 sys.path.append(os.getcwd())
-from utils.config import fetch_select, load_config, save_console, setup_parser
+from utils.config import Config, fetch_select, save_console, setup_parser
 
 
 def main(config_file="config.yaml"):
-    args = load_config(config_file)
+    args = Config(config_file)
 
     dataset_name = args.get("_select").get("dataset")
     dataset = fetch_select("dataset", dataset_name)

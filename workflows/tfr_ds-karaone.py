@@ -10,14 +10,14 @@ import numpy as np
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import line_separator, load_config, setup_parser
+from utils.config import Config, line_separator, setup_parser
 from utils.karaone import KaraOneDataLoader
 from utils.tfr import TFRDataset
 
 
 def main(config_file="config.yaml"):
     console = Console()
-    d_args = load_config(config_file, key="karaone")
+    d_args = Config(config_file)["karaone"]
 
     karaone = KaraOneDataLoader(
         raw_data_dir=d_args["raw_data_dir"],

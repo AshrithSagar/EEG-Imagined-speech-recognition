@@ -12,7 +12,7 @@ sys.path.append(os.getcwd())
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
-from utils.config import load_config, setup_parser
+from utils.config import Config, setup_parser
 
 
 class SacredRunner:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    s_args = load_config(args.config, key="sacred")
+    s_args = Config(args.config)["sacred"]
 
     runner = SacredRunner(
         name=s_args["name"],
