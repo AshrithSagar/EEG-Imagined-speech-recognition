@@ -5,12 +5,16 @@ Configuration utils
 
 import argparse
 import os
-from typing import Any, Optional, Union
+from typing import Any, Optional, Type, Union
 
 import toml
 import yaml
 from rich.console import Console
 from rich.traceback import install
+
+from utils.classifier import ClassifierGridSearch, EvaluateClassifier, RegularClassifier
+from utils.feis import FEISDataLoader
+from utils.karaone import KaraOneDataLoader
 
 install()
 ConfigValue = Optional[Union[dict, list, str, int, float, Any]]
@@ -98,15 +102,13 @@ class Config:
         return cls(config_file)
 
 
-def fetch_select(key, choice):
-    from utils.classifier import (
-        ClassifierGridSearch,
-        EvaluateClassifier,
-        RegularClassifier,
-    )
-    from utils.feis import FEISDataLoader
-    from utils.karaone import KaraOneDataLoader
-
+def fetch_select(key: str, choice: str) -> Union[
+    Type[FEISDataLoader],
+    Type[KaraOneDataLoader],
+    Type[RegularClassifier],
+    Type[EvaluateClassifier],
+    Type[ClassifierGridSearch],
+]:
     options = {
         "dataset": {
             "FEIS": FEISDataLoader,
