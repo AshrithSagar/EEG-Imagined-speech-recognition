@@ -1,0 +1,48 @@
+[_select]
+classifier = ""
+dataset = ""
+
+[classifier]
+model_base_dir = ""
+models = [""]
+n_splits = 0
+random_state = 0
+test_size = 0.0
+trial_size = 0.0
+
+[classifier.features_select_k_best]
+k = ""
+score_func = ""
+
+[feis]
+epoch_type = ""
+features_dir = ""
+raw_data_dir = ""
+subjects = []
+tasks = []
+tfr_dataset_dir = ""
+
+[karaone]
+channels = ""
+epoch_type = ""
+features_dir = ""
+filtered_data_dir = ""
+length_factor = 0.0
+overlap = 0.0
+raw_data_dir = ""
+subjects = []
+tasks = []
+tfr_dataset_dir = ""
+
+[sacred]
+base_dir = ""
+name = ""
+
+[tfr]
+batch_size = 0
+max_epochs = 0
+model_base_dir = ""
+trial_size = 0
+
+[utils]
+path = ""

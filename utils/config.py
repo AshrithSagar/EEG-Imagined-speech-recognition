@@ -6,6 +6,7 @@ Configuration utils
 import argparse
 import os
 
+import toml
 import yaml
 from rich.console import Console
 from rich.traceback import install
@@ -34,10 +35,17 @@ def line_separator(line="normal", color="", width="full", console=None):
 
 def load_config(config_file="config.yaml", key=None):
     """
-    Load configuration settings from a YAML file
+    Load configuration settings from a YAML or TOML file
     """
     with open(config_file, "r") as file:
-        config = yaml.safe_load(file)
+        if config_file.endswith(".toml"):
+            config = toml.load(file)
+        elif config_file.endswith(".yaml") or config_file.endswith(".yml"):
+            config = yaml.safe_load(file)
+        else:
+            raise ValueError(
+                "Unsupported file format. Only .toml and .yaml/.yml are supported."
+            )
 
     if key:
         return config.get(key, {})
@@ -94,7 +102,7 @@ def setup_parser(description=None):
         type=str,
         nargs="?",
         default="config.yaml",
-        help="Path to the configuration file (default: config.yaml)",
+        help="Path to the configuration file [.toml or .yaml/.yml] (default: config.yaml)",
     )
 
     args = parser.parse_args()

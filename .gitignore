@@ -11,3 +11,5 @@ notebooks/
 
 config*.yaml
 !config-template.yaml
+config*.toml
+!config-template.toml
