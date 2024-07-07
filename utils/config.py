@@ -5,6 +5,7 @@ Configuration utils
 
 import argparse
 import os
+from typing import Any, Optional, Union
 
 import toml
 import yaml
@@ -12,6 +13,7 @@ from rich.console import Console
 from rich.traceback import install
 
 install()
+ConfigValue = Optional[Union[dict, list, str, int, float, Any]]
 
 
 def line_separator(line="normal", color="", width="full", console=None):
@@ -36,44 +38,41 @@ def line_separator(line="normal", color="", width="full", console=None):
 class Config:
     """Class to manage configuration settings"""
 
-    def __init__(self, file="config.yaml"):
-        self.file = file
-        self.config = self.load(file)
+    def __init__(self, file: str = "config.yaml"):
+        self.file: str = file
+        self.config: dict = self.load(file)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> ConfigValue:
         return self.config[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: ConfigValue):
         self.config[key] = value
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         del self.config[key]
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         return key in self.config
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.__class__.__name__}({self.file})"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.file})"
 
-    def get(self, key, default=None):
+    def get(self, key: str, default: ConfigValue = None) -> ConfigValue:
         return self.config.get(key, default)
 
-    def load(self, file=None):
+    def load(self, file: Optional[str] = None) -> dict:
         """Load configuration settings from a YAML or TOML file"""
-
-        config_file = file if file else self.file
+        config_file: str = file if file else self.file
         with open(config_file, "r") as file:
             if config_file.endswith(".toml"):
                 config = toml.load(file)
             elif config_file.endswith(".yaml") or config_file.endswith(".yml"):
                 config = yaml.safe_load(file)
             else:
-                raise ValueError(
-                    "Unsupported file format. Only .toml and .yaml/.yml are supported."
-                )
+                raise ValueError("Invalid configuration file format")
         return config
 
 
