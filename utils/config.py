@@ -53,7 +53,7 @@ class Config:
     def __setitem__(self, key: str, value: ConfigValue):
         self.config[key] = value
 
-    def __delitem__(self, key: str) -> None:
+    def __delitem__(self, key: str):
         del self.config[key]
 
     def __contains__(self, key: str) -> bool:
@@ -94,7 +94,8 @@ class Config:
         )
 
         args = parser.parse_args()
-        return cls(args.config)
+        config_file: str = getattr(args, "config", "config.yaml")
+        return cls(config_file)
 
 
 def fetch_select(key, choice):
