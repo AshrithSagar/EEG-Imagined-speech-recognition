@@ -9,7 +9,7 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import Config, fetch_select, save_console
+from utils.config import Config, ConsoleHandler, fetch_select
 
 
 def main(args):
@@ -23,7 +23,7 @@ def main(args):
     classifier = fetch_select("classifier", classifier_name)
 
     for model in c_args["models"]:
-        console = Console(record=True)
+        console = ConsoleHandler(record=True)
         model_dir = os.path.join(c_args["model_base_dir"], model, dataset_name)
         model_file = os.path.join(c_args["model_base_dir"], model, "model.py")
         Console().rule(title=f"[bold blue3][Model: {model}][/]", style="blue3")
@@ -64,7 +64,7 @@ def main(args):
             clf.run()
 
         file = os.path.join(model_dir, classifier_name, "output.txt")
-        save_console(console, file)
+        console.save(file)
 
 
 if __name__ == "__main__":

@@ -7,17 +7,15 @@ import os
 import sys
 
 import numpy as np
-from rich.console import Console
-from rich.rule import Rule
 
 sys.path.append(os.getcwd())
-from utils.config import Config
+from utils.config import Config, ConsoleHandler
 from utils.karaone import KaraOneDataLoader
 from utils.tfr import TFRDataset
 
 
 def main(args):
-    console = Console()
+    console = ConsoleHandler()
     d_args = args["karaone"]
 
     karaone = KaraOneDataLoader(
@@ -40,7 +38,7 @@ def main(args):
     )
     karaone.epochs_info(verbose=True)
     labels = karaone.all_epoch_labels
-    console.print(Rule(characters="\u2501"))
+    console.line("thick")
 
     for subject in karaone.subjects:
         console.print(f"[bold]Subject: {subject}[/bold]")
@@ -56,7 +54,7 @@ def main(args):
         )
         tfr_ds.save_dataset_based_on_subjects(verbose=False)
         tfr_ds.reshape_based_on_channels(verbose=False)
-        console.print(Rule(characters="\u2501"))
+        console.line("thick")
 
     tfr_ds.directory_info(filter="ch")
 

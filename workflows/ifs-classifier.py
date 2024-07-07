@@ -10,7 +10,7 @@ from typing import List
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import Config, fetch_select, save_console
+from utils.config import Config, ConsoleHandler, fetch_select
 from utils.ifs import InformationSet
 
 
@@ -26,7 +26,7 @@ def main(args: Config):
 
     models: List[str] = c_args["models"]
     for model in models:
-        console = Console(record=True)
+        console = ConsoleHandler(record=True)
         model_dir = os.path.join(c_args["model_base_dir"], model, dataset_name)
         model_file = os.path.join(c_args["model_base_dir"], model, "model.py")
         Console().rule(title=f"[bold blue3][Model: {model}][/]", style="blue3")
@@ -71,11 +71,9 @@ def main(args: Config):
             clf.run()
 
         file = os.path.join(model_dir, classifier_name, "output.txt")
-        save_console(console, file)
+        console.save(file)
 
 
 if __name__ == "__main__":
-    args = Config.from_args(
-        description="Run the classifier on the effective features",
-    )
+    args = Config.from_args("Run the classifier on the effective features")
     main(args)

@@ -10,6 +10,7 @@ from typing import Any, Optional, Type, Union
 import toml
 import yaml
 from rich.console import Console
+from rich.rule import Rule
 from rich.traceback import install
 
 from utils.classifier import ClassifierGridSearch, EvaluateClassifier, RegularClassifier
@@ -111,12 +112,24 @@ def fetch_select(key: str, choice: str) -> Union[
     return options[key][choice]
 
 
-def save_console(console, file, mode="w"):
-    """Save the rich Console output to a file.
-    Args:
-    - console: The rich Console object to be saved.
-    - file: The path to the file where the console output will be saved.
-    - mode: The mode in which the file will be opened. Defaults to "w" (write mode).
-    """
-    with open(file, mode) as file_handle:
-        file_handle.write(console.export_text())
+class ConsoleHandler(Console):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def line(self, line: str = "normal"):
+        """Print a horizontal rule with a specified line style.
+        Args:
+        - line: The style of the line. Options are "normal", "thick", and "double".
+        """
+        options = {"normal": "\u2500", "thick": "\u2501", "double": "\u2550"}
+        characters = options.get(line, "\u2500")
+        self.print(Rule(characters=characters))
+
+    def save(self, file: str, mode: str = "w"):
+        """Save the rich Console output to a file.
+        Args:
+        - file: The path to the file where the console output will be saved.
+        - mode: The mode in which the file will be opened. Defaults to "w" (write mode).
+        """
+        with open(file, mode) as file_handle:
+            file_handle.write(self.export_text())

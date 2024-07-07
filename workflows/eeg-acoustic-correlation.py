@@ -9,19 +9,18 @@ import sys
 
 import numpy as np
 import pandas as pd
-from rich.console import Console
 from rich.table import Table
 from scipy.stats import pearsonr
 
 sys.path.append(os.getcwd())
-from utils.config import Config, fetch_select, save_console
+from utils.config import Config, ConsoleHandler, fetch_select
 
 
 def main(args):
     dataset_name = args.get("_select").get("dataset")
     dataset = fetch_select("dataset", dataset_name)
     d_args = args[dataset_name.lower()]
-    console = Console(record=True)
+    console = ConsoleHandler(record=True)
 
     dset = dataset(
         raw_data_dir=d_args["raw_data_dir"],
@@ -74,7 +73,7 @@ def main(args):
     console.print(table)
 
     file = os.path.join(d_args["features_dir"], "eeg-acoustic-correlation.txt")
-    save_console(console, file)
+    console.save(file)
 
 
 if __name__ == "__main__":
