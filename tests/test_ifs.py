@@ -7,9 +7,9 @@ import sys
 
 import numpy as np
 from rich.console import Console
+from rich.rule import Rule
 
 sys.path.append(os.getcwd())
-from utils.config import line_separator
 from utils.ifs import InformationSet
 
 
@@ -34,9 +34,9 @@ def test_extract_effective_information(verbose=True):
     if verbose:
         console = Console()
         console.print("Features:\n", features)
-        line_separator(console)
+        console.print(Rule())
         console.print("Effective Features:\n", eff_features)
-        line_separator(console)
+        console.print(Rule())
 
 
 test_extract_effective_information(verbose=True)

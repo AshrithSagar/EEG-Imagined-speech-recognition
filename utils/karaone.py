@@ -23,10 +23,10 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
 )
+from rich.rule import Rule
 from rich.table import Table
 from scipy.spatial.distance import cdist
 
-from utils.config import line_separator
 from utils.features import FeatureFunctions
 
 all_subjects = [
@@ -186,7 +186,7 @@ class KaraOneDataLoader:
         verbose = verbose if verbose is not None else self.verbose
         if verbose:
             self.console.print(f"Subject: [purple]{subject}[/]")
-            line_separator(self.console)
+            self.console.print(Rule())
 
         data_dir = self.raw_data_dir
         eeglab_raw_filename = glob.glob(os.path.join(data_dir, subject, "*.set"))
@@ -203,7 +203,7 @@ class KaraOneDataLoader:
         verbose = verbose if verbose is not None else self.verbose
         if verbose:
             self.console.print(f"Subject: [purple]{subject}[/]")
-            line_separator(self.console)
+            self.console.print(Rule())
 
         raw_filename = os.path.join(data_dir, subject, "raw.fif")
         self.raw = mne.io.read_raw_fif(
@@ -234,14 +234,14 @@ class KaraOneDataLoader:
 
         if verbose:
             self.console.print("All channels: \n[", ", ".join(self.raw.ch_names), "]")
-            line_separator(self.console)
+            self.console.print(Rule())
             self.console.print("Chosen channels: [", ", ".join(self.channels), "]")
-            line_separator(self.console)
+            self.console.print(Rule())
 
         self.raw.pick(self.channels, verbose=verbose)
         if verbose:
             self.console.print(f"Raw data shape: [black]{self.raw.get_data().shape}[/]")
-            line_separator(self.console)
+            self.console.print(Rule())
 
         return self.raw
 
@@ -388,11 +388,11 @@ class KaraOneDataLoader:
         )
 
         if verbose:
-            line_separator(self.console)
+            self.console.print(Rule())
             self.console.print(
                 f"Epochs shape: [black]{self.epochs.get_data().shape}[/]"
             )
-            line_separator(self.console)
+            self.console.print(Rule())
 
         return self.epochs
 
@@ -422,7 +422,7 @@ class KaraOneDataLoader:
                 self.console.print("The signal is centered after baseline correction.")
             else:
                 self.console.print("The signal may not be centered around zero.")
-            line_separator(self.console)
+            self.console.print(Rule())
 
         return self.epochs
 

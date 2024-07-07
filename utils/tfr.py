@@ -14,9 +14,8 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
 )
+from rich.rule import Rule
 from tftb.processing import smoothed_pseudo_wigner_ville
-
-from utils.config import line_separator
 
 
 class TFRDataset:
@@ -193,7 +192,7 @@ class TFRDataset:
 
             tfr_data = []
             if verbose:
-                line_separator(self.console)
+                self.console.print(Rule())
                 self.console.print(f"Class: [purple]{class_name}[/]")
 
             for file_name in os.listdir(class_dir):
