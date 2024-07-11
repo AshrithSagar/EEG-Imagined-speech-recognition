@@ -36,12 +36,6 @@ class Config:
     def __getitem__(self, key: str) -> ConfigValue:
         return self.config[key]
 
-    def __setitem__(self, key: str, value: ConfigValue):
-        self.config[key] = value
-
-    def __delitem__(self, key: str):
-        del self.config[key]
-
     def __contains__(self, key: str) -> bool:
         return key in self.config
 
