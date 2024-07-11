@@ -15,7 +15,6 @@ import numpy as np
 import requests
 import scipy.io
 from dask.distributed import Client, LocalCluster
-from rich.console import Console
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -27,6 +26,7 @@ from rich.rule import Rule
 from rich.table import Table
 from scipy.spatial.distance import cdist
 
+from utils.dataset import DatasetLoader
 from utils.features import FeatureFunctions
 
 all_subjects = [
@@ -47,7 +47,7 @@ all_subjects = [
 ]
 
 
-class KaraOneDataLoader:
+class KaraOneDataLoader(DatasetLoader):
     """Load data from KaraOne folder"""
 
     def __init__(
@@ -66,40 +66,15 @@ class KaraOneDataLoader:
         - sampling_freq (int): Sampling frequency for EEG data (default: 1000 Hz).
         - num_milliseconds_per_trial (int): Number of milliseconds per trial (default: 4900 ms).
         """
-        self.raw_data_dir = raw_data_dir
-        self.subjects = self.get_subjects(subjects)
+        super().__init__(raw_data_dir, subjects, all_subjects, console, verbose)
         self.sampling_freq = sampling_freq
         self.num_milliseconds_per_trial = num_milliseconds_per_trial
         self.epoch_type = None
-        self.verbose = verbose
         mne.set_log_level(verbose=verbose)
-        self.console = console if console else Console()
         self.progress = None
         if verbose:
             self.console.rule(title="[bold blue3][KaraOne Dataset][/]", style="blue3")
             self.subjects_info()
-
-    def get_subjects(self, subjects):
-        """Retrieve a list of subjects based on input criteria.
-
-        'subjects' parameter can be one of the following:
-            - "all": Retrieve all available subjects.
-            - A list of integers: Retrieve subjects by their indices.
-            - A list of subject names: Retrieve subjects by their names.
-        """
-
-        if subjects == "all":
-            return all_subjects
-        elif isinstance(subjects, list):
-            if all(isinstance(subject, int) for subject in subjects):
-                return [all_subjects[index] for index in subjects]
-            elif all(subject in all_subjects for subject in subjects):
-                return subjects
-
-        raise ValueError(
-            """Invalid value for 'subjects'.
-            Should be 'all', a list of subject indices, or a list of subject names."""
-        )
 
     def download(self, base_url=None, verbose=None):
         """Download database from website"""

@@ -8,7 +8,6 @@ import subprocess
 
 import numpy as np
 import pandas as pd
-from rich.console import Console
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -18,6 +17,7 @@ from rich.progress import (
 )
 from rich.table import Table
 
+from utils.dataset import DatasetLoader
 from utils.features import FeatureFunctions
 
 # Subjects: 01-21 and "chinese-1", "chinese-2"
@@ -60,7 +60,7 @@ labels = [
 ]
 
 
-class FEISDataLoader:
+class FEISDataLoader(DatasetLoader):
     """FEIS Utility class"""
 
     def __init__(
@@ -78,30 +78,14 @@ class FEISDataLoader:
         - sampling_freq (int): Sampling frequency for EEG data (default: 256 Hz).
         - num_seconds_per_trial (int): Number of seconds per trial (default: 5 seconds).
         """
+        super().__init__(raw_data_dir, subjects, all_subjects, console, verbose)
         self.data_dir = raw_data_dir
-        self.subjects = self.get_subjects(subjects)
         self.sampling_freq = sampling_freq
         self.num_seconds_per_trial = num_seconds_per_trial
-        self.console = console if console else Console()
-        self.verbose = verbose
         self.progress = None
         if verbose:
             self.console.rule(title="[bold blue3][FEIS Dataset][/]", style="blue3")
             self.subjects_info()
-
-    def get_subjects(self, subjects):
-        if subjects == "all":
-            return all_subjects
-        elif isinstance(subjects, list):
-            if all(isinstance(subject, int) for subject in subjects):
-                return [all_subjects[index] for index in subjects]
-            elif all(subject in all_subjects for subject in subjects):
-                return subjects
-
-        raise ValueError(
-            """Invalid value for 'subjects'.
-            Should be 'all', a list of subject indices, or a list of subject names."""
-        )
 
     def unzip_data_eeg(self, delete_zip=False):
         with self.create_progress_bar() as self.progress:
