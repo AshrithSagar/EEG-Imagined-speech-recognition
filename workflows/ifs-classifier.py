@@ -10,7 +10,7 @@ from typing import List
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import Config, ConsoleHandler, fetch_select
+from utils.config import Config, ConsoleHandler, fetch_classifier, fetch_dataset
 from utils.ifs import InformationSet
 
 
@@ -18,11 +18,11 @@ def main(args: Config):
     c_args: dict = args["classifier"]
 
     dataset_name: str = args.get("_select").get("dataset")
-    dataset = fetch_select("dataset", dataset_name)
+    dataset = fetch_dataset(dataset_name)
     d_args: dict = args[dataset_name.lower()]
 
     classifier_name: str = args.get("_select").get("classifier")
-    classifier = fetch_select("classifier", classifier_name)
+    classifier = fetch_classifier(classifier_name)
 
     models: List[str] = c_args["models"]
     for model in models:

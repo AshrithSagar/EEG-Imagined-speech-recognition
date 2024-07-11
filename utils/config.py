@@ -5,7 +5,7 @@ Configuration utils
 
 import argparse
 import os
-from typing import Any, Optional, Type, Union
+from typing import Any, Callable, Dict, Optional, Type, Union
 
 import toml
 import yaml
@@ -78,32 +78,31 @@ class Config:
         return cls(config_file)
 
 
-def fetch_select(key: str, choice: str) -> Union[
-    Type[FEISDataLoader],
-    Type[KaraOneDataLoader],
-    Type[RegularClassifier],
-    Type[EvaluateClassifier],
-    Type[ClassifierGridSearch],
-]:
-    options = {
-        "dataset": {
-            "FEIS": FEISDataLoader,
-            "KaraOne": KaraOneDataLoader,
-        },
-        "classifier": {
-            "RegularClassifier": RegularClassifier,
-            "EvaluateClassifier": EvaluateClassifier,
-            "ClassifierGridSearch": ClassifierGridSearch,
-        },
+def fetch_dataset(choice: str) -> Type[Union[FEISDataLoader, KaraOneDataLoader]]:
+    options: Dict[str, Callable[..., object]] = {
+        "FEIS": FEISDataLoader,
+        "KaraOne": KaraOneDataLoader,
     }
 
-    if key not in options:
-        raise ValueError(f"Invalid key: {key}")
+    if choice not in options:
+        raise ValueError(f"Invalid dataset name: {choice}")
 
-    if choice not in options[key]:
-        raise ValueError(f"Invalid {key} name: {choice}")
+    return options[choice]
 
-    return options[key][choice]
+
+def fetch_classifier(
+    choice: str,
+) -> Type[Union[RegularClassifier, EvaluateClassifier, ClassifierGridSearch]]:
+    options: Dict[str, Callable[..., object]] = {
+        "RegularClassifier": RegularClassifier,
+        "EvaluateClassifier": EvaluateClassifier,
+        "ClassifierGridSearch": ClassifierGridSearch,
+    }
+
+    if choice not in options:
+        raise ValueError(f"Invalid classifier name: {choice}")
+
+    return options[choice]
 
 
 class ConsoleHandler(Console):

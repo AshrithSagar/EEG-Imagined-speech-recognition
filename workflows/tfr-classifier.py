@@ -11,7 +11,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-from utils.config import Config, fetch_select
+from utils.config import Config, fetch_dataset
 from utils.tfr import TFRDataset
 
 tf.keras.backend.clear_session()
@@ -25,7 +25,7 @@ def main(args):
     t_args = args["tfr"]
 
     dataset_name = args.get("_select").get("dataset")
-    dataset = fetch_select("dataset", dataset_name)
+    dataset = fetch_dataset(dataset_name)
     d_args = args[dataset_name.lower()]
 
     channel = d_args["channels"][0]

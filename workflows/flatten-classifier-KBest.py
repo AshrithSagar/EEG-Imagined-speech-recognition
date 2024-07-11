@@ -10,7 +10,7 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import Config, ConsoleHandler, fetch_select
+from utils.config import Config, ConsoleHandler, fetch_classifier, fetch_dataset
 from utils.info import KBestSummary
 
 
@@ -18,11 +18,11 @@ def main(args):
     c_args = args["classifier"]
 
     dataset_name = args.get("_select").get("dataset")
-    dataset = fetch_select("dataset", dataset_name)
+    dataset = fetch_dataset(dataset_name)
     d_args = args[dataset_name.lower()]
 
     classifier_name = args.get("_select").get("classifier")
-    classifier = fetch_select("classifier", classifier_name)
+    classifier = fetch_classifier(classifier_name)
 
     for model in c_args["models"]:
         console = ConsoleHandler(record=True)

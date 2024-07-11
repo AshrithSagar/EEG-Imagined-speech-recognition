@@ -13,12 +13,12 @@ from rich.table import Table
 from scipy.stats import pearsonr
 
 sys.path.append(os.getcwd())
-from utils.config import Config, ConsoleHandler, fetch_select
+from utils.config import Config, ConsoleHandler, fetch_dataset
 
 
 def main(args):
     dataset_name = args.get("_select").get("dataset")
-    dataset = fetch_select("dataset", dataset_name)
+    dataset = fetch_dataset(dataset_name)
     d_args = args[dataset_name.lower()]
     console = ConsoleHandler(record=True)
 
