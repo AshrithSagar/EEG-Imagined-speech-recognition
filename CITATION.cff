@@ -6,8 +6,7 @@ title: EEG-Imagined-Speech-recognition
 message: 'If you use this software, please cite it as follows'
 type: software
 authors:
-  - given-names: Ashrith Sagar Yedlapalli
-    name-particle: Ashrith
+  - given-names: Ashrith Sagar
     family-names: Yedlapalli
     email:
       - ashrith9sagar@gmail.com
