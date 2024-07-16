@@ -15,4 +15,4 @@ Imagined speech recognition through EEG signals
 
 ## License
 
-This project falls under the [MIT License](https://github.com/AshrithSagar/EEG-Imagined-speech-recognition/blob/main/LICENSE).
+This project falls under the [MIT License](https://github.com/AshrithSagar/EEG-Imagined-speech-recognition/blob/main/LICENSE/).
