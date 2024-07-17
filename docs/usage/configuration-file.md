@@ -28,27 +28,27 @@ Refer to [config-template.yaml](https://github.com/AshrithSagar/EEG-Imagined-spe
 
 ## feis
 
-| Parameter    | Type                                    | Description                                                                                                                                              |
-| ------------ | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| epoch_type   | `str`                                   | One from { thinking, speaking, stimuli }                                                                                                                 |
-| features_dir | `path`                                  | Preferably use `files/Features/FEIS/features-1/`                                                                                                         |
-| raw_data_dir | `path`                                  | Preferably use `files/Data/FEIS/data_eeg/`                                                                                                               |
-| subjects     | `all` <br> `list[int]` <br> `list[str]` | Specify subjects to use (use `'all'` for all subjects)                                                                                                   |
-| tasks        | `list[int]`                             | Available tasks: `[0]`. Refer [FEISDataLoader.get_task()](https://github.com/AshrithSagar/EEG-Imagined-speech-recognition/blob/main/utils/feis.py#L356); |
+| Parameter    | Type                                      | Description                                                                                                                                              |
+| ------------ | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| epoch_type   | `str`                                     | One from { thinking, speaking, stimuli }                                                                                                                 |
+| features_dir | `path`                                    | Preferably use `files/Features/FEIS/features-1/`                                                                                                         |
+| raw_data_dir | `path`                                    | Preferably use `files/Data/FEIS/data_eeg/`                                                                                                               |
+| subjects     | `'all'` <br> `list[int]` <br> `list[str]` | Specify subjects to use (use `'all'` for all subjects)                                                                                                   |
+| tasks        | `list[int]`                               | Available tasks: `[0]`. Refer [FEISDataLoader.get_task()](https://github.com/AshrithSagar/EEG-Imagined-speech-recognition/blob/main/utils/feis.py#L356); |
 
 ## karaone
 
-| Parameter         | Type                                    | Description                                                                                                                                                                |
-| ----------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| epoch_type        | `str`                                   | One from { thinking, speaking, stimuli, clearing }                                                                                                                         |
-| features_dir      | `path`                                  | Preferably use `files/Features/KaraOne/features-1/`                                                                                                                        |
-| filtered_data_dir | `path`                                  | Preferably use `files/Data/KaraOne/EEG_data-1/`                                                                                                                            |
-| length_factor     | `float`                                 | Determines the window length                                                                                                                                               |
-| overlap           | `float`                                 | Determines the overlap between consecutive windows                                                                                                                         |
-| raw_data_dir      | `path`                                  | Preferably use `files/Data/KaraOne/EEG_raw/`                                                                                                                               |
-| subjects          | `all` <br> `list[int]` <br> `list[str]` | Specify subjects to use (use `'all'` for all subjects)                                                                                                                     |
-| tasks             | `list[int]`                             | Available tasks: `[0, 1, 2, 3, 4]`. Refer [KaraOneDataLoader.get_task()](https://github.com/AshrithSagar/EEG-Imagined-speech-recognition/blob/main/utils/karaone.py#L885); |
-| tfr_dataset_dir   | `path`                                  | Preferably use `files/TFR/KaraOne/tfr_ds-1/`                                                                                                                               |
+| Parameter         | Type                                      | Description                                                                                                                                                                |
+| ----------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| epoch_type        | `str`                                     | One from { thinking, speaking, stimuli, clearing }                                                                                                                         |
+| features_dir      | `path`                                    | Preferably use `files/Features/KaraOne/features-1/`                                                                                                                        |
+| filtered_data_dir | `path`                                    | Preferably use `files/Data/KaraOne/EEG_data-1/`                                                                                                                            |
+| length_factor     | `float`                                   | Determines the window length                                                                                                                                               |
+| overlap           | `float`                                   | Determines the overlap between consecutive windows                                                                                                                         |
+| raw_data_dir      | `path`                                    | Preferably use `files/Data/KaraOne/EEG_raw/`                                                                                                                               |
+| subjects          | `'all'` <br> `list[int]` <br> `list[str]` | Specify subjects to use (use `'all'` for all subjects)                                                                                                                     |
+| tasks             | `list[int]`                               | Available tasks: `[0, 1, 2, 3, 4]`. Refer [KaraOneDataLoader.get_task()](https://github.com/AshrithSagar/EEG-Imagined-speech-recognition/blob/main/utils/karaone.py#L885); |
+| tfr_dataset_dir   | `path`                                    | Preferably use `files/TFR/KaraOne/tfr_ds-1/`                                                                                                                               |
 
 ## utils
 
