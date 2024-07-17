@@ -1,6 +1,4 @@
-# Usage
-
-## Configuration file `config.yaml`
+# Configuration file `config.yaml`
 
 The configuration file `config.yaml` contains the paths to the data files and the parameters for the different workflows.
 Create and populate it with the appropriate values.
@@ -40,54 +38,3 @@ karaone:
 utils:
   path: (path) Absolute path to the project directory utils folder
 ```
-
-## Classifier `model.py`
-
-In {classifier.model_base_dir}, create the `model.py` with the following template.
-
-```python
-def model():
-  # Model definition here
-  # Takes certain parameters like random_state from config.yaml
-  return ...
-
-def param_grid():
-  # Optional. Only useful in ClassifierGridSearch, ignored otherwise.
-  return ...
-
-def resample():
-  # Optional. Remove/Comment this entire function to disable sampler.
-  # Takes certain parameters like random_state from config.yaml
-  return ...
-
-def cross_validation():
-  # Optional. Remove/Comment this entire function to use default CV of 5 splits from StratifiedKFold.
-  # Takes certain parameters like random_state, n_splits from config.yaml
-  return ...
-
-def pipeline():
-  # Optional. Remove/Comment this entire function to disable any pipeline functions to be run.
-```
-
-## Workflows
-
-Run the different workflows using `python3 workflows/*.py` from the project directory.
-
-1. `download-karaone.py`:
-Download the dataset into the {raw_data_dir} folder.
-
-1. `features-karaone.py`, `features-feis.py`:
-Preprocess the EEG data to extract relevant features.
-Run for different epoch_types: { thinking, acoustic, ... }.
-Also saves processed data as a `.fif` to {filtered_data_dir}.
-
-1. `ifs-classifier.py`:
-Train a machine learning classifier using the preprocessed EEG data.
-Uses Information set theory to extract effective information from the feature matrix, to be used as features.
-
-1. `flatten-classifier.py`:
-Flattens the feature matrix to a vector, to be used as features.
-Specify the number of features to be selected in features_select_k_best[k] (int).
-
-1. `flatten-classifier-KBest.py`:
-Run over multiple k's from features_select_k_best[k] (list[int]).

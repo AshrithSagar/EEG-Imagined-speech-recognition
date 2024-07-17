@@ -2,4 +2,9 @@
 
 * [EEG Imagined Speech Recognition](README.md)
 * [Installation](INSTALLATION.md)
-* [Usage](USAGE.md)
+
+## Usage
+
+* [Configuration file](usage/configuration-file.md)
+* [Configure model](usage/configure-model.md)
+* [Run workflows](usage/run-workflows.md)
