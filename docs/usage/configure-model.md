@@ -32,7 +32,7 @@ def pipeline():
 
 ## Directory structure
 
-```plaintext
+```markdown
 {classifier.model_base_dir}/
 ├── model.py
 ├── KaraOne
