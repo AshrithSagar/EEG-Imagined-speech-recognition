@@ -1,6 +1,8 @@
-# Classifier `model.py`
+# Model configuration
 
 In {classifier.model_base_dir}, create the `model.py` with the following template.
+
+{% code title="model.py" %}
 
 ```python
 def model():
@@ -25,3 +27,5 @@ def cross_validation():
 def pipeline():
   # Optional. Remove/Comment this entire function to disable any pipeline functions to be run.
 ```
+
+{% endcode %}
