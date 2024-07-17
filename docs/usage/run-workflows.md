@@ -1,22 +1,40 @@
 # Workflows
 
-Run the different workflows using `python3 workflows/*.py` from the project directory.
+Execute the various workflows using the command:
 
-1. `download-karaone.py`:
-Download the dataset into the {raw_data_dir} folder.
+```bash
+python3 workflows/{file}.py
+```
 
-1. `features-karaone.py`, `features-feis.py`:
+from the root of the project directory.
+
+## `download-karaone.py`
+
+Download the KaraOne dataset from the KaraOne website.
+
+Saves the dataset to the `{raw_data_dir}` folder.
+
+## `features-karaone.py` & `features-feis.py`
+
 Preprocess the EEG data to extract relevant features.
-Run for different epoch_types: { thinking, acoustic, ... }.
-Also saves processed data as a `.fif` to {filtered_data_dir}.
 
-1. `ifs-classifier.py`:
-Train a machine learning classifier using the preprocessed EEG data.
-Uses Information set theory to extract effective information from the feature matrix, to be used as features.
+Run for different `epoch_types`: { "thinking", "acoustic", ... }.
 
-1. `flatten-classifier.py`:
-Flattens the feature matrix to a vector, to be used as features.
-Specify the number of features to be selected in features_select_k_best[k] (int).
+Saves processed data as `.fif` files to the `{filtered_data_dir}`.
 
-1. `flatten-classifier-KBest.py`:
-Run over multiple k's from features_select_k_best[k] (list[int]).
+## `ifs-classifier.py`
+
+Train a classifier using the preprocessed EEG data.
+Uses Information Set Theory to extract effective information from the feature matrix to be used as features.
+
+## `flatten-classifier.py`
+
+Flatten the feature matrix to a vector to be used as features.
+
+**Configuration:** Specify the number of features to be selected in `features_select_k_best[k]` (`int`).
+
+## `flatten-classifier-KBest.py`
+
+Run the classifier over multiple `k`'s.
+
+**Configuration:** Iterate over values in `features_select_k_best[k]` (`list[int]`).
