@@ -29,3 +29,22 @@ def pipeline():
 ```
 
 {% endcode %}
+
+## Directory structure
+
+```plaintext
+{classifier.model_base_dir}/
+├── model.py
+├── KaraOne
+│   ├── EvaluateClassifier
+│   │   ├── output.txt
+│   │   ├── task-0
+│   │   │   └── ...
+│   │   └── ...
+│   ├── ClassifierGridSearch
+│   │   └── ...
+│   └── RegularClassifier
+│       └── ...
+└── FEIS
+    └── ...
+```
