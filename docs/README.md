@@ -3,6 +3,7 @@
 ![License](https://img.shields.io/github/license/AshrithSagar/EEG-Imagined-speech-recognition)
 ![GitHub repo size](https://img.shields.io/github/repo-size/AshrithSagar/EEG-Imagined-speech-recognition)
 [![CodeFactor](https://www.codefactor.io/repository/github/AshrithSagar/EEG-Imagined-speech-recognition/badge)](https://www.codefactor.io/repository/github/AshrithSagar/EEG-Imagined-speech-recognition)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Imagined speech recognition through EEG signals
 
@@ -12,6 +13,19 @@ Imagined speech recognition through EEG signals
 <https://www.cs.toronto.edu/~complingweb/data/karaOne/karaOne.html>
 
 - <https://github.com/scottwellington/FEIS>
+
+## Citation
+
+If you use this project in your research, please cite using the following BibTeX entries.
+
+```bibtex
+@software{Yedlapalli_EEG-Imagined-Speech-recognition,
+author = {Yedlapalli, Ashrith Sagar},
+license = {MIT},
+title = {{EEG-Imagined-Speech-recognition}},
+url = {https://github.com/AshrithSagar/EEG-Imagined-speech-recognition}
+}
+```
 
 ## License
 
