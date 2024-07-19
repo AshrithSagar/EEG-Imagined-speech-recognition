@@ -135,6 +135,19 @@ Run over multiple k's from features_select_k_best[k] (list[int]).
 
 - <https://github.com/scottwellington/FEIS>
 
+## Citation
+
+If you use this project in your research, please cite using the following BibTeX entries.
+
+```bibtex
+@software{Yedlapalli_EEG-Imagined-Speech-recognition,
+author = {Yedlapalli, Ashrith Sagar},
+license = {MIT},
+title = {{EEG-Imagined-Speech-recognition}},
+url = {https://github.com/AshrithSagar/EEG-Imagined-speech-recognition}
+}
+```
+
 ## License
 
 This project falls under the [MIT License](LICENSE).
