@@ -4,6 +4,7 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/AshrithSagar/EEG-Imagined-speech-recognition)
 [![CodeFactor](https://www.codefactor.io/repository/github/AshrithSagar/EEG-Imagined-speech-recognition/badge)](https://www.codefactor.io/repository/github/AshrithSagar/EEG-Imagined-speech-recognition)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-EEG%20Imagined%20Speech%20Recognition-tan)](https://github.com/AshrithSagar/EEG-Imagined-speech-recognition)
 
 Imagined speech recognition through EEG signals
 
