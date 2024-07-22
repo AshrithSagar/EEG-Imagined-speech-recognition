@@ -9,6 +9,10 @@
 * [Configure model](usage/configure-model.md)
 * [Run workflows](usage/run-workflows.md)
 
+## utils
+
+* [ifs.py](utils/ifs.md)
+
 ***
 
 * [GitHub Repository](https://github.com/AshrithSagar/EEG-Imagined-speech-recognition)
