@@ -3,7 +3,7 @@
 
 cff-version: 1.2.0
 title: EEG-Imagined-Speech-recognition
-message: 'If you use this software, please cite it as follows'
+message: "If you use this software, please cite it as follows"
 type: software
 authors:
   - given-names: Ashrith Sagar
@@ -12,7 +12,7 @@ authors:
       - ashrith9sagar@gmail.com
       - ashrith.yedlapalli@gmail.com
       - ashrith.yedlapalli@learner.manipal.edu
-    affiliation: 'Manipal Institute of Technology, Manipal'
+    affiliation: "Manipal Institute of Technology, Manipal"
 identifiers:
   - type: url
     value: >-

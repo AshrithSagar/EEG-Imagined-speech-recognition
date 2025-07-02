@@ -11,28 +11,52 @@ Imagined speech recognition through EEG signals
 
 ## Installation
 
-Follow these steps to get started.
+<details>
 
-1. **Clone the repository:**
+<summary>Clone the repository</summary>
 
-   ```bash
-   git clone https://github.com/AshrithSagar/EEG-Imagined-speech-recognition.git
-   cd EEG-Imagined-speech-recognition
-   ```
+```shell
+git clone https://github.com/AshrithSagar/EEG-Imagined-speech-recognition.git
+cd EEG-Imagined-speech-recognition
+```
 
-2. **Install dependencies:**
+</details>
 
-   Next, install the required dependencies using pip:
+<details>
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+<summary>Install uv</summary>
 
-### Linux packages
+Install [`uv`](https://docs.astral.sh/uv/), if not already.
+Check [here](https://docs.astral.sh/uv/getting-started/installation/) for installation instructions.
+
+It is recommended to use `uv`, as it will automatically install the dependencies in a virtual environment.
+If you don't want to use `uv`, skip to the next step.
+
+TL;DR: Just run
+
+```shell
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+</details>
+
+The dependencies are listed in the [pyproject.toml](pyproject.toml) file.
+
+Install the package in editable mode (recommended):
+
+```shell
+# Using uv
+uv pip install -e .
+
+# Or with pip
+pip install -e .
+```
+
+### Additional packages
 
 For Ubuntu: `sudo apt-get install graphviz`
 
-For macOS (with Homebrew): `brew install graphviz`
+For macOS (with [Homebrew](https://brew.sh/)): `brew install graphviz`
 
 For Windows: Download and install Graphviz from the [Graphviz website](https://graphviz.org/download/).
 
@@ -112,28 +136,28 @@ def pipeline():
 Run the different workflows using `python3 workflows/*.py` from the project directory.
 
 1. `download-karaone.py`:
-Download the dataset into the {raw_data_dir} folder.
+   Download the dataset into the {raw_data_dir} folder.
 
 1. `features-karaone.py`, `features-feis.py`:
-Preprocess the EEG data to extract relevant features.
-Run for different epoch_types: { thinking, acoustic, ... }.
-Also saves processed data as a `.fif` to {filtered_data_dir}.
+   Preprocess the EEG data to extract relevant features.
+   Run for different epoch_types: { thinking, acoustic, ... }.
+   Also saves processed data as a `.fif` to {filtered_data_dir}.
 
 1. `ifs-classifier.py`:
-Train a machine learning classifier using the preprocessed EEG data.
-Uses Information set theory to extract effective information from the feature matrix, to be used as features.
+   Train a machine learning classifier using the preprocessed EEG data.
+   Uses Information set theory to extract effective information from the feature matrix, to be used as features.
 
 1. `flatten-classifier.py`:
-Flattens the feature matrix to a vector, to be used as features.
-Specify the number of features to be selected in features_select_k_best[k] (int).
+   Flattens the feature matrix to a vector, to be used as features.
+   Specify the number of features to be selected in features_select_k_best[k] (int).
 
 1. `flatten-classifier-KBest.py`:
-Run over multiple k's from features_select_k_best[k] (list[int]).
+   Run over multiple k's from features_select_k_best[k] (list[int]).
 
 ## References
 
 - The KARA ONE Database: Phonological Categories in imagined and articulated speech
-<https://www.cs.toronto.edu/~complingweb/data/karaOne/karaOne.html>
+  <https://www.cs.toronto.edu/~complingweb/data/karaOne/karaOne.html>
 
 - <https://github.com/scottwellington/FEIS>
 
