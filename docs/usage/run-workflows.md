@@ -2,7 +2,7 @@
 
 Execute the various workflows using the command:
 
-```bash
+```shell
 python3 workflows/{file}.py
 ```
 

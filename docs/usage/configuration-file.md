@@ -4,7 +4,7 @@ The configuration file `config.yaml` contains the paths to the data files and th
 
 Refer to [config-template.yaml](https://github.com/AshrithSagar/EEG-Imagined-speech-recognition/blob/main/config-template.yaml) for the template.
 
-## _select
+## \_select
 
 | Parameter  | Type  | Description                                                                     |
 | ---------- | ----- | ------------------------------------------------------------------------------- |
