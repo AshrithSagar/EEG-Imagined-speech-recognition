@@ -167,7 +167,8 @@ class EvaluateClassifierSummary(ModelSummary):
             task_metrics = {}
             for model in self.models:
                 formatted_metrics = metrics[model][task].apply(
-                    lambda x: f"${x['Mean']*100:.2f} \pm {x['Std']*100:.2f}$", axis=1
+                    lambda x: f"${x['Mean'] * 100:.2f} \pm {x['Std'] * 100:.2f}$",
+                    axis=1,
                 )
                 task_metrics.update({model: formatted_metrics})
             task_df = pd.concat(task_metrics, axis=1)

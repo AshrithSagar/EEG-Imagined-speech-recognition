@@ -30,7 +30,7 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from sklearn.model_selection import GridSearchCV, cross_validate, train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 
 
 class ClassifierMixin:
@@ -195,7 +195,7 @@ class ClassifierMixin:
         if verbose:
             table = Table(title="[bold underline]Pearson Correlation:[/]")
             table.add_column("Feature", justify="right", style="magenta", no_wrap=True)
-            table.add_column("\u03C1-Value", style="cyan")
+            table.add_column("\u03c1-Value", style="cyan")
 
             for i, coeff in enumerate(self.correlation_coeffs):
                 table.add_row(self.features_names[i], f"{coeff:.4f}")

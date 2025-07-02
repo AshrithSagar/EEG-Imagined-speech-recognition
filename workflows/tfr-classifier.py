@@ -25,7 +25,7 @@ def main(args):
     t_args = args["tfr"]
 
     dataset_name = args.get("_select").get("dataset")
-    dataset = fetch_dataset(dataset_name)
+    _dataset = fetch_dataset(dataset_name)
     d_args = args[dataset_name.lower()]
 
     channel = d_args["channels"][0]
@@ -94,7 +94,7 @@ def main(args):
     filename = os.path.join(model_dir, "model.png")
     tf.keras.utils.plot_model(model, to_file=filename, show_shapes=True)
 
-    history = model.fit(
+    _history = model.fit(
         x_train,
         y_train,
         epochs=max_epochs,

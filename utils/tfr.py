@@ -166,7 +166,7 @@ class TFRDataset:
             return output
 
         if filter and filter not in ["sb", "ch"]:
-            self.console.print(f"[red]ERROR[/]: Unknown filter specified")
+            self.console.print("[red]ERROR[/]: Unknown filter specified")
             return
 
         result = print_tree(self.dataset_dir)

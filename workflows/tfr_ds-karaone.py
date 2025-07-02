@@ -37,7 +37,7 @@ def main(args):
         pick_channels=d_args["channels"],
     )
     karaone.epochs_info(verbose=True)
-    labels = karaone.all_epoch_labels
+    _labels = karaone.all_epoch_labels
     console.line("thick")
 
     for subject in karaone.subjects:

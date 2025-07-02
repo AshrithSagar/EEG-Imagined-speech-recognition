@@ -100,7 +100,7 @@ class KaraOneDataLoader(DatasetLoader):
                 for data in self.progress.track(
                     response.iter_content(block_size),
                     total=total_size_in_bytes // block_size,
-                    description=f"Downloading ...",
+                    description="Downloading ...",
                 ):
                     file_handle.write(data)
 
@@ -136,7 +136,7 @@ class KaraOneDataLoader(DatasetLoader):
                 "Subjects ...", total=len(self.subjects), completed=1
             )
             for subject in self.subjects:
-                task_extract = self.progress.add_task(f"Extracting ...", start=False)
+                task_extract = self.progress.add_task("Extracting ...", start=False)
                 zip_file = os.path.join(self.raw_data_dir, f"{subject}.tar.bz2")
                 with tarfile.open(zip_file, "r:bz2") as tar:
                     for member in tar:
@@ -376,7 +376,7 @@ class KaraOneDataLoader(DatasetLoader):
         baseline = (0, 0) ==> Baseline from the beginning of the epoch to t=0 seconds
         """
         verbose = verbose if verbose is not None else self.verbose
-        wbc_epochs = self.epochs.copy()  # Without baseline correction epochs
+        _wbc_epochs = self.epochs.copy()  # Without baseline correction epochs
         self.epochs.apply_baseline(
             baseline, verbose=verbose
         )  # Baseline corrected epochs
@@ -448,7 +448,7 @@ class KaraOneDataLoader(DatasetLoader):
                 total=len(self.subjects),
                 completed=1,
             )
-            task_filter = self.progress.add_task("Applying Laplacian filter ...")
+            _task_filter = self.progress.add_task("Applying Laplacian filter ...")
 
             for subject in self.subjects:
                 if not overwrite and os.path.exists(
@@ -805,7 +805,7 @@ class KaraOneDataLoader(DatasetLoader):
         verbose = verbose if verbose is not None else self.verbose
 
         if verbose:
-            message = f"[bold underline]Subjects:[/]\n"
+            message = "[bold underline]Subjects:[/]\n"
             message += ", ".join(self.subjects)
             self.console.print(message)
 

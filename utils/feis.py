@@ -21,7 +21,9 @@ from utils.dataset import DatasetLoader
 from utils.features import FeatureFunctions
 
 # Subjects: 01-21 and "chinese-1", "chinese-2"
-all_subjects = [str(i).zfill(2) if i <= 21 else f"chinese-{i-21}" for i in range(1, 24)]
+all_subjects = [
+    str(i).zfill(2) if i <= 21 else f"chinese-{i - 21}" for i in range(1, 24)
+]
 
 channels = [
     "F3",
@@ -321,7 +323,7 @@ class FEISDataLoader(DatasetLoader):
         verbose = verbose if verbose is not None else self.verbose
 
         if verbose:
-            message = f"[bold underline]Subjects:[/]\n"
+            message = "[bold underline]Subjects:[/]\n"
             message += ", ".join(self.subjects)
             self.console.print(message)
 

@@ -27,9 +27,9 @@ def test_extract_effective_information(verbose=True):
         5,
         4,
     ), "Output shape should be (n_epochs, n_features)"
-    assert np.all(
-        np.isfinite(eff_features)
-    ), "Effective information values should be finite"
+    assert np.all(np.isfinite(eff_features)), (
+        "Effective information values should be finite"
+    )
 
     if verbose:
         console = Console()

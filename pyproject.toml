@@ -1,8 +1,19 @@
 [project]
-name = "eeg-imagined-speech-recognition"
+name = "EEG-Imagined-speech-recognition"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Ashrith Sagar Yedlapalli" }]
+keywords = [
+    "eeg",
+    "eeg-signals",
+    "eeg-classification",
+    "imagined-speech",
+    "covert-speech",
+    "karaone",
+    "feis",
+]
 requires-python = ">=3.12"
 dependencies = [
     "antropy>=0.1.9",
@@ -19,4 +30,14 @@ dependencies = [
     "scipy>=1.16.0",
     "tensorflow>=2.19.0",
     "tftb>=0.1.4",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "jupyter>=1.1.1",
+    "jupyter-ruff>=0.2.0",
+    "jupyterlab>=4.4.0",
+    "ruff>=0.11.6",
+    "uv>=0.6.14",
 ]
