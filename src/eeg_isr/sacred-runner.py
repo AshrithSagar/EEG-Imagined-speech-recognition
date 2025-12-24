@@ -12,11 +12,11 @@ sys.path.append(os.getcwd())
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
-from utils.config import Config
+from eeg_isr.config import Config
 
 
 class SacredRunner:
-    def __init__(self, name, save_dir, file, config):
+    def __init__(self, name, save_dir, file, config) -> None:
         self.name = name
         self.save_dir = save_dir
         self.file = file

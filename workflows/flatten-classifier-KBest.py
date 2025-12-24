@@ -10,8 +10,8 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import Config, ConsoleHandler, fetch_classifier, fetch_dataset
-from utils.info import KBestSummary
+from eeg_isr.config import Config, ConsoleHandler, fetch_classifier, fetch_dataset
+from eeg_isr.info import KBestSummary
 
 
 def main(args):

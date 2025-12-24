@@ -7,8 +7,8 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from utils.config import Config
-from utils.feis import FEISDataLoader
+from eeg_isr.config import Config
+from eeg_isr.feis import FEISDataLoader
 
 
 def main(args):

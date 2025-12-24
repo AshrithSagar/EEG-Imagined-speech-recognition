@@ -50,7 +50,7 @@ class HanmanClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(
         self, *, alpha=None, beta=None, a=None, b=None, q=None, n_jobs=1, verbose=None
-    ):
+    ) -> None:
         self.alpha = alpha
         self.beta = beta
         self.a = a

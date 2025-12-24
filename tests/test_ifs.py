@@ -2,18 +2,14 @@
 test_ifs.py
 """
 
-import os
-import sys
-
 import numpy as np
 from rich.console import Console
 from rich.rule import Rule
 
-sys.path.append(os.getcwd())
-from utils.ifs import InformationSet
+from eeg_isr.ifs import InformationSet
 
 
-def test_extract_effective_information(verbose=True):
+def test_extract_effective_information(verbose: bool = True) -> None:
     np.random.seed(seed=42)
 
     # Mock dataset with n.epochs, n.windows, n.channels, n.features_per_window
@@ -39,4 +35,5 @@ def test_extract_effective_information(verbose=True):
         console.print(Rule())
 
 
-test_extract_effective_information(verbose=True)
+if __name__ == "__main__":
+    test_extract_effective_information(verbose=True)

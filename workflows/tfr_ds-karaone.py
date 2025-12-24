@@ -9,9 +9,9 @@ import sys
 import numpy as np
 
 sys.path.append(os.getcwd())
-from utils.config import Config, ConsoleHandler
-from utils.karaone import KaraOneDataLoader
-from utils.tfr import TFRDataset
+from eeg_isr.config import Config, ConsoleHandler
+from eeg_isr.karaone import KaraOneDataLoader
+from eeg_isr.tfr import TFRDataset
 
 
 def main(args):

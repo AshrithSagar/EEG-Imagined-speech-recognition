@@ -23,7 +23,7 @@ class TFRDataset:
     Time Frequency Representation using Smoothed Pseudo Wigner-Ville Distribution (SPWVD)
     """
 
-    def __init__(self, dataset_dir, data=None, console=None):
+    def __init__(self, dataset_dir, data=None, console=None) -> None:
         self.console = console if console else Console()
         self.data = data  # KaraOneDataLoader instance
         self.dataset_dir = os.path.join(dataset_dir)

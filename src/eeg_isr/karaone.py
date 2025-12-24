@@ -26,8 +26,8 @@ from rich.rule import Rule
 from rich.table import Table
 from scipy.spatial.distance import cdist
 
-from utils.dataset import DatasetLoader
-from utils.features import FeatureFunctions
+from eeg_isr.dataset import DatasetLoader
+from eeg_isr.features import FeatureFunctions
 
 all_subjects = [
     "MM05",
@@ -58,7 +58,7 @@ class KaraOneDataLoader(DatasetLoader):
         num_milliseconds_per_trial=4900,
         verbose=False,
         console=None,
-    ):
+    ) -> None:
         """Parameters:
         - raw_data_dir (str): Path to the raw data folder.
         - subjects (str or list): List of subjects to load. Use "all" for all subjects (default),

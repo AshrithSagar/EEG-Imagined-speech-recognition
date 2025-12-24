@@ -4,7 +4,6 @@ Dataset meta class
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
 
 from rich.console import Console
 
@@ -16,11 +15,11 @@ class DatasetLoader(ABC):
     def __init__(
         self,
         raw_data_dir: str,
-        subjects: Union[List[str], List[int], str],
-        all_subjects: Union[List[str], List[int]],
-        console: Optional[Console] = None,
+        subjects: list[str] | list[int] | str,
+        all_subjects: list[str] | list[int],
+        console: Console | None = None,
         verbose: bool = False,
-    ):
+    ) -> None:
         self.raw_data_dir = raw_data_dir
         self.all_subjects = all_subjects
         self.subjects = self.get_subjects(subjects)

@@ -17,8 +17,8 @@ from rich.progress import (
 )
 from rich.table import Table
 
-from utils.dataset import DatasetLoader
-from utils.features import FeatureFunctions
+from eeg_isr.dataset import DatasetLoader
+from eeg_isr.features import FeatureFunctions
 
 # Subjects: 01-21 and "chinese-1", "chinese-2"
 all_subjects = [
@@ -73,7 +73,7 @@ class FEISDataLoader(DatasetLoader):
         num_seconds_per_trial=5,
         console=None,
         verbose=False,
-    ):
+    ) -> None:
         """Parameters:
         - raw_data_dir (str): Path to the data folder.
         - subjects (list): List of subjects to load. Use "all" for all subjects (default)

@@ -5,30 +5,34 @@ Configuration utils
 
 import argparse
 import os
-from typing import Any, Callable, Dict, Optional, Type, Union
+from typing import Any, Literal, Self
 
 import toml
 import yaml
 from rich.console import Console
 from rich.rule import Rule
-from rich.traceback import install
 
-from utils.classifier import ClassifierGridSearch, EvaluateClassifier, RegularClassifier
-from utils.feis import FEISDataLoader
-from utils.karaone import KaraOneDataLoader
+from eeg_isr.classifier import (
+    ClassifierGridSearch,
+    ClassifierMixin,
+    EvaluateClassifier,
+    RegularClassifier,
+)
+from eeg_isr.dataset import DatasetLoader
+from eeg_isr.feis import FEISDataLoader
+from eeg_isr.karaone import KaraOneDataLoader
 
-install()
-ConfigValue = Optional[Union[dict, list, str, int, float, Any]]
+type ConfigValue = dict[Any, Any] | list[Any] | str | int | float | Any | None
 
 
 class Config:
     """Class to manage configuration settings"""
 
-    def __init__(self, file: str = "config.yaml", verbose: bool = True):
+    def __init__(self, file: str = "config.yaml", verbose: bool = True) -> None:
         self.file: str = file
         if not os.path.exists(self.file):
             raise FileNotFoundError(f"Configuration file not found: {self.file}")
-        self.config: dict = self.load()
+        self.config = self.load()
         if verbose:
             console = Console()
             console.print(f"Configuration loaded from [bold]{self.file}[/]")
@@ -48,20 +52,21 @@ class Config:
     def get(self, key: str, default: ConfigValue = None) -> ConfigValue:
         return self.config.get(key, default)
 
-    def load(self) -> ConfigValue:
+    def load(self) -> dict[str, ConfigValue]:
         """Load configuration settings from a YAML or TOML file"""
         with open(self.file, "r") as f:
-            if self.file.endswith(".toml"):
-                config = toml.load(f)
-            elif self.file.endswith(".yaml") or self.file.endswith(".yml"):
-                config = yaml.safe_load(f)
-            else:
-                raise ValueError("Invalid configuration file format")
+            match os.path.splitext(self.file.lower())[1]:
+                case ".toml":
+                    config = toml.load(f)
+                case ".yaml" | ".yml":
+                    config = yaml.safe_load(f)
+                case _:
+                    raise ValueError("Invalid configuration file format")
 
         return config
 
     @classmethod
-    def from_args(cls, description: Optional[str] = None):
+    def from_args(cls, description: str | None = None) -> Self:
         """Create a Config instance from command-line arguments"""
         parser = argparse.ArgumentParser(description=description)
         parser.add_argument(
@@ -78,38 +83,35 @@ class Config:
         return cls(config_file)
 
 
-def fetch_dataset(choice: str) -> Type[Union[FEISDataLoader, KaraOneDataLoader]]:
-    options: Dict[str, Callable[..., object]] = {
-        "FEIS": FEISDataLoader,
-        "KaraOne": KaraOneDataLoader,
-    }
-
-    if choice not in options:
-        raise ValueError(f"Invalid dataset name: {choice}")
-
-    return options[choice]
+def fetch_dataset(choice: Literal["FEIS", "KaraOne"]) -> type[DatasetLoader]:
+    match choice:
+        case "FEIS":
+            return FEISDataLoader
+        case "KaraOne":
+            return KaraOneDataLoader
+        case _:
+            raise ValueError(f"Invalid dataset name: {choice}")
 
 
 def fetch_classifier(
-    choice: str,
-) -> Type[Union[RegularClassifier, EvaluateClassifier, ClassifierGridSearch]]:
-    options: Dict[str, Callable[..., object]] = {
-        "RegularClassifier": RegularClassifier,
-        "EvaluateClassifier": EvaluateClassifier,
-        "ClassifierGridSearch": ClassifierGridSearch,
-    }
-
-    if choice not in options:
-        raise ValueError(f"Invalid classifier name: {choice}")
-
-    return options[choice]
+    choice: Literal["RegularClassifier", "EvaluateClassifier", "ClassifierGridSearch"],
+) -> type[ClassifierMixin]:
+    match choice:
+        case "RegularClassifier":
+            return RegularClassifier
+        case "EvaluateClassifier":
+            return EvaluateClassifier
+        case "ClassifierGridSearch":
+            return ClassifierGridSearch
+        case _:
+            raise ValueError(f"Invalid classifier name: {choice}")
 
 
 class ConsoleHandler(Console):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    def line(self, line: str = "normal"):
+    def line(self, line: str = "normal") -> None:
         """Print a horizontal rule with a specified line style.
         Args:
         - line: The style of the line. Options are "normal", "thick", and "double".
@@ -118,7 +120,7 @@ class ConsoleHandler(Console):
         characters = options.get(line, "\u2500")
         self.print(Rule(characters=characters))
 
-    def save(self, file: str, mode: str = "w"):
+    def save(self, file: str, mode: str = "w") -> None:
         """Save the rich Console output to a file.
         Args:
         - file: The path to the file where the console output will be saved.

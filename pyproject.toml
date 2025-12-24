@@ -1,5 +1,5 @@
 [project]
-name = "EEG-Imagined-speech-recognition"
+name = "EEG-ISR"
 version = "0.1.0"
 description = "Imagined speech recognition through EEG signals"
 readme = "README.md"
@@ -22,6 +22,7 @@ dependencies = [
     "dask[complete]>=2025.12.0",
     "graphviz>=0.21",
     "imbalanced-learn>=0.14.1",
+    "microsoft-python-type-stubs",
     "mne>=1.11.0",
     "numpy>=2.3.5",
     "pandas>=2.3.3",
@@ -34,6 +35,10 @@ dependencies = [
     "tftb>=0.1.4",
 ]
 
+[build-system]
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
+
 [dependency-groups]
 dev = [
     "ipykernel>=7.1.0",
@@ -42,3 +47,6 @@ dev = [
     "jupyterlab>=4.5.1",
     "ruff>=0.14.10",
 ]
+
+[tool.uv.sources]
+microsoft-python-type-stubs = { git = "https://github.com/microsoft/python-type-stubs.git" }

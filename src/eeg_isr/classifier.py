@@ -47,7 +47,7 @@ class ClassifierMixin:
         features_select_k_best=None,
         verbose=False,
         console=None,
-    ):
+    ) -> None:
         """Parameters:
         - trial_size (int | float | None): Only use part of the dataset for trial.
             (default: Entire dataset)
@@ -453,7 +453,7 @@ class RegularClassifier(ClassifierMixin):
         features_select_k_best=None,
         verbose=False,
         console=None,
-    ):
+    ) -> None:
         super().__init__(
             X=X,
             y=y,
@@ -592,7 +592,7 @@ class ClassifierGridSearch(ClassifierMixin):
         features_select_k_best=None,
         verbose=False,
         console=None,
-    ):
+    ) -> None:
         super().__init__(
             X=X,
             y=y,
@@ -793,7 +793,7 @@ class EvaluateClassifier(ClassifierMixin):
         features_select_k_best=None,
         verbose=False,
         console=None,
-    ):
+    ) -> None:
         super().__init__(
             X=X,
             y=y,
@@ -1071,7 +1071,7 @@ class EvaluateClassifier(ClassifierMixin):
         filename = os.path.join(self.save_dir, "confusion_matrix-cv.minimal.png")
         self.plot_confusion_matrix_cv(minimal=True, save_path=filename)
 
-    def run(self):
+    def run(self) -> None:
         self.compile()
         self.evaluate(
             return_train_score=True,

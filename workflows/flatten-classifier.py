@@ -9,7 +9,7 @@ import sys
 from rich.console import Console
 
 sys.path.append(os.getcwd())
-from utils.config import Config, ConsoleHandler, fetch_classifier, fetch_dataset
+from eeg_isr.config import Config, ConsoleHandler, fetch_classifier, fetch_dataset
 
 
 def main(args):

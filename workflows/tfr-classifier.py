@@ -7,14 +7,15 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
+import keras
 import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-from utils.config import Config, fetch_dataset
-from utils.tfr import TFRDataset
+from eeg_isr.config import Config, fetch_dataset
+from eeg_isr.tfr import TFRDataset
 
-tf.keras.backend.clear_session()
+keras.backend.clear_session()
 print("Num GPUs Available: ", len(tf.config.list_physical_devices("GPU")))
 tf.config.experimental.set_memory_growth(
     tf.config.list_physical_devices("GPU")[0], True
@@ -53,8 +54,8 @@ def main(args):
     x_test = np.expand_dims(x_test, axis=-1)
 
     # One hot encoding
-    y_train = tf.keras.utils.to_categorical(y_train, num_classes)
-    y_test = tf.keras.utils.to_categorical(y_test, num_classes)
+    y_train = keras.utils.to_categorical(y_train, num_classes)
+    y_test = keras.utils.to_categorical(y_test, num_classes)
 
     if trial_size is None:
         subset_size = len(y_train)
@@ -67,18 +68,18 @@ def main(args):
     x_test, y_test = x_test[:subset_size], y_test[:subset_size]
     tfr_ds.split_info(x_train, x_test, y_train, y_test)
 
-    model = tf.keras.Sequential(
+    model = keras.Sequential(
         [
-            tf.keras.Input(shape=input_shape),
-            tf.keras.layers.Conv2D(96, kernel_size=(3, 3), activation="relu"),
-            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
-            tf.keras.layers.Conv2D(128, kernel_size=(7, 7), activation="relu"),
-            tf.keras.layers.Dropout(0.30),
-            tf.keras.layers.Conv2D(216, kernel_size=(7, 7), activation="relu"),
-            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
-            tf.keras.layers.Conv2D(256, kernel_size=(9, 9), activation="relu"),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(num_classes, activation="softmax"),
+            keras.Input(shape=input_shape),
+            keras.layers.Conv2D(96, kernel_size=(3, 3), activation="relu"),
+            keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            keras.layers.Conv2D(128, kernel_size=(7, 7), activation="relu"),
+            keras.layers.Dropout(0.30),
+            keras.layers.Conv2D(216, kernel_size=(7, 7), activation="relu"),
+            keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            keras.layers.Conv2D(256, kernel_size=(9, 9), activation="relu"),
+            keras.layers.Flatten(),
+            keras.layers.Dense(num_classes, activation="softmax"),
         ]
     )
     model.summary()
@@ -92,7 +93,7 @@ def main(args):
     os.makedirs(model_dir, exist_ok=True)
 
     filename = os.path.join(model_dir, "model.png")
-    tf.keras.utils.plot_model(model, to_file=filename, show_shapes=True)
+    keras.utils.plot_model(model, to_file=filename, show_shapes=True)
 
     _history = model.fit(
         x_train,

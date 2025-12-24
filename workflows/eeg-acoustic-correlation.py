@@ -13,7 +13,7 @@ from rich.table import Table
 from scipy.stats import pearsonr
 
 sys.path.append(os.getcwd())
-from utils.config import Config, ConsoleHandler, fetch_dataset
+from eeg_isr.config import Config, ConsoleHandler, fetch_dataset
 
 
 def main(args):

@@ -46,7 +46,7 @@ Install the package in editable mode (recommended):
 
 ```shell
 # Using uv
-uv pip install -e .
+uv sync
 
 # Or with pip
 pip install -e .

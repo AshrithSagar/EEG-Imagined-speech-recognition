@@ -16,7 +16,7 @@ from sklearn.model_selection import LearningCurveDisplay, ValidationCurveDisplay
 
 
 class ModelSummary:
-    def __init__(self, model_base_dir, models, console=None, verbose=False):
+    def __init__(self, model_base_dir, models, console=None, verbose=False) -> None:
         self.model_base_dir = model_base_dir
         self.models = models
         self.verbose = verbose
@@ -87,7 +87,9 @@ class ModelSummary:
 
 
 class EvaluateClassifierSummary(ModelSummary):
-    def __init__(self, model_base_dir, models, dataset, console=None, verbose=False):
+    def __init__(
+        self, model_base_dir, models, dataset, console=None, verbose=False
+    ) -> None:
         super(EvaluateClassifierSummary, self).__init__(
             model_base_dir=model_base_dir,
             models=models,
@@ -183,7 +185,7 @@ class EvaluateClassifierSummary(ModelSummary):
 
 
 class KBestSummary:
-    def __init__(self, task_dir, save_ext="png"):
+    def __init__(self, task_dir, save_ext="png") -> None:
         self.task_dir = task_dir
         self.save_ext = save_ext
         self.save_dir = os.path.join(task_dir, "Summary")
@@ -240,7 +242,7 @@ class KBestSummary:
 
 
 class CurvePlotter:
-    def __init__(self, estimator, X, y, cv=5):
+    def __init__(self, estimator, X, y, cv=5) -> None:
         self.estimator = estimator
         self.X, self.y = X, y
         self.cv = cv

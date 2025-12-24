@@ -7,8 +7,8 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from utils.config import Config
-from utils.karaone import KaraOneDataLoader
+from eeg_isr.config import Config
+from eeg_isr.karaone import KaraOneDataLoader
 
 
 def main(args):
