@@ -1,10 +1,12 @@
 [project]
 name = "EEG-Imagined-speech-recognition"
 version = "0.1.0"
-description = "Add your description here"
+description = "Imagined speech recognition through EEG signals"
 readme = "README.md"
 license = { text = "MIT" }
-authors = [{ name = "Ashrith Sagar Yedlapalli" }]
+authors = [
+    { name = "Ashrith Sagar Yedlapalli", email = "ashrith9sagar@gmail.com" },
+]
 keywords = [
     "eeg",
     "eeg-signals",
@@ -14,30 +16,29 @@ keywords = [
     "karaone",
     "feis",
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "antropy>=0.1.9",
-    "dask[complete]>=2025.5.1",
+    "dask[complete]>=2025.12.0",
     "graphviz>=0.21",
-    "imbalanced-learn>=0.12.4",
-    "mne>=1.9.0",
-    "numpy>=2.1.3",
-    "pandas>=2.3.0",
+    "imbalanced-learn>=0.14.1",
+    "mne>=1.11.0",
+    "numpy>=2.3.5",
+    "pandas>=2.3.3",
     "pydot>=4.0.1",
-    "rich>=14.0.0",
+    "rich>=14.2.0",
     "sacred>=0.8.7",
-    "scikit-learn>=1.7.0",
-    "scipy>=1.16.0",
-    "tensorflow>=2.19.0",
+    "scikit-learn>=1.8.0",
+    "scipy>=1.16.3",
+    "tensorflow>=2.20.0",
     "tftb>=0.1.4",
 ]
 
 [dependency-groups]
 dev = [
-    "ipykernel>=6.29.5",
+    "ipykernel>=7.1.0",
     "jupyter>=1.1.1",
     "jupyter-ruff>=0.2.0",
-    "jupyterlab>=4.4.0",
-    "ruff>=0.11.6",
-    "uv>=0.6.14",
+    "jupyterlab>=4.5.1",
+    "ruff>=0.14.10",
 ]
