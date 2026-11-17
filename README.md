@@ -1,3 +1,5 @@
+
+
 # EEG Imagined Speech Recognition
 
 ![GitHub](https://img.shields.io/github/license/AshrithSagar/EEG-Imagined-speech-recognition)
@@ -88,7 +90,7 @@ feis:
   features_dir: (path) Preferably use files/Features/FEIS/features-1/
   raw_data_dir: (path) Preferably use files/Data/FEIS/data_eeg/
   subjects: (all / list[int] / list[str]) Specify the subjects to be used. Use 'all' to use all subjects.
-  tasks: list[int]) Available tasks:- [0]; Refer utils/feis.py:FEISDataLoader.get_task();
+  tasks: (list[int]) Available tasks:- [0]; Refer utils/feis.py:FEISDataLoader.get_task();
 karaone:
   epoch_type: (str) One from { thinking, speaking, stimuli, clearing }
   features_dir: (path) Preferably use files/Features/KaraOne/features-1/
